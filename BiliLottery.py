@@ -54,4 +54,3 @@ def main(*args):
     bili_lottery(cookieData)
 
 main()
- 
