@@ -1,4 +1,4 @@
-from Biliapi import Biliapi
+from models.Biliapi import BiliWebApi
 import sqlite3
 
 cookieData = {
@@ -24,7 +24,7 @@ def update(dynamic_id):
 def bili_lottery(data):
 
     try:
-        biliapi = Biliapi(data)
+        biliapi = BiliWebApi(data)
     except Exception as e: 
         logging.error(f'登录验证id为{data["DedeUserID"]}的账户失败，原因为{str(e)}，跳过后续所有操作')
         return
