@@ -2,8 +2,8 @@
 import requests
 import json
 import re
-class Biliapi(object):
-    "B站API操作"
+class BiliWebApi(object):
+    "B站web的api接口"
     __headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36",
             "Referer": "https://www.bilibili.com/",
@@ -14,7 +14,7 @@ class Biliapi(object):
         #添加cookie
         requests.utils.add_dict_to_cookiejar(self.__session.cookies, cookieData)
         #设置header
-        self.__session.headers.update(Biliapi.__headers)
+        self.__session.headers.update(BiliWebApi.__headers)
 
         self.__bili_jct = cookieData["bili_jct"]
         self.__uid = cookieData["DedeUserID"]
@@ -22,7 +22,6 @@ class Biliapi(object):
         content = self.__session.get("https://account.bilibili.com/home/reward")
         if json.loads(content.text)["code"] != 0:
             raise Exception("参数验证失败")
-
 
     def getReward(self):
         "取B站经验信息"
@@ -93,7 +92,7 @@ class Biliapi(object):
     def getRegions(rid=1, num=6):
         "获取B站分区视频信息"
         url = "https://api.bilibili.com/x/web-interface/dynamic/region?ps=" + str(num) + "&rid=" + str(rid)
-        content = requests.get(url, headers=Biliapi.__headers)
+        content = requests.get(url, headers=BiliWebApi.__headers)
         datas = json.loads(content.text)["data"]["archives"]
         ids = []
         for x in datas:
@@ -104,7 +103,7 @@ class Biliapi(object):
     def getRankings(rid=1, day=3):
         "获取B站分区排行榜视频信息"
         url = "https://api.bilibili.com/x/web-interface/ranking?rid=" + str(rid) + "&day=" + str(day)
-        content = requests.get(url, headers=Biliapi.__headers)
+        content = requests.get(url, headers=BiliWebApi.__headers)
         datas = json.loads(content.text)["data"]["list"]
         ids = []
         for x in datas:
@@ -132,6 +131,29 @@ class Biliapi(object):
         content = self.__session.get(url)
         return json.loads(content.text)
 
+    def xliveSign(self):
+        "B站直播签到"
+        url = "https://api.live.bilibili.com/xlive/web-ucenter/v1/sign/DoSign"
+        content = self.__session.get(url)
+        return json.loads(content.text)
+
+    def xliveGetStatus(self):
+        "B站直播获取金银瓜子状态"
+        url = "https://api.live.bilibili.com/pay/v1/Exchange/getStatus"
+        content = self.__session.get(url)
+        return json.loads(content.text)
+
+    def silver2coin(self):
+        "银瓜子兑换硬币"
+        url = "https://api.live.bilibili.com/pay/v1/Exchange/silver2coin"
+        post_data = {
+            "csrf_token": self.__bili_jct
+            }
+        content = self.__session.post(url, data=post_data)
+        return json.loads(content.text)
+
+class BiliAppApi(object):
+    "B站app的api接口"
     @staticmethod
     def mangaClockIn(access_key, platform="android"):
         "模拟B站漫画客户端签到"
@@ -145,12 +167,6 @@ class Biliapi(object):
             "platform": platform
             }
         content = requests.post(url, data=post_data, headers=headers)
-        return json.loads(content.text)
-
-    def xliveSign(self):
-        "B站直播签到"
-        url = "https://api.live.bilibili.com/xlive/web-ucenter/v1/sign/DoSign"
-        content = self.__session.get(url)
         return json.loads(content.text)
 
     @staticmethod
