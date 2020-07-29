@@ -152,3 +152,23 @@ class Biliapi(object):
         url = "https://api.live.bilibili.com/xlive/web-ucenter/v1/sign/DoSign"
         content = self.__session.get(url)
         return json.loads(content.text)
+
+    @staticmethod
+    def xliveGetCurrentTask(access_key, platform="android"):
+        "B站直播模拟客户端获取时间宝箱"
+        url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getCurrentTask?access_key={access_key}&platform={platform}'
+        headers = {
+            "User-Agent": "Mozilla/5.0 BiliDroid/6.4.0 (bbcallen@gmail.com) os/android"
+            }
+        content = requests.get(url=url, headers=headers)
+        return json.loads(content.text)
+
+    @staticmethod
+    def xliveGetAward(access_key, platform="android"):
+        "B站直播模拟客户端打开宝箱领取银瓜子"
+        url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getAward?access_key={access_key}&platform={platform}'
+        headers = {
+            "User-Agent": "Mozilla/5.0 BiliDroid/6.4.0 (bbcallen@gmail.com) os/android"
+            }
+        content = requests.get(url=url, headers=headers)
+        return json.loads(content.text)
