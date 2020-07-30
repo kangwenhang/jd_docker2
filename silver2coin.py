@@ -1,17 +1,8 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from models.Biliapi import BiliWebApi
 import logging
-
-cookieDatas = [{
-    "SESSDATA": "",
-    "bili_jct": "",
-    "DedeUserID": "",
-    },  #支持多账户，单账户只填写一组cookie就行
-    {
-    "SESSDATA": "",
-    "bili_jct": "",
-    "DedeUserID": "",
-    }]
+from userData.userData import cookieDatas
 
 def silver2coin(cookieData):
    "B站直播银瓜子兑换硬币"

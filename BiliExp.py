@@ -3,18 +3,7 @@
 from models.Biliapi import BiliWebApi
 from models.PushMessage import PushMessage
 import logging
-
-cookieDatas = [{
-    "SESSDATA": "",
-    "bili_jct": "",
-    "DedeUserID": "",
-    },  #支持多账户，单账户只填写一组cookie就行
-    {
-    "SESSDATA": "",
-    "bili_jct": "",
-    "DedeUserID": "",
-    }]
-SCKEY = "这里填写SCKEY" #感谢server酱提供的推送微信消息服务，详情见http://sc.ftqq.com/
+from userData.userData import cookieDatas, SCKEY
 
 pm = PushMessage(SCKEY, "B站经验脚本消息推送")
 
@@ -123,6 +112,7 @@ def main(*args):
         logging.basicConfig(filename="exp.log", filemode='a', level=logging.INFO, format="%(asctime)s: %(levelname)s, %(message)s", datefmt="%Y/%d/%m %H:%M:%S")
     except:
         pass
+
     for x in cookieDatas:
         bili_exp(x)
 
