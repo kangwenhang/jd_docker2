@@ -1,8 +1,7 @@
 from models.Biliapi import BiliAppApi
 import logging
 import time
-
-access_keys = [""] #在这里填入B站客户端access_keys，支持多账户
+from userData.userData import app_access_keys
 
 '''
 腾讯云函数cron表达式例子
@@ -74,7 +73,7 @@ def main(*args):
         logging.basicConfig(filename="SilverAward.log", filemode='a', level=logging.INFO, format="%(asctime)s: %(levelname)s, %(message)s", datefmt="%Y/%d/%m %H:%M:%S")
     except:
         pass
-    for x in access_keys:
+    for x in app_access_keys:
         getAward(x)
 
 main()
