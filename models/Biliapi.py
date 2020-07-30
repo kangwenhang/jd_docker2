@@ -21,7 +21,7 @@ class BiliWebApi(object):
 
         content = self.__session.get("https://account.bilibili.com/home/reward")
         if json.loads(content.text)["code"] != 0:
-            raise Exception("参数验证失败")
+            raise Exception("参数验证失败，登录状态失效")
 
     def getReward(self):
         "取B站经验信息"
@@ -129,6 +129,7 @@ class BiliWebApi(object):
         "取B站用户动态数据"
         url = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid=" + self.__uid + "&type_list=" + type_list
         content = self.__session.get(url)
+        content.encoding = 'utf-8'
         return json.loads(content.text)
 
     def xliveSign(self):
@@ -188,3 +189,13 @@ class BiliAppApi(object):
             }
         content = requests.get(url=url, headers=headers)
         return json.loads(content.text)
+
+    @staticmethod
+    def isValid(access_key, platform="android", source_type=2):
+        "判断access_key是否有效"
+        url = f'https://api.bilibili.com/x/laser/app/query?access_key={access_key}&platform=android&source_type=2'
+        headers = {
+            "User-Agent": "Mozilla/5.0 BiliDroid/6.4.0 (bbcallen@gmail.com) os/android"
+            }
+        content = requests.get(url, headers=headers)
+        return (json.loads(content.text)["code"] == 0)
