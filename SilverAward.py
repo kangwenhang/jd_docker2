@@ -6,8 +6,8 @@ access_keys = [""] #在这里填入B站客户端access_keys，支持多账户
 
 '''
 腾讯云函数cron表达式例子
-1. 0 0,3,9,18,21,27,36,39,45,54 2 * * * *
-2. 0 0,6,15,18,24,33 3 * * * *
+1. 0 0,3,9,18,21,27,36,39,45,54 2 * * *
+2. 0 0,6,15,18,24,33 3 * * *
 表达式1表示凌晨2点在0,3,9,18,21,27,36,39,45,54分钟时执行脚本，表达式2同理
 
 非大老爷，每天可以领3轮银瓜子，只需要添加一个触发器，触发周期自定义，cron用表达式1就行
@@ -37,10 +37,13 @@ def getAward(access_key):
     timeEnd = time.strftime("%Y/%d/%m %H:%M:%S", time.localtime(result["data"]["time_end"]))
     logging.info(f'本次宝箱领取成功，在{timeEnd}后就可以领取{result["data"]["silver"]}个银瓜子')
     
-    now = int(time.time())
-    if(now < result["data"]["time_end"]):
-        logging.warning(f'还没有到开宝箱的时间，跳过开启宝箱')
-        return
+    time_difference = result["data"]["time_end"] - int(time.time()) #取时间差
+    if(time_difference > 0): #还没到开宝箱时间
+        if(time_difference < 11): #距离开宝箱时间在10s内，等待开宝箱，超过10s则立即退出，目的是修正领取宝箱的时间误差
+            time.sleep(time_difference)
+        else:
+            logging.warning(f'还没有到开宝箱的时间，跳过开启宝箱')
+            return
 
     try:
         result = BiliAppApi.xliveGetAward(access_key)
