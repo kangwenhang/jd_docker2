@@ -41,7 +41,7 @@ B站自动操作脚本(投币、点赞、分享视频，直播签到，自动转
 
 B站操作需要的cookie数据可以按照以下方式获取
 浏览器打开B站主页--》按F12打开开发者工具--》application--》cookies
-<div align=center><img src="image/tip.png" width="800" height="450" ><div>
+<div align=center><img src="image/tip.png" width="800" height="450" ></div>
 
 ## 使用方法(以阿里云函数为例)
 ##### 1.准备工作
