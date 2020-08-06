@@ -204,7 +204,7 @@ class BiliWebApi(object):
         post_data = {
             "title": tilte,
             "content": content,
-            "category": 0,#专栏分类,0为默认
+            "category": category,#专栏分类,0为默认
             "list_id": list_id,#文集编号，默认0不添加到文集
             "tid": 4, #4为专栏封面单图,3为专栏封面三图
             "reprint": 0,

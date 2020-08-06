@@ -90,7 +90,7 @@ class Article(object):
                   '<figure class="img-box" contenteditable="false"><img src="//i0.hdslb.com/bfs/article/02db465212d3c374a43c60fa2625cc1caeaab796.png" class="cut-off-6"/></figure>')
             self.__content = f'{self.__content}{ll[type]}'
             return self
-        def startU(self, size=16):
+        def startU(self):
             "开始一段无序列表"
             self.__content = f'{self.__content}<ul class=" list-paddingleft-2">'
             return self
@@ -98,7 +98,7 @@ class Article(object):
             "结束一段无序列表"
             self.__content = f'{self.__content}</ul>'
             return self
-        def startO(self, size=16):
+        def startO(self):
             "开始一段有序列表"
             self.__content = f'{self.__content}<ol class=" list-paddingleft-2">'
             return self
@@ -106,7 +106,7 @@ class Article(object):
             "结束一段有序列表"
             self.__content = f'{self.__content}</ol>'
             return self
-        def startL(self, size=16):
+        def startL(self):
             "开始列表中的一列"
             self.__content = f'{self.__content}<li>'
             return self
