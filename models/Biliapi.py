@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import requests
 import json
-import re
+
 class BiliWebApi(object):
     "B站web的api接口"
     __headers = {
@@ -32,6 +32,7 @@ class BiliWebApi(object):
     @staticmethod
     def getId(url):
         "取B站指定视频链接的aid和cid号"
+        import re
         content = requests.get(url, headers=Biliapi.__headers)
         match = re.search( 'https:\/\/www.bilibili.com\/video\/av(.*?)\/\">', content.text, 0)
         aid = match.group(1)
@@ -82,6 +83,7 @@ class BiliWebApi(object):
 
     def getHomePageUrls(self):
         "取B站首页推荐视频地址列表"
+        import re
         url = "https://www.bilibili.com"
         content = self.__session.get(url)
         match = re.findall( '<div class=\"info-box\"><a href=\"(.*?)\" target=\"_blank\">', content.text, 0)
@@ -126,8 +128,52 @@ class BiliWebApi(object):
         return json.loads(content.text)
 
     def getDynamicNew(self, type_list='268435455'):
+        "取B站用户最新动态数据"
+        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self.__uid}&type_list={type_list}'
+        content = self.__session.get(url)
+        content.encoding = 'utf-8'
+        return json.loads(content.text)
+
+    def getDynamic(self, type_list='268435455'):
         "取B站用户动态数据"
-        url = "https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid=" + self.__uid + "&type_list=" + type_list
+        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self.__uid}&type_list={type_list}'
+        content = self.__session.get(url)
+        content.encoding = 'utf-8'
+        jsobj = json.loads(content.text)
+        cards = jsobj["data"]["cards"]
+        offset = jsobj["data"]
+        for x in cards:
+            yield x
+        hasnext = True
+        offset = cards[len(cards) - 1]["desc"]["dynamic_id"]
+        while hasnext:
+            content = self.__session.get(f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_history?uid={self.__uid}&offset_dynamic_id={offset}&type={type_list}')
+            content.encoding = 'utf-8'
+            jsobj = json.loads(content.text)
+            hasnext = (jsobj["data"]["has_more"] == 1)
+            #offset = jsobj["data"]["next_offset"]
+            cards = jsobj["data"]["cards"]
+            for x in cards:
+                yield x
+            offset = cards[len(cards) - 1]["desc"]["dynamic_id"]
+
+    def getMyDynamic(self):
+        "取B站用户自己的动态列表"
+        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid={self.__uid}&need_top=1&offset_dynamic_id='
+        hasnext = True
+        offset = 0
+        while hasnext:
+            content = self.__session.get(f'{url}{offset}')
+            jsobj = json.loads(content.text)
+            hasnext = (jsobj["data"]["has_more"] == 1)
+            offset = jsobj["data"]["next_offset"]
+            cards = jsobj["data"]["cards"]
+            for x in cards:
+                yield x
+
+    def getLotteryNotice(self, dynamic_id: int):
+        "取指定抽奖信息"
+        url = f'https://api.vc.bilibili.com/lottery_svr/v1/lottery_svr/lottery_notice?dynamic_id={dynamic_id}'
         content = self.__session.get(url)
         content.encoding = 'utf-8'
         return json.loads(content.text)
@@ -153,49 +199,161 @@ class BiliWebApi(object):
         content = self.__session.post(url, data=post_data)
         return json.loads(content.text)
 
-class BiliAppApi(object):
-    "B站app的api接口"
-    @staticmethod
-    def mangaClockIn(access_key, platform="android"):
-        "模拟B站漫画客户端签到"
-        url = "https://manga.bilibili.com/twirp/activity.v1.Activity/ClockIn"
-        headers = {
-            "User-Agent": "Mozilla/5.0 BiliComic/3.0.0",
-            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+    def createArticle(self, tilte="", content="", aid=0, category=0, list_id=0, tid=4, original=1, image_urls="", origin_image_urls="", submit=False):
+        "发表专栏"
+        post_data = {
+            "title": tilte,
+            "content": content,
+            "category": 0,#专栏分类,0为默认
+            "list_id": list_id,#文集编号，默认0不添加到文集
+            "tid": 4, #4为专栏封面单图,3为专栏封面三图
+            "reprint": 0,
+            "media_id": 0,
+            "spoiler": 0,
+            "original": original,
+            "csrf": self.__bili_jct
+            }
+        url = 'https://api.bilibili.com/x/article/creative/draft/addupdate'#编辑地址,发表前可以通过这个来编辑草稿,没打草稿不允许发表
+        if aid:
+            post_data["aid"] = aid
+            if submit:
+                url = 'https://api.bilibili.com/x/article/creative/article/submit'#正式发表地址
+        if origin_image_urls and image_urls:
+            post_data["origin_image_urls"] = origin_image_urls
+            post_data["image_urls"] = image_urls
+        content = self.__session.post(url, post_data)
+        return json.loads(content.text)
+
+    def deleteArticle(self, aid: int):
+        "删除专栏"
+        url = 'https://member.bilibili.com/x/web/draft/delete'
+        post_data = {
+            "aid": aid,
+            "csrf": self.__bili_jct
+            }
+        content = self.__session.post(url, post_data)
+        return json.loads(content.text)
+
+    def getArticle(self, aid: int):
+        "获取专栏内容"
+        url = f'https://api.bilibili.com/x/article/creative/draft/view?aid={aid}'
+        content = self.__session.get(url)
+        return json.loads(content.text)
+
+    def articleUpcover(self, file):
+        "上传本地图片,返回链接"
+        url = 'https://api.bilibili.com/x/article/creative/article/upcover'
+        files = {
+            'binary':(file)
             }
         post_data = {
-            "access_key": access_key,
-            "platform": platform
+            "csrf": self.__bili_jct
             }
-        content = requests.post(url, data=post_data, headers=headers)
+        content = self.__session.post(url, data=post_data, files=files, timeout=(5, 60))
         return json.loads(content.text)
 
-    @staticmethod
-    def xliveGetCurrentTask(access_key, platform="android"):
+    def articleCardsBvid(self, bvid: 'str 加上BV前缀'):
+        "根据bv号获取视频信息，在专栏引用视频时使用"
+        url = f'https://api.bilibili.com/x/article/cards?ids={bvid}&cross_domain=true'
+        content = self.__session.get(url)
+        return json.loads(content.text)
+
+    def articleCardsCvid(self, cvid: 'str 加上cv前缀'):
+        "根据cv号获取专栏，在专栏引用其他专栏时使用"
+        url = f'https://api.bilibili.com/x/article/cards?id={cvid}&cross_domain=true'
+        content = self.__session.get(url)
+        return json.loads(content.text)
+
+    def articleCardsId(self, epid: 'str 加上ep前缀'):
+        "根据ep号获取番剧信息，在专栏引用站内番剧时使用"
+        return self.articleCardsCvid(epid)
+
+    def articleCardsAu(self, auid: 'str 加上au前缀'):
+        "根据au号获取音乐信息，在专栏引用站内音乐时使用"
+        return self.articleCardsCvid(auid)
+
+    def articleCardsPw(self, pwid: 'str 加上pw前缀'):
+        "根据au号获取会员购信息，在专栏引用会员购时使用"
+        return self.articleCardsCvid(pwid)
+
+    def articleMangas(self, mcid: 'int 不加mc前缀'):
+        "根据mc号获取漫画信息，在专栏引用站内漫画时使用"
+        url = f'https://api.bilibili.com/x/article/mangas?id={mcid}&cross_domain=true'
+        content = self.__session.get(url)
+        return json.loads(content.text)
+
+    def articleCardsLv(self, lvid: 'str 加上lv前缀'):
+        "根据lv号获取直播信息，在专栏引用站内直播时使用"
+        return self.articleCardsCvid(lvid)
+
+    def articleCreateVote(self, vote):
+        "创建一个投票"
+        ''''''
+        vote = {
+            "title": "投票标题",
+            "desc": "投票说明",
+            "type": 0, #0为文字投票，1为图片投票
+            "duration": 604800,#投票时长秒,604800为一个星期
+            "options":[
+                {
+                    "desc": "选项1",
+                    "cnt": 0,#不知道什么意思
+                    "idx": 1, #选项序号，第一个选项为1
+                    #"img_url": "http://i0.hdslb.com/bfs/album/d74e83cf96a9028eb3e280d5f877dce53760a7e2.jpg",#仅图片投票需要
+                },
+                {
+                    "desc": "选项2",
+                    "cnt": 0,
+                    "idx": 2, #选项序号，第二个选项为2
+                    #"img_url": ""
+                }
+                ]
+            }
+        ''''''
+        post_data = {
+            "info": vote,
+            "csrf": self.__bili_jct
+            }
+        content = self.__session.post(url, data=post_data)
+        return json.loads(content.text)
+
+class BiliAppApi(object):
+    "B站app的api接口"
+    __headers = {
+            "User-Agent": "Mozilla/5.0 BiliDroid/6.4.0 (bbcallen@gmail.com) os/android",
+            }
+    def __init__(self, access_key, platform="android"):
+        "初始化app操作类,B站客户端和漫画客户端通用一个access_key"
+        self.__access_key = access_key
+        self.__platform = platform
+        if not self.isValid(access_key, platform):
+            raise Exception("参数验证失败，登录状态失效")
+
+    def mangaClockIn(self):
+        "模拟B站漫画客户端签到"
+        url = "https://manga.bilibili.com/twirp/activity.v1.Activity/ClockIn"
+        post_data = {
+            "access_key": self.__access_key,
+            "platform": self.__platform
+            }
+        content = requests.post(url, data=post_data, headers=BiliAppApi.__headers)
+        return json.loads(content.text)
+
+    def xliveGetCurrentTask(self):
         "B站直播模拟客户端获取时间宝箱"
-        url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getCurrentTask?access_key={access_key}&platform={platform}'
-        headers = {
-            "User-Agent": "Mozilla/5.0 BiliDroid/6.4.0 (bbcallen@gmail.com) os/android"
-            }
-        content = requests.get(url=url, headers=headers)
+        url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getCurrentTask?access_key={self.__access_key}&platform={self.__platform}'
+        content = requests.get(url=url, headers=BiliAppApi.__headers)
         return json.loads(content.text)
 
-    @staticmethod
-    def xliveGetAward(access_key, platform="android"):
+    def xliveGetAward(self):
         "B站直播模拟客户端打开宝箱领取银瓜子"
-        url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getAward?access_key={access_key}&platform={platform}'
-        headers = {
-            "User-Agent": "Mozilla/5.0 BiliDroid/6.4.0 (bbcallen@gmail.com) os/android"
-            }
-        content = requests.get(url=url, headers=headers)
+        url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getAward?access_key={self.__access_key}&platform={self.__platform}'
+        content = requests.get(url=url, headers=BiliAppApi.__headers)
         return json.loads(content.text)
 
     @staticmethod
     def isValid(access_key, platform="android", source_type=2):
         "判断access_key是否有效"
         url = f'https://api.bilibili.com/x/laser/app/query?access_key={access_key}&platform=android&source_type=2'
-        headers = {
-            "User-Agent": "Mozilla/5.0 BiliDroid/6.4.0 (bbcallen@gmail.com) os/android"
-            }
-        content = requests.get(url, headers=headers)
+        content = requests.get(url, headers=BiliAppApi.__headers)
         return (json.loads(content.text)["code"] == 0)

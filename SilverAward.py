@@ -3,20 +3,15 @@ import logging
 import time
 from userData.userData import app_access_keys
 
-'''
-腾讯云函数cron表达式例子
-1. 0 0,3,9,18,21,27,36,39,45,54 2 * * *
-2. 0 0,6,15,18,24,33 3 * * *
-表达式1表示凌晨2点在0,3,9,18,21,27,36,39,45,54分钟时执行脚本，表达式2同理
-
-非大老爷，每天可以领3轮银瓜子，只需要添加一个触发器，触发周期自定义，cron用表达式1就行
-大老爷，每天可以领5轮银瓜子，需要添加两个触发器，第二个触发器用表达式2
-'''
-
 def getAward(access_key):
     logging.info(f'B站直播获取领取银瓜子脚本开始为access_key({access_key})的账户获取银瓜子')
     try:
-        result = BiliAppApi.xliveGetCurrentTask(access_key)
+        biliapi = BiliAppApi(access_key)
+    except Exception as e:
+        logging.warning(f'获取银瓜子异常，原因为{str(e)},跳过此账户后续操作')
+        return
+    try:
+        result = biliapi.xliveGetCurrentTask()
     except Exception as e:
         logging.warning(f'获取本次宝箱信息异常，原因为({str(e)})，跳过本账户后续操作')
         return
@@ -45,7 +40,7 @@ def getAward(access_key):
             return
 
     try:
-        result = BiliAppApi.xliveGetAward(access_key)
+        result = biliapi.xliveGetAward()
     except Exception as e:
         logging.warning(f'打开宝箱异常，信息为({result["msg"]})，获取银瓜子失败')
         return
@@ -56,7 +51,7 @@ def getAward(access_key):
     logging.info(f'成功领取{result["data"]["awardSilver"]}个银瓜子')
 
     try:
-        result = BiliAppApi.xliveGetCurrentTask(access_key)
+        result = biliapi.xliveGetCurrentTask()
     except Exception as e:
         logging.warning(f'获取下次宝箱信息异常，原因为({str(e)})，跳过本账户后续操作')
         return
@@ -73,7 +68,8 @@ def main(*args):
         logging.basicConfig(filename="SilverAward.log", filemode='a', level=logging.INFO, format="%(asctime)s: %(levelname)s, %(message)s", datefmt="%Y/%d/%m %H:%M:%S")
     except:
         pass
+
     for x in app_access_keys:
         getAward(x)
 
-main()
+main()#云函数使用注释掉这一句
