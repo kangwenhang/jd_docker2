@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 import requests
 import json
-
 class BiliWebApi(object):
     "B站web的api接口"
-    __headers = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36",
-            "Referer": "https://www.bilibili.com/",
-            }
+    __headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36","Referer": "https://www.bilibili.com/"}
     def __init__(self, cookieData):
         #创建session
         self.__session = requests.session()
@@ -288,7 +284,7 @@ class BiliWebApi(object):
 
     def articleCreateVote(self, vote):
         "创建一个投票"
-        ''''''
+        '''
         vote = {
             "title": "投票标题",
             "desc": "投票说明",
@@ -309,12 +305,78 @@ class BiliWebApi(object):
                 }
                 ]
             }
-        ''''''
+        '''
         post_data = {
             "info": vote,
             "csrf": self.__bili_jct
             }
         content = self.__session.post(url, data=post_data)
+        return json.loads(content.text)
+
+    def videoPreupload(self, filename, filesize):
+        "申请上传，返回上传信息"
+        from urllib.parse import quote
+        name = quote(filename)
+        url = f'https://member.bilibili.com/preupload?name={name}&size={filesize}&r=upos&profile=ugcupos%2Fbup&ssl=0&version=2.8.9&build=2080900&upcdn=bda2&probe_version=20200628'
+        content = self.__session.get(url)
+        return json.loads(content.text)
+
+    def videoUploadId(self, url, auth):
+        "向上传地址申请上传，得到上传id等信息"
+        content = self.__session.post(f'{url}?uploads&output=json', headers={"X-Upos-Auth": auth})
+        return json.loads(content.text)
+
+    def videoUpload(self, url, auth, upload_id, data, chunk, chunks, start, total):
+        "上传视频分块"
+        size = len(data)
+        end = start + size
+        content = self.__session.put(f'{url}?partNumber={chunk+1}&uploadId={upload_id}&chunk={chunk}&chunks={chunks}&size={size}&start={start}&end={end}&total={total}', data=data, headers={"X-Upos-Auth": auth})
+        return True if content.text == "MULTIPART_PUT_SUCCESS" else False
+
+    def videoUploadInfo(self, url, auth, parts, filename, upload_id, biz_id):
+        "查询上传视频信息"
+        from urllib.parse import quote
+        name = quote(filename)
+        content = self.__session.post(f'{url}?output=json&name={name}&profile=ugcupos%2Fbup&uploadId={upload_id}&biz_id={biz_id}', json={"parts":parts}, headers={"X-Upos-Auth": auth})
+        return json.loads(content.text)
+
+    def videoRecovers(self, fns: '视频编号'):
+        "查询以前上传的视频信息"
+        content = self.__session.get(f'https://member.bilibili.com/x/web/archive/recovers?fns={fns}')
+        return json.loads(content.text)
+
+    def videoTags(self, title: '视频标题', filename: "上传后的视频名称", typeid="", desc="", cover="", groupid=1, vfea=""):
+        "上传视频后获得推荐标签"
+        from urllib.parse import quote
+        content = self.__session.get(f'https://member.bilibili.com/x/web/archive/tags?typeid={typeid}&title={quote(title)}&filename=filename&desc={desc}&cover={cover}&groupid={groupid}&vfea={vfea}')
+        return json.loads(content.text)
+
+    def videoAdd(self, videoData:"视频数据包 dict"):
+        "发布视频"
+        content = self.__session.post(f'https://member.bilibili.com/x/vu/web/add?csrf={self.__bili_jct}', json=videoData)
+        return json.loads(content.text)
+
+    def videoPre(self):
+        "视频预操作"
+        content = self.__session.get('https://member.bilibili.com/x/geetest/pre')
+        return json.loads(content.text)
+
+    def videoPre(self):
+        "视频预操作"
+        content = self.__session.get('https://member.bilibili.com/x/geetest/pre')
+        return json.loads(content.text)
+
+    def videoDelete(self, aid, geetest_challenge, geetest_validate, geetest_seccode):
+        "删除视频"
+        post_data = {
+            "aid": aid,
+            "geetest_challenge": geetest_challenge,
+            "geetest_validate": geetest_validate,
+            "geetest_seccode": geetest_seccode,
+            "success": 1,
+            "csrf": self.__bili_jct
+            }
+        content = self.__session.post('https://member.bilibili.com/x/web/archive/delete', data=post_data)
         return json.loads(content.text)
 
 class BiliAppApi(object):
