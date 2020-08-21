@@ -163,9 +163,21 @@ class BiliWebApi(object):
             jsobj = json.loads(content.text)
             hasnext = (jsobj["data"]["has_more"] == 1)
             offset = jsobj["data"]["next_offset"]
+            if not 'cards' in jsobj["data"]:
+                continue
             cards = jsobj["data"]["cards"]
             for x in cards:
                 yield x
+
+    def removeDynamic(self, dynamic_id: int):
+        "删除自己的动态"
+        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic'
+        post_data = {
+            "dynamic_id": dynamic_id,
+            "csrf_token": self.__bili_jct
+            }
+        content = self.__session.post(url, data=post_data)
+        return json.loads(content.text)
 
     def getLotteryNotice(self, dynamic_id: int):
         "取指定抽奖信息"
@@ -377,6 +389,35 @@ class BiliWebApi(object):
             "csrf": self.__bili_jct
             }
         content = self.__session.post('https://member.bilibili.com/x/web/archive/delete', data=post_data)
+        return json.loads(content.text)
+
+    def activityAddTimes(self, sid: 'str 活动sid', action_type: 'int 操作类型'):
+        "增加B站活动的参与次数"
+        post_data = {
+            "sid": sid,
+            "action_type": action_type,
+            "csrf": self.__bili_jct
+            }
+        content = self.__session.post('https://api.bilibili.com/x/activity/lottery/addtimes', data=post_data)
+        #响应例子{"code":75405,"message":"获得的抽奖次数已达到上限","ttl":1}
+        return json.loads(content.text)
+
+    def activityDo(self, sid: 'str 活动sid', type: 'int 操作类型'):
+        "参与B站活动"
+        #B站有时候举行抽奖之类的活动，活动页面能查出活动的sid
+        post_data = {
+            "sid": sid,
+            "type": type,
+            "csrf": self.__bili_jct
+            }
+        content = self.__session.post('https://api.bilibili.com/x/activity/lottery/do', data=post_data)
+        #响应例子{"code":75415,"message":"抽奖次数不足","ttl":1,"data":null}
+        return json.loads(content.text)
+
+    def activityMyTimes(self, sid: 'str 活动sid'):
+        "获取B站活动次数"
+        content = self.__session.get(f'https://api.bilibili.com/x/activity/lottery/mytimes?sid={sid}')
+        #响应例子{"code":0,"message":"0","ttl":1,"data":{"times":0}}
         return json.loads(content.text)
 
 class BiliAppApi(object):
