@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from models.Biliapi import BiliWebApi
 import logging
-from userData.userData import cookieDatas
+import json
 
 def silver2coin(cookieData):
    "B站直播银瓜子兑换硬币"
@@ -44,7 +44,12 @@ def main(*args):
         logging.basicConfig(filename="silver2coin.log", filemode='a', level=logging.INFO, format="%(asctime)s: %(levelname)s, %(message)s", datefmt="%Y/%d/%m %H:%M:%S")
     except:
         pass
-    for x in cookieDatas:
+
+    with open('config/config.json','r',encoding='utf-8') as fp:
+        configData = json.load(fp)
+
+    for x in configData["cookieDatas"]:
         silver2coin(x)
 
-main()
+if __name__=="__main__":
+    main()

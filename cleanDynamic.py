@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from models.Biliapi import BiliWebApi
-import time
-from userData.userData import cookieDatas
-import json
+import time, json
 
 endTime = 0  #结束时间戳(10位)，默认为当前时间
 startTime = 0 #开始时间戳(10位)，默认为0
@@ -72,8 +70,10 @@ def cleanDynamic(cookieData, filters):
             print(f'已删除id为{dynamic_id}的动态')
 
 def main(*args):
+    with open('config/config.json','r',encoding='utf-8') as fp:
+        configData = json.load(fp)
     filters = (filterB,filterC,filterD)
-    for x in cookieDatas:
+    for x in configData["cookieDatas"]:
         cleanDynamic(x, filters)
     
 if __name__=="__main__":

@@ -2,12 +2,10 @@
 # -*- coding: utf-8 -*-
 from models.Biliapi import BiliWebApi
 from models.PushMessage import PushMessage
+import json
 import logging
-from userData.userData import cookieDatas, SCKEY
 
-pm = PushMessage(SCKEY, "B站经验脚本消息推送")
-
-def bili_exp(cookieData):
+def bili_exp(cookieData, pm):
    "B站直播签到，投币分享获取经验，模拟观看一个视频"
    logging.info(f'B站经验脚本开始为id为{cookieData["DedeUserID"]}的用户进行直播签到，投币点赞分享并观看一个首页视频')
    pm.addMsg(f'目前账户id为：{cookieData["DedeUserID"]}')
@@ -113,8 +111,14 @@ def main(*args):
     except:
         pass
 
-    for x in cookieDatas:
-        bili_exp(x)
+    with open('config/config.json','r',encoding='utf-8') as fp:
+        configData = json.load(fp)
+
+    SCKEY = configData["SCKEY"]
+    pm = PushMessage(SCKEY, "B站经验脚本消息推送")
+
+    for x in configData["cookieDatas"]:
+        bili_exp(x, pm)
 
     if SCKEY:
         try:
@@ -123,4 +127,5 @@ def main(*args):
         except Exception as e: 
             logging.warning(f'消息推送异常，原因为{str(e)}')
 
-main()
+if __name__=="__main__":
+    main()

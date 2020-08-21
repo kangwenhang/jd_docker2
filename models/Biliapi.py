@@ -420,6 +420,27 @@ class BiliWebApi(object):
         #响应例子{"code":0,"message":"0","ttl":1,"data":{"times":0}}
         return json.loads(content.text)
 
+    def xliveGetAward(self, platform="android"):
+        "B站直播模拟客户端打开宝箱领取银瓜子"
+        url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getAward?platform={platform}'
+        content = self.__session.get(url=url)
+        return json.loads(content.text)
+
+    def xliveGetCurrentTask(self, platform="android"):
+        "B站直播模拟客户端获取时间宝箱"
+        url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getCurrentTask?platform={platform}'
+        content = self.__session.get(url=url)
+        return json.loads(content.text)
+
+    def mangaClockIn(self, platform="android"):
+        "模拟B站漫画客户端签到"
+        url = "https://manga.bilibili.com/twirp/activity.v1.Activity/ClockIn"
+        post_data = {
+            "platform": platform
+            }
+        content = self.__session.post(url, data=post_data)
+        return json.loads(content.text)
+
 class BiliAppApi(object):
     "B站app的api接口"
     __headers = {

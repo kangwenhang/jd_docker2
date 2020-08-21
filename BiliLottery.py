@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from models.Biliapi import BiliWebApi
+import json
 import logging
-from userData.userData import cookieDatas
 
 def bili_lottery(data):
     try:
@@ -38,7 +38,11 @@ def main(*args):
     except:
         pass
 
-    for x in cookieDatas:
+    with open('config/config.json','r',encoding='utf-8') as fp:
+        configData = json.load(fp)
+
+    for x in configData["cookieDatas"]:
         bili_lottery(x)
 
-main()
+if __name__=="__main__":
+    main()

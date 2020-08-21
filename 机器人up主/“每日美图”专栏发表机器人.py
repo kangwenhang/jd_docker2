@@ -4,11 +4,13 @@ import json
 import re
 from models.Biliapi import BiliWebApi
 from models.Article import Article
-from userData.userData import cookieDatas
+
+with open('config/config.json','r',encoding='utf-8') as fp:
+    configData = json.load(fp)
 
 num = 18 #只爬取18张图,可以调大，如果中间网络异常会丢失几张图，最终数量可能达不到
 
-biliapi = BiliWebApi(cookieDatas[0])
+biliapi = BiliWebApi(configData["cookieDatas"][0])
 #下面开始爬取P站图片
 datas = []
 headers = {
@@ -37,7 +39,7 @@ for i in range(num):
     datas.append({"url":tourl,"title":title}) #将上传到B站的url和图片的标题保存
 
 #下面开始发表B站专栏
-article = Article(cookieDatas[0], "每日美图") #创建B站专栏草稿,并设置标题
+article = Article(configData["cookieDatas"][0], "每日美图") #创建B站专栏草稿,并设置标题
 article.DoNotDel = True #在程序退出时不删除创建的文章草稿，文章草稿可在article.getAid(True)返回的网址查看，修改，提交
 content = Article.Content() #创建content类编写文章正文
 content.startP().add('所有图片均转载于').startB().add('网络').endB().add('，如有侵权请联系我，我会立即').startB().add('删除').endB().endP().br()

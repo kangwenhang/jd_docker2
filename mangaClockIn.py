@@ -1,11 +1,11 @@
-from models.Biliapi import BiliAppApi
+from models.Biliapi import BiliWebApi
 import logging
-from userData.userData import app_access_keys
+import json
 
-def mangaClockIn(access_key):
-    logging.info(f'B站漫画签到脚本开始为access_key({access_key})的账户签到')
+def mangaClockIn(cookieData):
+    logging.info(f'B站漫画签到脚本开始为id为({cookieData["DedeUserID"]})的账户签到')
     try:
-        biliapi = BiliAppApi(access_key)
+        biliapi = BiliWebApi(cookieData)
     except Exception as e:
         logging.warning(f'签到异常，原因为{str(e)},跳过此账户后续操作')
         return
@@ -23,7 +23,13 @@ def main(*args):
         logging.basicConfig(filename="manga.log", filemode='a', level=logging.INFO, format="%(asctime)s: %(levelname)s, %(message)s", datefmt="%Y/%d/%m %H:%M:%S")
     except:
         pass
-    for x in app_access_keys:
+
+    with open('config/config.json','r',encoding='utf-8') as fp:
+        configData = json.load(fp)
+
+    for x in configData["cookieDatas"]:
         mangaClockIn(x)
 
-main()#云函数使用注释掉这一句
+if __name__=="__main__":
+    main()
+

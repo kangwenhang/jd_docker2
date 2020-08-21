@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from models.Video import Video
-from userData.userData import cookieDatas
-import time
+import time, json
 from pytube import YouTube
+
+with open('config/config.json','r',encoding='utf-8') as fp:
+        configData = json.load(fp)
 
 url = input("请粘贴youtube视频完整链接后按回车：")
 title = input("请输入B站发布标题(直接回车默认为视频标题)：")
@@ -19,7 +21,7 @@ if itag:
 else:
     filename = video.streams.get_by_itag(22).download()
 
-bilivideo = Video(cookieDatas[0]) #创建B站视频发布任务
+bilivideo = Video(configData["cookieDatas"][0]) #创建B站视频发布任务
 print(f'开始将{filename}上传至B站，请耐心等待')
 vd = bilivideo.uploadFile(filename) #上传视频
 if vd["filename"] == "":

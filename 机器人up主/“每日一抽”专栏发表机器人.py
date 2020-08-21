@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from models.Biliapi import BiliWebApi
 from models.Article import Article
-from userData.userData import cookieDatas
-import time
+import time, json
 
 # 本程序为B站专栏机器人，可以收集整理动态中一段时间内的抽奖消息，并整理
 # 后发布到B站专栏中，效果看例子 https://www.bilibili.com/read/cv7055733
@@ -78,11 +77,14 @@ def buildContent(article, list):
     return content
 
 def main(*args):
+    with open('config/config.json','r',encoding='utf-8') as fp:
+        configData = json.load(fp)
+
     now_time = int(time.time())
     endtime = now_time - now_time % 86400 + time.timezone #今天0点
     starttime = time1 - 86400 #昨天0点
-    list = listLott(cookieDatas[0], endtime, starttime) #返回自己动态里从starttime到endtime的所有抽奖信息
-    article = Article(cookieDatas[0], "互动抽奖系列--每日一抽") #创建B站专栏,并设置标题
+    list = listLott(configData["cookieDatas"][0], endtime, starttime) #返回自己动态里从starttime到endtime的所有抽奖信息
+    article = Article(configData["cookieDatas"][0], "互动抽奖系列--每日一抽") #创建B站专栏,并设置标题
     article.DoNotDel = True #在程序退出时不删除创建的文章草稿，文章草稿可在article.getAid(True)返回的网址查看，修改，提交
     content = buildContent(article, list) #创建文章内容
     article.setContent(content.output()) #将文章内容保存至专栏
@@ -95,4 +97,5 @@ def main(*args):
     article.save() #保存专栏至B站草稿箱
     #article.submit() #发布专栏，注释掉后需要到article.getAid(True)返回的网址去草稿箱手动提交
 
-main()
+if __name__=="__main__":
+    main()

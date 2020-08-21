@@ -1,0 +1,11 @@
+{
+     "cookieDatas":[
+		{
+			"SESSDATA": "",
+			"bili_jct": "",
+			"DedeUserID": ""
+		}
+	],
+	"SCKEY":"",
+	"tag":"cookieDatas由浏览器获取，支持多用户，获取详情见首页说明；SCKEY用于微信消息推送(不用请留空)，详情见http://sc.ftqq.com/"
+}

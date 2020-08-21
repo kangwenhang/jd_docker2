@@ -1,5 +1,4 @@
 from models.Biliapi import BiliWebApi
-from userData.userData import cookieDatas
 import time, json
 
 def do_activity(cookieData, activityData):
@@ -37,10 +36,13 @@ def do_activity(cookieData, activityData):
                 print(f'参与活动异常，原因为({str(e)})')
 
 def main(*args):
-    with open('userData/activity.json','r',encoding='utf-8') as fp:
+    with open('config/config.json','r',encoding='utf-8') as fp:
+        configData = json.load(fp)
+
+    with open('config/activity.json','r',encoding='utf-8') as fp:
         activityData = json.load(fp)
 
-    for x in cookieDatas:
+    for x in configData["cookieDatas"]:
         do_activity(x, activityData)
 
 if __name__=="__main__":

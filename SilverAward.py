@@ -1,12 +1,11 @@
-from models.Biliapi import BiliAppApi
+from models.Biliapi import BiliWebApi
 import logging
-import time
-from userData.userData import app_access_keys
+import time, json
 
-def getAward(access_key):
-    logging.info(f'B站直播获取领取银瓜子脚本开始为access_key({access_key})的账户获取银瓜子')
+def getAward(cookieData):
+    logging.info(f'B站直播获取领取银瓜子脚本开始为id为({cookieData["DedeUserID"]})的账户获取银瓜子')
     try:
-        biliapi = BiliAppApi(access_key)
+        biliapi = BiliWebApi(cookieData)
     except Exception as e:
         logging.warning(f'获取银瓜子异常，原因为{str(e)},跳过此账户后续操作')
         return
@@ -69,7 +68,11 @@ def main(*args):
     except:
         pass
 
-    for x in app_access_keys:
+    with open('config/config.json','r',encoding='utf-8') as fp:
+        configData = json.load(fp)
+
+    for x in configData["cookieDatas"]:
         getAward(x)
 
-main()#云函数使用注释掉这一句
+if __name__=="__main__":
+    main()
