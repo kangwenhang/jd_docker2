@@ -3,6 +3,19 @@ B站自动操作脚本(投币、点赞、分享视频，直播签到，自动转
 脚本up主系列(python实现B站专栏的编写，排版和发表，视频的上传和发布)
 </br></br>
 
+## 2020/08/22更新
+
+* 1.使用Actions实现脚本自动部署到阿里云，代替本文最下方的手动部署方式
+    *  需要在github仓库的“Settings” --》“Secrets” 中添加以下四个参数(地区设置为cn-shanghai)
+        *  (1) "ACCOUNT_ID"          值为阿里云用户的账号ID
+        *  (2) "ACCESS_KEY_ID"       值为阿里云账户AccessKeyID
+        *  (3) "ACCESS_KEY_SECRET"   值为阿里云账户accessKeySecret
+        *  (4) "biliconfig"          将用户配置文件config/config.json的文件内容放在此处
+    *  在仓库执行push或pull_request时会自动部署到阿里云
+    *  ！注意账户信息安全！
+
+
+</br></br>
 ## 2020/08/21更新
 
 * 1.增加doActivity.py用于参加B站官方活动(抽奖类) 活动列表 https://www.bilibili.com/blackboard/x/act_list/
