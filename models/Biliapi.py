@@ -3,27 +3,25 @@ import requests
 import json
 class BiliWebApi(object):
     "B站web的api接口"
-    __headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36","Referer": "https://www.bilibili.com/"}
     def __init__(self, cookieData):
         #创建session
         self.__session = requests.session()
         #添加cookie
         requests.utils.add_dict_to_cookiejar(self.__session.cookies, cookieData)
         #设置header
-        self.__session.headers.update(BiliWebApi.__headers)
+        self.__session.headers.update({"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36","Referer": "https://www.bilibili.com/",'Connection': 'keep-alive'})
 
         self.__bili_jct = cookieData["bili_jct"]
         self.__uid = cookieData["DedeUserID"]
 
-        content = self.__session.get("https://account.bilibili.com/home/reward")
-        if json.loads(content.text)["code"] != 0:
+        code = self.__session.get("https://account.bilibili.com/home/reward").json()["code"]
+        if code != 0:
             raise Exception("参数验证失败，登录状态失效")
 
     def getReward(self):
         "取B站经验信息"
         url = "https://account.bilibili.com/home/reward"
-        content = self.__session.get(url)
-        return json.loads(content.text)["data"]
+        return self.__session.get(url).json()["data"]
 
     @staticmethod
     def getId(url):
@@ -39,8 +37,7 @@ class BiliWebApi(object):
     def getCoin(self):
         "获取剩余硬币数"
         url = "https://api.bilibili.com/x/web-interface/nav?build=0&mobi_app=web"
-        content = self.__session.get(url)
-        return int(json.loads(content.text)["data"]["money"])
+        return int(self.__session.get(url).json()["data"]["money"])
 
     def coin(self, aid, num, select_like):
         "给指定av号视频投币"
@@ -52,8 +49,7 @@ class BiliWebApi(object):
             "cross_domain": "true",
             "csrf": self.__bili_jct
             }
-        content = self.__session.post(url, post_data)
-        return json.loads(content.text)
+        return self.__session.post(url, post_data).json()
 
     def share(self, aid):
         "分享指定av号视频"
@@ -62,8 +58,7 @@ class BiliWebApi(object):
             "aid": aid,
             "csrf": self.__bili_jct
             }
-        content = self.__session.post(url, post_data)
-        return json.loads(content.text)
+        return self.__session.post(url, post_data).json()
 
     def report(self, aid, cid, progres):
         "B站上报观看进度"
@@ -74,8 +69,7 @@ class BiliWebApi(object):
             "progres": progres,
             "csrf": self.__bili_jct
             }
-        content = self.__session.post(url, post_data)
-        return json.loads(content.text)
+        return self.__session.post(url, post_data).json()
 
     def getHomePageUrls(self):
         "取B站首页推荐视频地址列表"
@@ -90,8 +84,7 @@ class BiliWebApi(object):
     def getRegions(rid=1, num=6):
         "获取B站分区视频信息"
         url = "https://api.bilibili.com/x/web-interface/dynamic/region?ps=" + str(num) + "&rid=" + str(rid)
-        content = requests.get(url, headers=BiliWebApi.__headers)
-        datas = json.loads(content.text)["data"]["archives"]
+        datas = requests.get(url).json()["data"]["archives"]
         ids = []
         for x in datas:
             ids.append({"title": x["title"], "aid": x["aid"], "bvid": x["bvid"], "cid": x["cid"]})
@@ -101,8 +94,7 @@ class BiliWebApi(object):
     def getRankings(rid=1, day=3):
         "获取B站分区排行榜视频信息"
         url = "https://api.bilibili.com/x/web-interface/ranking?rid=" + str(rid) + "&day=" + str(day)
-        content = requests.get(url, headers=BiliWebApi.__headers)
-        datas = json.loads(content.text)["data"]["list"]
+        datas = requests.get(url).json()["data"]["list"]
         ids = []
         for x in datas:
             ids.append({"title": x["title"], "aid": x["aid"], "bvid": x["bvid"], "cid": x["cid"], "coins": x["coins"], "play": x["play"]})
@@ -120,21 +112,20 @@ class BiliWebApi(object):
             #"ctrl": "[]",
             "csrf_token": self.__bili_jct
             }
-        content = self.__session.post(url, post_data)
-        return json.loads(content.text)
+        return self.__session.post(url, post_data).json()
 
     def getDynamicNew(self, type_list='268435455'):
         "取B站用户最新动态数据"
         url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self.__uid}&type_list={type_list}'
         content = self.__session.get(url)
-        content.encoding = 'utf-8'
+        content.encoding = 'utf-8' #需要指定编码
         return json.loads(content.text)
 
     def getDynamic(self, type_list='268435455'):
         "取B站用户动态数据"
         url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self.__uid}&type_list={type_list}'
         content = self.__session.get(url)
-        content.encoding = 'utf-8'
+        content.encoding = 'utf-8' #需要指定编码
         jsobj = json.loads(content.text)
         cards = jsobj["data"]["cards"]
         offset = jsobj["data"]
@@ -159,8 +150,7 @@ class BiliWebApi(object):
         hasnext = True
         offset = 0
         while hasnext:
-            content = self.__session.get(f'{url}{offset}')
-            jsobj = json.loads(content.text)
+            jsobj = self.__session.get(f'{url}{offset}').json()
             hasnext = (jsobj["data"]["has_more"] == 1)
             offset = jsobj["data"]["next_offset"]
             if not 'cards' in jsobj["data"]:
@@ -176,27 +166,24 @@ class BiliWebApi(object):
             "dynamic_id": dynamic_id,
             "csrf_token": self.__bili_jct
             }
-        content = self.__session.post(url, data=post_data)
-        return json.loads(content.text)
+        return self.__session.post(url, post_data).json()
 
     def getLotteryNotice(self, dynamic_id: int):
         "取指定抽奖信息"
         url = f'https://api.vc.bilibili.com/lottery_svr/v1/lottery_svr/lottery_notice?dynamic_id={dynamic_id}'
         content = self.__session.get(url)
-        content.encoding = 'utf-8'
+        content.encoding = 'utf-8'#不指定会出错
         return json.loads(content.text)
 
     def xliveSign(self):
         "B站直播签到"
         url = "https://api.live.bilibili.com/xlive/web-ucenter/v1/sign/DoSign"
-        content = self.__session.get(url)
-        return json.loads(content.text)
+        return self.__session.get(url).json()
 
     def xliveGetStatus(self):
         "B站直播获取金银瓜子状态"
         url = "https://api.live.bilibili.com/pay/v1/Exchange/getStatus"
-        content = self.__session.get(url)
-        return json.loads(content.text)
+        return self.__session.get(url).json()
 
     def silver2coin(self):
         "银瓜子兑换硬币"
@@ -204,8 +191,7 @@ class BiliWebApi(object):
         post_data = {
             "csrf_token": self.__bili_jct
             }
-        content = self.__session.post(url, data=post_data)
-        return json.loads(content.text)
+        return self.__session.post(url, post_data).json()
 
     def createArticle(self, tilte="", content="", aid=0, category=0, list_id=0, tid=4, original=1, image_urls="", origin_image_urls="", submit=False):
         "发表专栏"
@@ -229,8 +215,7 @@ class BiliWebApi(object):
         if origin_image_urls and image_urls:
             post_data["origin_image_urls"] = origin_image_urls
             post_data["image_urls"] = image_urls
-        content = self.__session.post(url, post_data)
-        return json.loads(content.text)
+        return self.__session.post(url, post_data).json()
 
     def deleteArticle(self, aid: int):
         "删除专栏"
@@ -239,14 +224,12 @@ class BiliWebApi(object):
             "aid": aid,
             "csrf": self.__bili_jct
             }
-        content = self.__session.post(url, post_data)
-        return json.loads(content.text)
+        return self.__session.post(url, post_data).json()
 
     def getArticle(self, aid: int):
         "获取专栏内容"
         url = f'https://api.bilibili.com/x/article/creative/draft/view?aid={aid}'
-        content = self.__session.get(url)
-        return json.loads(content.text)
+        return self.__session.get(url).json()
 
     def articleUpcover(self, file):
         "上传本地图片,返回链接"
@@ -257,20 +240,17 @@ class BiliWebApi(object):
         post_data = {
             "csrf": self.__bili_jct
             }
-        content = self.__session.post(url, data=post_data, files=files, timeout=(5, 60))
-        return json.loads(content.text)
+        return self.__session.post(url, post_data, files=files, timeout=(5, 60)).json()
 
     def articleCardsBvid(self, bvid: 'str 加上BV前缀'):
         "根据bv号获取视频信息，在专栏引用视频时使用"
         url = f'https://api.bilibili.com/x/article/cards?ids={bvid}&cross_domain=true'
-        content = self.__session.get(url)
-        return json.loads(content.text)
+        return self.__session.get(url).json()
 
     def articleCardsCvid(self, cvid: 'str 加上cv前缀'):
         "根据cv号获取专栏，在专栏引用其他专栏时使用"
         url = f'https://api.bilibili.com/x/article/cards?id={cvid}&cross_domain=true'
-        content = self.__session.get(url)
-        return json.loads(content.text)
+        return self.__session.get(url).json()
 
     def articleCardsId(self, epid: 'str 加上ep前缀'):
         "根据ep号获取番剧信息，在专栏引用站内番剧时使用"
@@ -287,8 +267,7 @@ class BiliWebApi(object):
     def articleMangas(self, mcid: 'int 不加mc前缀'):
         "根据mc号获取漫画信息，在专栏引用站内漫画时使用"
         url = f'https://api.bilibili.com/x/article/mangas?id={mcid}&cross_domain=true'
-        content = self.__session.get(url)
-        return json.loads(content.text)
+        return self.__session.get(url).json()
 
     def articleCardsLv(self, lvid: 'str 加上lv前缀'):
         "根据lv号获取直播信息，在专栏引用站内直播时使用"
@@ -322,21 +301,18 @@ class BiliWebApi(object):
             "info": vote,
             "csrf": self.__bili_jct
             }
-        content = self.__session.post(url, data=post_data)
-        return json.loads(content.text)
+        return self.__session.post(url, post_data).json()
 
     def videoPreupload(self, filename, filesize):
         "申请上传，返回上传信息"
         from urllib.parse import quote
         name = quote(filename)
         url = f'https://member.bilibili.com/preupload?name={name}&size={filesize}&r=upos&profile=ugcupos%2Fbup&ssl=0&version=2.8.9&build=2080900&upcdn=bda2&probe_version=20200628'
-        content = self.__session.get(url)
-        return json.loads(content.text)
+        return self.__session.get(url).json()
 
     def videoUploadId(self, url, auth):
         "向上传地址申请上传，得到上传id等信息"
-        content = self.__session.post(f'{url}?uploads&output=json', headers={"X-Upos-Auth": auth})
-        return json.loads(content.text)
+        return self.__session.post(f'{url}?uploads&output=json', headers={"X-Upos-Auth": auth}).json()
 
     def videoUpload(self, url, auth, upload_id, data, chunk, chunks, start, total):
         "上传视频分块"
@@ -349,37 +325,32 @@ class BiliWebApi(object):
         "查询上传视频信息"
         from urllib.parse import quote
         name = quote(filename)
-        content = self.__session.post(f'{url}?output=json&name={name}&profile=ugcupos%2Fbup&uploadId={upload_id}&biz_id={biz_id}', json={"parts":parts}, headers={"X-Upos-Auth": auth})
-        return json.loads(content.text)
+        return self.__session.post(f'{url}?output=json&name={name}&profile=ugcupos%2Fbup&uploadId={upload_id}&biz_id={biz_id}', json={"parts":parts}, headers={"X-Upos-Auth": auth}).json()
 
     def videoRecovers(self, fns: '视频编号'):
         "查询以前上传的视频信息"
-        content = self.__session.get(f'https://member.bilibili.com/x/web/archive/recovers?fns={fns}')
-        return json.loads(content.text)
+        url = f'https://member.bilibili.com/x/web/archive/recovers?fns={fns}'
+        return self.__session.get(url=url).json()
 
     def videoTags(self, title: '视频标题', filename: "上传后的视频名称", typeid="", desc="", cover="", groupid=1, vfea=""):
         "上传视频后获得推荐标签"
         from urllib.parse import quote
-        content = self.__session.get(f'https://member.bilibili.com/x/web/archive/tags?typeid={typeid}&title={quote(title)}&filename=filename&desc={desc}&cover={cover}&groupid={groupid}&vfea={vfea}')
-        return json.loads(content.text)
+        url = f'https://member.bilibili.com/x/web/archive/tags?typeid={typeid}&title={quote(title)}&filename=filename&desc={desc}&cover={cover}&groupid={groupid}&vfea={vfea}'
+        return self.__session.get(url=url).json()
 
     def videoAdd(self, videoData:"视频数据包 dict"):
         "发布视频"
-        content = self.__session.post(f'https://member.bilibili.com/x/vu/web/add?csrf={self.__bili_jct}', json=videoData)
-        return json.loads(content.text)
+        url = f'https://member.bilibili.com/x/vu/web/add?csrf={self.__bili_jct}'
+        return self.__session.post(url, json=videoData).json()
 
     def videoPre(self):
         "视频预操作"
-        content = self.__session.get('https://member.bilibili.com/x/geetest/pre')
-        return json.loads(content.text)
-
-    def videoPre(self):
-        "视频预操作"
-        content = self.__session.get('https://member.bilibili.com/x/geetest/pre')
-        return json.loads(content.text)
+        url = 'https://member.bilibili.com/x/geetest/pre'
+        return self.__session.get(url=url).json()
 
     def videoDelete(self, aid, geetest_challenge, geetest_validate, geetest_seccode):
         "删除视频"
+        url = 'https://member.bilibili.com/x/web/archive/delete'
         post_data = {
             "aid": aid,
             "geetest_challenge": geetest_challenge,
@@ -388,19 +359,18 @@ class BiliWebApi(object):
             "success": 1,
             "csrf": self.__bili_jct
             }
-        content = self.__session.post('https://member.bilibili.com/x/web/archive/delete', data=post_data)
-        return json.loads(content.text)
+        return self.__session.post(url, post_data).json()
 
     def activityAddTimes(self, sid: 'str 活动sid', action_type: 'int 操作类型'):
         "增加B站活动的参与次数"
+        url = 'https://api.bilibili.com/x/activity/lottery/addtimes'
         post_data = {
             "sid": sid,
             "action_type": action_type,
             "csrf": self.__bili_jct
             }
-        content = self.__session.post('https://api.bilibili.com/x/activity/lottery/addtimes', data=post_data)
         #响应例子{"code":75405,"message":"获得的抽奖次数已达到上限","ttl":1}
-        return json.loads(content.text)
+        return self.__session.post(url, post_data).json()
 
     def activityDo(self, sid: 'str 活动sid', type: 'int 操作类型'):
         "参与B站活动"
@@ -410,27 +380,80 @@ class BiliWebApi(object):
             "type": type,
             "csrf": self.__bili_jct
             }
-        content = self.__session.post('https://api.bilibili.com/x/activity/lottery/do', data=post_data)
         #响应例子{"code":75415,"message":"抽奖次数不足","ttl":1,"data":null}
-        return json.loads(content.text)
+        return self.__session.post('https://api.bilibili.com/x/activity/lottery/do', post_data).json()
 
     def activityMyTimes(self, sid: 'str 活动sid'):
         "获取B站活动次数"
-        content = self.__session.get(f'https://api.bilibili.com/x/activity/lottery/mytimes?sid={sid}')
+        url = f'https://api.bilibili.com/x/activity/lottery/mytimes?sid={sid}'
         #响应例子{"code":0,"message":"0","ttl":1,"data":{"times":0}}
-        return json.loads(content.text)
+        return self.__session.get(url=url).json()
 
     def xliveGetAward(self, platform="android"):
         "B站直播模拟客户端打开宝箱领取银瓜子"
         url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getAward?platform={platform}'
-        content = self.__session.get(url=url)
-        return json.loads(content.text)
+        return self.__session.get(url).json()
 
     def xliveGetCurrentTask(self, platform="android"):
         "B站直播模拟客户端获取时间宝箱"
         url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getCurrentTask?platform={platform}'
-        content = self.__session.get(url=url)
-        return json.loads(content.text)
+        return self.__session.get(url).json()
+
+    def xliveGiftBagList(self):
+        "B站直播获取背包礼物"
+        url = 'https://api.live.bilibili.com/xlive/web-room/v1/gift/bag_list'
+        return self.__session.get(url=url).json()
+
+    def xliveGetRecommendList(self):
+        "B站直播获取首页前10条直播"
+        url = f'https://api.live.bilibili.com/relation/v1/AppWeb/getRecommendList'
+        return self.__session.get(url=url).json()
+
+    def xliveBagSend(self, biz_id, ruid, bag_id, gift_id, gift_num, storm_beat_id=0, price=0, platform="pc"):
+        "B站直播送出背包礼物"
+        url = 'https://api.live.bilibili.com/gift/v2/live/bag_send'
+        post_data = {
+            "uid": self.__uid,
+            "gift_id": gift_id, #背包里的礼物id
+            "ruid": ruid, #up主的uid
+            "send_ruid": 0,
+            "gift_num": gift_num, #送礼物的数量
+            "bag_id": bag_id, #背包id
+            "platform": platform, #平台
+            "biz_code": "live",
+            "biz_id": biz_id, #房间号
+            #"rnd": rnd, #直播开始时间
+            "storm_beat_id": storm_beat_id,
+            "price": price, #礼物价格
+            "csrf": self.__bili_jct
+            }
+        return self.__session.post(url,post_data).json()
+
+    def xliveGetRoomInfo(self, room_id: 'int 房间id'):
+        "B站直播获取房间信息"
+        url = f'https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id={room_id}'
+        return self.__session.get(url=url).json()
+
+    def xliveWebHeartBeat(self, biz_id, last=11, platform="web"):
+        "B站直播 直播间心跳"
+        import base64
+        hb = base64.b64encode(f'{last}|{biz_id}|1|0'.encode('utf-8')).decode()
+        url = f'https://live-trace.bilibili.com/xlive/rdata-interface/v1/heartbeat/webHeartBeat?hb={hb}&pf={platform}'
+        return self.__session.get(url).json()
+
+    def xliveHeartBeat(self):
+        "B站直播 心跳(大约2分半一次)"
+        url = f'https://api.live.bilibili.com/relation/v1/Feed/heartBeat'
+        return self.__session.get(url).json()
+
+    def xliveUserOnlineHeart(self):
+        "B站直播 用户在线心跳(很少见)"
+        url = f'https://api.live.bilibili.com/User/userOnlineHeart'
+        post_data = {
+            "csrf": self.__bili_jct
+            }
+        content = self.__session.post(url, post_data)
+        return self.__session.post(url, post_data).json()
 
     def mangaClockIn(self, platform="android"):
         "模拟B站漫画客户端签到"
@@ -438,46 +461,4 @@ class BiliWebApi(object):
         post_data = {
             "platform": platform
             }
-        content = self.__session.post(url, data=post_data)
-        return json.loads(content.text)
-
-class BiliAppApi(object):
-    "B站app的api接口"
-    __headers = {
-            "User-Agent": "Mozilla/5.0 BiliDroid/6.4.0 (bbcallen@gmail.com) os/android",
-            }
-    def __init__(self, access_key, platform="android"):
-        "初始化app操作类,B站客户端和漫画客户端通用一个access_key"
-        self.__access_key = access_key
-        self.__platform = platform
-        if not self.isValid(access_key, platform):
-            raise Exception("参数验证失败，登录状态失效")
-
-    def mangaClockIn(self):
-        "模拟B站漫画客户端签到"
-        url = "https://manga.bilibili.com/twirp/activity.v1.Activity/ClockIn"
-        post_data = {
-            "access_key": self.__access_key,
-            "platform": self.__platform
-            }
-        content = requests.post(url, data=post_data, headers=BiliAppApi.__headers)
-        return json.loads(content.text)
-
-    def xliveGetCurrentTask(self):
-        "B站直播模拟客户端获取时间宝箱"
-        url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getCurrentTask?access_key={self.__access_key}&platform={self.__platform}'
-        content = requests.get(url=url, headers=BiliAppApi.__headers)
-        return json.loads(content.text)
-
-    def xliveGetAward(self):
-        "B站直播模拟客户端打开宝箱领取银瓜子"
-        url = f'https://api.live.bilibili.com/lottery/v1/SilverBox/getAward?access_key={self.__access_key}&platform={self.__platform}'
-        content = requests.get(url=url, headers=BiliAppApi.__headers)
-        return json.loads(content.text)
-
-    @staticmethod
-    def isValid(access_key, platform="android", source_type=2):
-        "判断access_key是否有效"
-        url = f'https://api.bilibili.com/x/laser/app/query?access_key={access_key}&platform=android&source_type=2'
-        content = requests.get(url, headers=BiliAppApi.__headers)
-        return (json.loads(content.text)["code"] == 0)
+        return self.__session.post(url, post_data).json()

@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from models.Biliapi import BiliWebApi
 from models.PushMessage import PushMessage
-import json
+import json, time
 import logging
 
 def bili_exp(cookieData, pm):
@@ -23,8 +22,6 @@ def bili_exp(cookieData, pm):
        "视频分享": False,
        "脚本执行前经验": 0,
        "脚本执行前硬币": 0,
-       "脚本执行后经验": 0,
-       "脚本执行后硬币": 0
        }
 
    try:
@@ -33,6 +30,19 @@ def bili_exp(cookieData, pm):
        rdata["直播签到"] = (xliveInfo["code"] == 0)
    except Exception as e:
        logging.warning(f'直播签到异常，原因为{str(e)}')
+
+   try:
+        room_id = biliapi.xliveGetRecommendList()["data"]["list"][6]["roomid"]
+        uid = biliapi.xliveGetRoomInfo(room_id)["data"]["room_info"]["uid"]
+        now_time = int(time.time())
+        bagList = biliapi.xliveGiftBagList()["data"]["list"]
+        for x in bagList:
+            if x["expire_at"] - now_time < 172800: #礼物到期时间小于2天
+                ret = biliapi.xliveBagSend(room_id, uid, x["bag_id"], x["gift_id"], x["gift_num"])
+                if ret["code"] == 0:
+                    logging.info(f'{ret["data"]["send_tips"]} {ret["data"]["gift_name"]} 数量{ret["data"]["gift_num"]}')
+   except Exception as e:
+       logging.warning(f'直播送出即将过期礼物异常，原因为{str(e)}')
 
    try:
        reward = biliapi.getReward()
@@ -85,22 +95,6 @@ def bili_exp(cookieData, pm):
        rdata["视频分享"] = (info["code"] == 0)
    except Exception as e: 
        logging.warning(f'分享视频异常，原因为{str(e)}')
-
-   try:
-       reward = biliapi.getReward()
-       logging.info(f'经验脚本结束后经验信息 ：{str(reward)}')
-   except Exception as e: 
-       logging.warning(f'获取账户经验信息异常，原因为{str(e)}')
-
-   rdata["脚本执行后经验"] = reward["level_info"]["current_exp"]
-
-   try:
-       coin_num = biliapi.getCoin()
-   except Exception as e: 
-       logging.warning(f'获取账户剩余硬币数异常，原因为{str(e)}')
-       coin_num = 0
-
-   rdata["脚本执行后硬币"] = coin_num
 
    pm.addMsg(str(rdata))
    logging.info(f'id为{cookieData["DedeUserID"]}的账户操作全部完成')

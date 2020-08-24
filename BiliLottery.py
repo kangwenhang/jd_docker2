@@ -11,6 +11,12 @@ def bili_lottery(data):
         return
 
     try:
+        biliapi.xliveUserOnlineHeart() #发两个直播在线心跳
+        biliapi.xliveHeartBeat()
+    except: 
+        pass
+
+    try:
         datas = biliapi.getDynamicNew()["data"]["cards"] #获取"当前"的动态列表，不追溯历史动态
     except Exception as e: 
         logging.warning(f'获取动态列表异常，原因为{str(e)}，跳过后续所有操作')
