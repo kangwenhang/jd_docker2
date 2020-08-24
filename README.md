@@ -10,8 +10,8 @@ B站自动操作脚本(投币、点赞、分享视频，直播签到，自动转
         *  (1) "ACCOUNT_ID"          值为阿里云用户的账号ID
         *  (2) "ACCESS_KEY_ID"       值为阿里云账户AccessKeyID
         *  (3) "ACCESS_KEY_SECRET"   值为阿里云账户accessKeySecret
-        *  (4) "biliconfig"          将用户配置文件config/config.json的文件内容放在此处
-    *  在仓库执行push或pull_request时会自动部署到阿里云
+        *  (4) "biliconfig"          将用户配置文件config/config.json的文件内容放在此处，一定要填写cookie中的三个参数
+    *  在"Actions"中的"deploy for ailiyun"下点击"Run workflow"即可部署至阿里云
     *  ！注意账户信息安全！
 
 
