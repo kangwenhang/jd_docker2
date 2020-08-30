@@ -16,7 +16,7 @@ B站自动操作脚本(投币、点赞、分享视频，直播签到，直播挂
         *  2.1.3 name为"ACCESS_KEY_SECRET"    value为阿里云账户accessKeySecret
         *  2.1.4 name为"biliconfig"           value为B站账号登录信息，格式参照config/config.json文件
     *  2.2添加完上面4个"Secrets"后，进入"Actions" --》"deploy for aliyun"，点击右边的"Run workflow"即可部署至阿里云函数
-        *  2.2.1 首次fork可能要去actions里面同意使用actions条款，如果"Actions"里面没有"deploy for aliyun"，则需要提交一次，在/.github/workflows/deploy_for_aliyun.yml里加个回车，提交后就能在"Actions"里找到"deploy for aliyun"了
+        *  2.2.1 首次fork可能要去actions里面同意使用actions条款，如果"Actions"里面没有"deploy for aliyun"，点一下右上角的"star"，"deploy for aliyun"就会出现在"Actions"里面
 
 注:账号cookie检查每天0:10执行1次(填写SCKEY后账号登录状态失效会微信通知)；投币、点赞、分享视频，直播签到，送出直播即将过期礼物 每天0:20执行1次；参与B站官方抽奖活动每天0:30执行1次；漫画app签到每天0:40执行1次；直播开启宝箱领取银瓜子1:00-2:00之间每隔10分钟运行1次(非大老爷用户每天最多领取9轮)；将银瓜子兑换为硬币每天3:00执行1次；B站转发互动抽奖和发送直播在线心跳维持在线状态每隔10分钟运行1次(之所以转发抽奖10分钟执行1次而不是每天执行1次是为了及时转发，如果同时转发太多抽奖可能被B站列为异常转发)；清理B站无效动态半个月1次。最后注意不要在github上直接在config/config.json中填写账号信息，而是在Secrets中填写，避免账号信息泄露。
 </br></br>
