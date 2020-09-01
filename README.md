@@ -5,7 +5,7 @@ B站自动操作脚本(投币、点赞、分享视频，直播签到，直播挂
 
 # 使用方式
 * 1.准备
-    *  1.1开通云函数计算的阿里云账号，以及账号的ACCOUNT_ID，ACCESS_KEY_ID，ACCESS_KEY_SECRET
+    *  1.1开通云函数计算的阿里云账号，以及账号的ACCOUNT_ID，ACCESS_KEY_ID，ACCESS_KEY_SECRET(**注意**！！获取后面两个参数时**不**要使用**子账户**！！会没有权限创建新的函数)
     *  1.2一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图)
     *  1.3SCKEY (可选，用于账号失效时用微信提醒,不用请留空，详情见http://sc.ftqq.com/)
     *  1.4fork本项目
