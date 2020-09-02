@@ -115,7 +115,7 @@ class BiliWebApi(object):
             }
         return self.__session.post(url, post_data).json()
 
-    def follow(self, followid: 'up的uid', isfollow=True):
+    def followed(self, followid: 'up的uid', isfollow=True):
         "关注或取关up主"
         url = "https://api.vc.bilibili.com/feed/v1/feed/SetUserFollow"
         post_data = {
@@ -125,7 +125,28 @@ class BiliWebApi(object):
             }
         return self.__session.post(url, post_data).json()
 
-    def getFollower(self, uid=0, pn=1, ps=2000, order='desc'):
+    def followedModify(self, followid: 'up的uid', act=1, re_src=11):
+        "改变关注状态(增加、删除关注的up)"
+        url = "https://api.bilibili.com/x/relation/modify"
+        post_data = {
+            "fid": followid,
+            "act": act,
+            "re_src": re_src,
+            "csrf": self.__bili_jct
+            }
+        return self.__session.post(url, post_data).json()
+
+    def groupAddFollowed(self, followid: 'up的uid', tagids=0):
+        "移动关注的up主的分组"
+        url = "https://api.bilibili.com/x/relation/tags/addUsers?cross_domain=true"
+        post_data = {
+            "fids": followid,
+            "tagids": tagids, #默认是0，特别关注是-10
+            "csrf": self.__bili_jct
+            }
+        return self.__session.post(url, post_data).json()
+
+    def getFollowed(self, uid=0, pn=1, ps=50, order='desc'):
         "获取指定账户的关注者(默认取本账户)"
         if uid == 0:
             uid = self.__uid
@@ -504,3 +525,31 @@ class BiliWebApi(object):
             "platform": platform
             }
         return self.__session.post(url, post_data).json()
+
+    def mangaDetail(self, comic_id: int, device='pc', platform='web'):
+        "获取漫画信息"
+        url = f'https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device={device}&platform={platform}'
+        post_data = {
+            "comic_id": comic_id
+            }
+        return self.__session.post(url, json=post_data).json()
+
+    def mangaImageToken(self, urls=[], device='pc', platform='web'):
+        "获取漫画图片token"
+        url = f'https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device={device}&platform={platform}'
+        post_data = {
+            "urls": json.dumps(urls)
+            }
+        return self.__session.post(url, json=post_data).json()
+
+    def mangaImageIndex(self, ep_id: int, device='pc', platform='web'):
+        "获取漫画图片列表"
+        url = f'https://manga.bilibili.com/twirp/comic.v1.Comic/GetImageIndex?device={device}&platform={platform}'
+        post_data = {
+            "ep_id": ep_id
+            }
+        return self.__session.post(url, json=post_data).json()
+
+    def mangaGetImageBytes(self, url: str):
+        "获取漫画图片列表"
+        return self.__session.get(url).content

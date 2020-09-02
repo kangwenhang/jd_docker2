@@ -9,3 +9,9 @@ browser_assist
 机器人up主
 *.zip
 *.md
+topicRepost.py
+cancelAttention.py
+mangaDownloader.py
+models/Article.py
+models/Manga.py
+models/Video.py
