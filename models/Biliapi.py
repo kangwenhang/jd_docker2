@@ -17,6 +17,7 @@ class BiliWebApi(object):
         code = self.__session.get("https://account.bilibili.com/home/reward").json()["code"]
         if code != 0:
             raise Exception("参数验证失败，登录状态失效")
+        #print(self.__session.cookies)
 
     def getReward(self):
         "取B站经验信息"
@@ -113,6 +114,47 @@ class BiliWebApi(object):
             "csrf_token": self.__bili_jct
             }
         return self.__session.post(url, post_data).json()
+
+    def follow(self, followid: 'up的uid', isfollow=True):
+        "关注或取关up主"
+        url = "https://api.vc.bilibili.com/feed/v1/feed/SetUserFollow"
+        post_data = {
+            "type": 1 if isfollow else 0,
+            "follow": followid,
+            "csrf_token": self.__bili_jct
+            }
+        return self.__session.post(url, post_data).json()
+
+    def getFollower(self, uid=0, pn=1, ps=2000, order='desc'):
+        "获取指定账户的关注者(默认取本账户)"
+        if uid == 0:
+            uid = self.__uid
+        url = f"https://api.bilibili.com/x/relation/followings?vmid={uid}&pn={pn}&ps={ps}&order={order}"
+        return self.__session.get(url).json()
+
+    def getTopicInfo(self, tag_name):
+        "取B站话题信息"
+        url = f'https://api.bilibili.com/x/tag/info?tag_name={tag_name}'
+        return self.__session.get(url).json()
+
+    def getTopicList(self, tag_name):
+        "取B站话题列表，返回一个可迭代对象"
+        topic_id = self.getTopicInfo(tag_name)["data"]["tag_id"]
+        url = f'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_new?topic_id={topic_id}'
+        jsobj = self.__session.get(url).json()
+        cards = jsobj["data"]["cards"]
+        for x in cards:
+            yield x
+        has_more = (jsobj["data"]["has_more"] == 1)
+        while has_more:
+            offset = jsobj["data"]["offset"]
+            jsobj = self.__session.get(f'https://api.vc.bilibili.com/topic_svr/v1/topic_svr/topic_history?topic_name={tag_name}&offset_dynamic_id={offset}').json()
+            if not 'cards' in jsobj["data"]:
+                break
+            cards = jsobj["data"]["cards"]
+            for x in cards:
+                yield x
+            has_more = (jsobj["data"]["has_more"] == 1)
 
     def getDynamicNew(self, type_list='268435455'):
         "取B站用户最新动态数据"
