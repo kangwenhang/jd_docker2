@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from models.Biliapi import BiliWebApi
-import json
+import json, time
 import logging
 
-def bili_lottery(data):
+def bili_lottery(data, stime, etime):
+    "抽取从stime到etime之间的抽奖，stime<etime"
     try:
         biliapi = BiliWebApi(data)
     except Exception as e: 
@@ -16,27 +17,26 @@ def bili_lottery(data):
     except: 
         pass
 
+    datas = biliapi.getDynamic()
     try:
-        datas = biliapi.getDynamicNew()["data"]["cards"] #获取"当前"的动态列表，不追溯历史动态
-    except Exception as e: 
-        logging.warning(f'获取动态列表异常，原因为{str(e)}，跳过后续所有操作')
-        return
-    
-    already_repost_dyid = [] #记录动态列表中自己已经转发的动态id
-    for x in datas:
-        if str(x["desc"]["uid"]) == data["DedeUserID"] and x["desc"]["pre_dy_id"]: 
-            already_repost_dyid.append(x["desc"]["pre_dy_id"])
-            continue
-
-        if x.__contains__("extension") and x["extension"].__contains__("lott"): #若抽奖标签存在
-            uname = x["desc"]["user_profile"]["info"]["uname"]  #动态的主人的用户名
-            dynamic_id = x["desc"]["dynamic_id"]  #动态id
-            if not dynamic_id in already_repost_dyid: #若动态没被转发过
+        for x in datas:
+            timestamp = x["desc"]["timestamp"]
+            if(timestamp > etime):
+                continue
+            elif(timestamp < stime):
+                break
+            if 'extension' in x and 'lott' in x["extension"]: #若抽奖标签存在
+                uname = x["desc"]["user_profile"]["info"]["uname"]  #动态的主人的用户名
+                dyid = x["desc"]["dynamic_id"]
                 try:
-                    biliapi.repost(dynamic_id)
-                    logging.info(f'id为{data["DedeUserID"]}的账户转发抽奖(用户名:{uname},动态id:{str(dynamic_id)})成功')
+                    biliapi.repost(dyid)
+                    logging.info(f'id为{data["DedeUserID"]}的账户转发抽奖(用户名:{uname},动态id:{dyid})成功')
                 except Exception as e: 
-                    logging.warning(f'此次转发抽奖失败，原因为{str(e)}')
+                    logging.warning(f'转发抽奖失败，原因为{str(e)}')
+            
+    except Exception as e: 
+        logging.warning(f'获取动态列表、异常，原因为{str(e)}，跳过后续所有操作')
+        return
 
 def main(*args):
     try:
@@ -44,11 +44,16 @@ def main(*args):
     except:
         pass
 
+    now_time = int(time.time()) + 10 #当前时间
+    time1 = now_time - now_time % 600 #当前时间对10分钟取整
+    time2 = time1 - 600 #再取前10分钟
+    #对上一个10分钟区间内的抽奖动态进行转发，比如9:15的上一个十分钟区间为9:00--9:10
+
     with open('config/config.json','r',encoding='utf-8') as fp:
         configData = json.load(fp)
 
     for x in configData["cookieDatas"]:
-        bili_lottery(x)
+        bili_lottery(x, time2, time1)
 
 if __name__=="__main__":
     main()

@@ -3,25 +3,37 @@ import requests
 import json
 class BiliWebApi(object):
     "B站web的api接口"
-    def __init__(self, cookieData):
+    def __init__(self, cookieData=None):
         #创建session
         self.__session = requests.session()
+        #设置header
+        self.__session.headers.update({"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/63.0.3239.108","Referer": "https://www.bilibili.com/",'Connection': 'keep-alive'})
+        if cookieData == None:
+            return
+
         #添加cookie
         requests.utils.add_dict_to_cookiejar(self.__session.cookies, cookieData)
-        #设置header
-        self.__session.headers.update({"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36","Referer": "https://www.bilibili.com/",'Connection': 'keep-alive'})
+        if 'bili_jct' in cookieData:
+            self.__bili_jct = cookieData["bili_jct"]
+        else:
+            self.__bili_jct = ''
+        #self.__uid = cookieData["DedeUserID"]
 
-        self.__bili_jct = cookieData["bili_jct"]
-        self.__uid = cookieData["DedeUserID"]
-
-        code = self.__session.get("https://account.bilibili.com/home/reward").json()["code"]
-        if code != 0:
+        data = self.__session.get("https://api.bilibili.com/x/web-interface/nav").json()
+        if data["code"] != 0:
             raise Exception("参数验证失败，登录状态失效")
+        self.__name = data["data"]["uname"]
+        self.__uid = data["data"]["mid"]
         #print(self.__session.cookies)
 
     def getReward(self):
         "取B站经验信息"
         url = "https://account.bilibili.com/home/reward"
+        return self.__session.get(url).json()["data"]
+
+    def getWebNav(self):
+        "取导航信息"
+        url = "https://api.bilibili.com/x/web-interface/nav"
         return self.__session.get(url).json()["data"]
 
     @staticmethod
@@ -191,7 +203,6 @@ class BiliWebApi(object):
         content.encoding = 'utf-8' #需要指定编码
         jsobj = json.loads(content.text)
         cards = jsobj["data"]["cards"]
-        offset = jsobj["data"]
         for x in cards:
             yield x
         hasnext = True
@@ -401,7 +412,7 @@ class BiliWebApi(object):
         url = f'https://member.bilibili.com/x/web/archive/tags?typeid={typeid}&title={quote(title)}&filename=filename&desc={desc}&cover={cover}&groupid={groupid}&vfea={vfea}'
         return self.__session.get(url=url).json()
 
-    def videoAdd(self, videoData:"视频数据包 dict"):
+    def videoAdd(self, videoData:"dict 视频参数"):
         "发布视频"
         url = f'https://member.bilibili.com/x/vu/web/add?csrf={self.__bili_jct}'
         return self.__session.post(url, json=videoData).json()
@@ -551,5 +562,69 @@ class BiliWebApi(object):
         return self.__session.post(url, json=post_data).json()
 
     def mangaGetImageBytes(self, url: str):
-        "获取漫画图片列表"
+        "获取漫画图片"
         return self.__session.get(url).content
+
+    @staticmethod
+    def webView(bvid: str):
+        "通过bv号获取视频信息"
+        url = f'https://api.bilibili.com/x/web-interface/view?bvid={bvid}'
+        return requests.get(url,headers={"User-Agent": "Mozilla/5.0","Referer": "https://www.bilibili.com/"}).json()
+
+    @staticmethod
+    def webStat(aid: int):
+        "通过av号获取视频信息"
+        url = f'https://api.bilibili.com/x/web-interface/archive/stat?aid={aid}'
+        return requests.get(url,headers={"User-Agent": "Mozilla/5.0","Referer": "https://www.bilibili.com/"}).json()
+
+    @staticmethod
+    def playList(bvid: str):
+        "获取播放列表"
+        url = f'https://api.bilibili.com/x/player/pagelist?bvid={bvid}'
+        return requests.get(url).json()
+
+    @staticmethod
+    def epPlayList(ep_or_ss: str):
+        "获取番剧播放列表"
+        import re
+        url = f'https://www.bilibili.com/bangumi/play/{ep_or_ss}'
+        text = requests.get(url, headers={'User-Agent':'Mozilla/5.0'}).text
+        find = re.findall(r'window.__INITIAL_STATE__=({.*});\(function\(\)', text, re.S)
+        return json.loads(find[0])
+
+    def webPlayUrl(self, cid=0, aid=0, bvid='', epid=0, qn=16):
+        "获取番剧播放地址(普通视频请用playerUrl方法)"
+        url = 'https://api.bilibili.com/pgc/player/web/playurl'
+        data = {"qn":qn}
+        if cid:
+            data["cid"] = cid
+        if aid:
+            data["avid"] = aid
+        if bvid:
+            data["bvid"] = bvid
+        if epid:
+            data["ep_id"] = epid
+        #{'code': -10403, 'message': '抱歉您所在地区不可观看！'}
+        #{'code': -10403, 'message': '大会员专享限制'}
+        return self.__session.get(url, params=data).json()
+
+    def playerUrl(self, cid: int, aid=0, bvid='', qn=16, reverse_proxy=''):
+        "获取视频播放地址"
+        if reverse_proxy:
+            url = reverse_proxy
+        else:
+            url = 'https://api.bilibili.com/x/player/playurl'
+        #data = {"qn":qn,"cid":cid,'fnval':80}
+        data = {"qn":qn,"cid":cid}
+        if aid:
+            data["avid"] = aid
+        if bvid:
+            data["bvid"] = bvid
+        return self.__session.get(url, params=data).json()
+
+    @staticmethod
+    def videoGetPart(url: str, start, end):
+        "下载视频分段"
+        headers = {"Range":f'bytes={start}-{end}',"Referer": "https://www.bilibili.com/"}
+        return requests.get(url, headers=headers).content
+
