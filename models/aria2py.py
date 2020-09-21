@@ -15,8 +15,14 @@ class Aria2Py(object):
                  session=None,
                  remote=False
                  ):
+        self.server_uri = f'http://{host}:{port}/jsonrpc'
+        self.secret = secret
+        import requests
+        self.session = requests.session()
 
         if not remote:
+            if self.isAria2Running():
+                return
             if not Aria2Py.isAria2Installed():
                 raise Exception('未找到aria2')
 
@@ -34,11 +40,6 @@ class Aria2Py(object):
                       f' --save-session={session}'
 
             subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-
-        self.server_uri = f'http://{host}:{port}/jsonrpc'
-        self.secret = secret
-        import requests
-        self.session = requests.session()
 
         try:
             data = self.getGlobalStat()
@@ -179,3 +180,14 @@ class Aria2Py(object):
             if os.path.isdir(cmdpath) and 'aria2c' in os.listdir(cmdpath):
                 return True
         return False
+
+    def isAria2Running(self):
+        '''Aria2是否已经启动并能成功连接'''
+        ret = True
+        try:
+            data = self.getGlobalStat()
+            if 'error' in data:
+                ret = False
+        except:
+            ret = False
+        return ret

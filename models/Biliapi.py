@@ -26,6 +26,10 @@ class BiliWebApi(object):
         self.__uid = data["data"]["mid"]
         #print(self.__session.cookies)
 
+    def getUserName(self):
+        "获取登录的账户用户名"
+        return self.__name
+
     def getReward(self):
         "取B站经验信息"
         url = "https://account.bilibili.com/home/reward"
@@ -537,6 +541,91 @@ class BiliWebApi(object):
             }
         return self.__session.post(url, post_data).json()
 
+    def mangaGetWallet(self, platform="web"):
+        "获取钱包信息"
+        url = f'https://manga.bilibili.com/twirp/user.v1.User/GetWallet?platform={platform}'
+        #{"code":0,"msg":"","data":{"remain_coupon":0,"remain_gold":0,"first_reward":false,"point":"1270","first_bonus_percent":0,"bonus_percent":0,"unusable_gold":0,"remain_item":0,"remain_tickets":0,"remain_discount":0,"account_level":0}}
+        #                               劵的数量        金币数量         是否第一次充值          积分
+        return self.__session.post(url, json={}).json()
+
+    def mangaComrade(self, platform="web"):
+        "站友日漫画卷兑换"
+        url = f'https://manga.bilibili.com/twirp/activity.v1.Activity/Comrade?platform={platform}'
+        #{"code":0,"msg":"","data":{"now":"2020-09-20T21:10:38+08:00","received":0,"active":0,"lottery":0,"svip":1}}
+        return self.__session.post(url, json={}).json()
+
+    def mangaGetEpisodeBuyInfo(self, ep_id: int, platform="web"):
+        "获取漫画购买信息"
+        url = f'https://manga.bilibili.com/twirp/comic.v1.Comic/GetEpisodeBuyInfo?platform={platform}'
+        post_data = {
+            "ep_id": ep_id
+            }
+        return self.__session.post(url, json=post_data).json()
+
+    def mangaBuyEpisode(self, ep_id: int, buy_method=1, coupon_id=0, auto_pay_gold_status=0, platform="web"):
+        "购买漫画"
+        url = f'https://manga.bilibili.com/twirp/comic.v1.Comic/BuyEpisode?&platform={platform}'
+        post_data = {
+            "buy_method": buy_method,
+            "ep_id": ep_id
+            }
+        #{"buy_method":2,"ep_id":283578,"coupon_id":2064528,"auto_pay_gold_status":2}
+        if coupon_id:
+            post_data["coupon_id"] = coupon_id
+        if auto_pay_gold_status:
+            post_data["auto_pay_gold_status"] = auto_pay_gold_status
+
+        #{"code":1,"msg":"没有足够的卡券使用次数，请刷新重试。","data":{"auto_use_item":""}}
+        return self.__session.post(url, json=post_data).json()
+
+    def mangaGetTopic(self, page_num=1, platform='phone'):
+        "B站漫画app活动中心列表"
+        url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/Topic'
+        post_data = {
+            "page_num": page_num,
+            "platform": platform
+            }
+        return self.__session.post(url, post_data).json()
+
+    def mangaListFavorite(self, page_num=1, page_size=50, order=1, wait_free=0, platform='web'):
+        "B站漫画追漫列表"
+        url = 'https://manga.bilibili.com/twirp/bookshelf.v1.Bookshelf/ListFavorite?platform={platform}'
+        post_data = {
+            "page_num": page_num,
+            "page_size": page_size,
+            "order": order,
+            "wait_free": wait_free
+            }
+        return self.__session.post(url, json=post_data).json()
+
+    def mangaPayBCoin(self, pay_amount: int, product_id=1, platform='web'):
+        "B币购买漫画"
+        url = f'https://manga.bilibili.com/twirp/pay.v1.Pay/PayBCoin?platform={platform}'
+        post_data = {
+            "pay_amount": pay_amount,
+            "product_id": product_id
+            }
+        #{"code":0,"msg":"","data":{"id":"1600656017507211119"}}
+        return self.__session.post(url, json=post_data).json()
+
+    def mangaGetBCoin(self, platform='web'):
+        "获取B币与漫读劵的信息"
+        url = f'https://manga.bilibili.com/twirp/pay.v1.Pay/GetBCoin?platform={platform}'
+        #{"code":0,"msg":"","data":{"amount":0,"exchange_rate":100,"first_max_coin":18800,"first_bonus_percent":0,"bonus_percent":0,"coupon_rate":2,"coupon_exp":30,"point_rate":200,"coin_amount":0,"coupon_amount":0,"is_old_version":true}}
+        return self.__session.post(url, json={}).json()
+
+    def mangaGetCoupons(self, not_expired=True, page_num=1, page_size=50, tab_type=1, platform='web'):
+        "获取账户中的漫读劵信息"
+        url = f'https://manga.bilibili.com/twirp/user.v1.User/GetCoupons?platform={platform}'
+        post_data = {
+            "not_expired": not_expired,
+            "page_num": page_num,
+            "page_size": page_size,
+            "tab_type": tab_type
+            }
+        #{"code":0,"msg":"","data":{"total_remain_amount":4,"user_coupons":[{"ID":2093696,"remain_amount":2,"expire_time":"2020-10-21 10:40:17","reason":"B币兑换","type":"福利券","ctime":"2020-09-21 10:40:17","total_amount":2,"limits":[],"type_num":7,"will_expire":0,"discount":0,"discount_limit":0,"is_from_card":0},{"ID":2093703,"remain_amount":2,"expire_time":"2020-10-21 10:47:43","reason":"B币兑换","type":"福利券","ctime":"2020-09-21 10:47:43","total_amount":2,"limits":[],"type_num":7,"will_expire":0,"discount":0,"discount_limit":0,"is_from_card":0}],"coupon_info":{"new_coupon_num":0,"coupon_will_expire":0,"rent_will_expire":0,"new_rent_num":0,"discount_will_expire":0,"new_discount_num":0,"month_ticket_will_expire":0,"new_month_ticket_num":0,"silver_will_expire":0,"new_silver_num":0,"remain_item":0,"remain_discount":0,"remain_coupon":4,"remain_silver":0}}}
+        return self.__session.post(url, json=post_data).json()
+
     def mangaDetail(self, comic_id: int, device='pc', platform='web'):
         "获取漫画信息"
         url = f'https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device={device}&platform={platform}'
@@ -628,3 +717,18 @@ class BiliWebApi(object):
         headers = {"Range":f'bytes={start}-{end}',"Referer": "https://www.bilibili.com/"}
         return requests.get(url, headers=headers).content
 
+    @staticmethod
+    def dmList(oid: int):
+        "获得弹幕xml"
+        url = f'https://api.bilibili.com/x/v1/dm/list.so?oid={oid}'
+        content = requests.get(url)
+        content.encoding = 'utf-8'
+        return content.text
+
+    @staticmethod
+    def dmHistory(oid: int, data: str):
+        "获得历史弹幕xml"
+        url = f'https://api.bilibili.com/x/v2/dm/history?type=1&oid={oid}&date={data}'
+        content = requests.get(url)
+        content.encoding = 'utf-8'
+        return content.text
