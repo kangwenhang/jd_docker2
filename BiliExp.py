@@ -6,14 +6,15 @@ import logging
 
 def bili_exp(cookieData, pm):
    "B站直播签到，投币分享获取经验，模拟观看一个视频"
-   logging.info(f'B站经验脚本开始为id为{cookieData["DedeUserID"]}的用户进行直播签到，投币点赞分享并观看一个首页视频')
-   pm.addMsg(f'目前账户id为：{cookieData["DedeUserID"]}')
    try:
        biliapi = BiliWebApi(cookieData)
    except Exception as e: 
        logging.info(f'登录验证id为{cookieData["DedeUserID"]}的账户失败，原因为({str(e)})，跳过此账户后续所有操作')
-       pm.addMsg("账户登录失败")
+       pm.addMsg(f'id为：{cookieData["DedeUserID"]} 的账户登录失败')
        return
+
+   pm.addMsg(f'目前账户为：({biliapi.getUserName()})')
+   logging.info(f'登录账户 ({biliapi.getUserName()}) 成功')
 
    rdata = {
        "直播签到": False,
@@ -23,6 +24,14 @@ def bili_exp(cookieData, pm):
        "脚本执行前经验": 0,
        "脚本执行前硬币": 0,
        }
+
+   try:
+       if biliapi.vipPrivilegeReceive(1)["code"] == 0:
+           rdata["领取大会员B币"] = True
+       if biliapi.vipPrivilegeReceive(2)["code"] == 0:
+           rdata["领取会员购优惠券"] = True
+   except:
+       pass
 
    try:
        xliveInfo = biliapi.xliveSign()
@@ -97,7 +106,7 @@ def bili_exp(cookieData, pm):
        logging.warning(f'分享视频异常，原因为{str(e)}')
 
    pm.addMsg(str(rdata))
-   logging.info(f'id为{cookieData["DedeUserID"]}的账户操作全部完成')
+   logging.info('本账户操作全部完成')
 
 def main(*args):
     try:

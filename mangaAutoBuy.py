@@ -2,18 +2,22 @@
 from models.Biliapi import BiliWebApi
 import json, logging
 
-auto_buy_list = {
-    "8468742": "25900|1-30,35,55;25966|5,15,35-",
-    "账户2uid": "同上所示"
-    #这里表示为uid为8468742的账户购买漫画mc25900的第1话到30话和35话及55话，购买漫画mc25966的5话，15话 和 35话到最新话
+inner_config = {
+    "mode": 0,
+    "filter": {
+        "8468742": "25900|1-30,35,55;25966|5,15,35-",
+        #这里表示为uid为8468742的账户购买漫画mc25900的第1话到30话和35话及55话，购买漫画mc25966的5话，15话 和 35话到最新话
+        "账户2uid": "格式同上所示" #依次类推更多账号,uid(DedeUserID)必须在config/config.json文件中存在
+        }
     }
-#注：配置格式为 "账号uid": "漫画mc号1{竖线}漫画章数1(支持n-m和n-格式){逗号}漫画章数2{分号}漫画mc号2{竖线}漫画章数1......"
+#注:当mode为0时，"filter"参数无效，脚本自动购买追漫列表里的漫画(默认)，当mode为1时，请手动在"filter"下设置每个账户购买的漫画列表
+#filter格式为 "账号uid": "漫画mc号1{竖线}漫画章数1(支持n-m和n-格式){逗号}漫画章数2{分号}漫画mc号2{竖线}漫画章数1......"
 #上述的章数与实际章数可能不一样，番外也算一话，如果要购买30章，但是前面有一章番外，那么章数请填写31
-#支持多账户，每个账户以DedeUserID(uid)作区分,必须在config/config.json文件中存在
 
-def get_need_buy_eplist(need: 'str 需要购买的话数', all_ep_list):
+
+def get_need_buy_eplist(filter: 'str 需要购买的话数', all_ep_list):
     '''通过所有eplist和过滤条件获得需要购买的漫画ep_id列表'''
-    L1 = need.split(',')
+    L1 = filter.split(',')
     length = len(all_ep_list)
     if length == 0:
         return  []
@@ -47,12 +51,30 @@ def buy_manga_by_coupon(biliapi: 'BiliWebApi b站api接口实例', ep_id: 'int �
     if data["code"] != 0:
         raise Exception(data["msg"])
 
-def manga_buy_by_coupons(cookie, buy_list):
+def filter2list(filter):
+    result = []
+    S1 = filter.split(';')
+    for x in S1:
+        if x == '':
+            continue
+        S2 = x.split('|')
+        result.append((S2[0],S2[1]))
+    return result
+
+def get_filter_by_favorite(biliapi: 'BiliWebApi b站api接口实例'):
+    '''通过漫画关注列表获取filter字符串'''
+    List = biliapi.mangaListFavorite()["data"]
+    result = ''
+    for x in List:
+        result = f'{result};{x["comic_id"]}|1-'
+    return result
+
+def manga_buy_by_coupons(cookie, filter=''):
     '''用即将过期的漫读劵兑换漫画'''
     try:
         biliapi = BiliWebApi(cookie)
     except Exception as e: 
-        logging.error(f'登录验证id为{data["DedeUserID"]}的账户失败，原因为:{str(e)}，跳过后续所有操作')
+        logging.error(f'登录验证id为{data["DedeUserID"]}的账户失败，原因为:{str(e)}，跳过漫画兑换')
         return
     
     logging.info(f'登录账户 {biliapi.getUserName()} 成功')
@@ -64,12 +86,21 @@ def manga_buy_by_coupons(cookie, buy_list):
             if x["will_expire"] != 0:
                 coupons_will_expire += x["remain_amount"]
     except Exception as e: 
-        logging.error(f'获取漫读劵数量失败，原因为:{str(e)}，跳过后续所有操作')
+        logging.error(f'获取漫读劵数量失败，原因为:{str(e)}，跳过漫画兑换')
         return
     
     if coupons_will_expire == 0:
         logging.info('没有即将过期的漫读劵，跳过购买')
         return
+
+    if filter:
+        buy_list = filter2list(filter)
+    else:
+        try:
+            buy_list = filter2list(get_filter_by_favorite(biliapi))
+        except Exception as e: 
+            logging.error('获取追漫列表失败，原因为:{str(e)}，跳过漫画兑换')
+            return
 
     for x in buy_list:
         try:
@@ -97,16 +128,6 @@ def manga_buy_by_coupons(cookie, buy_list):
 
     logging.info('购买任务结束')
 
-def str2list(s_input):
-    result = []
-    S1 = s_input.split(';')
-    for x in S1:
-        if x == '':
-            continue
-        S2 = x.split('|')
-        result.append((S2[0],S2[1]))
-    return result
-
 def main(*args):
     try:
         logging.basicConfig(filename="mangaAutoBuy.log", filemode='a', level=logging.INFO, format="%(asctime)s: %(levelname)s, %(message)s", datefmt="%Y/%d/%m %H:%M:%S")
@@ -116,9 +137,13 @@ def main(*args):
     with open('config/config.json','r',encoding='utf-8') as fp:
         configData = json.load(fp)
 
-    for x in configData["cookieDatas"]:
-        if x["DedeUserID"] in auto_buy_list:
-            manga_buy_by_coupons(x, str2list(auto_buy_list[x["DedeUserID"]]))
+    if inner_config["mode"] == 0:
+        for x in configData["cookieDatas"]:
+            manga_buy_by_coupons(x)
+    else:
+        for x in configData["cookieDatas"]:
+            if x["DedeUserID"] in inner_config["filter"]:
+                manga_buy_by_coupons(x, inner_config["filter"][x["DedeUserID"]])
 
 if __name__=="__main__":
     main()

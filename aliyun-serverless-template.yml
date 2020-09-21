@@ -62,6 +62,20 @@ Resources:
               CronExpression: '0 40 16 * * *'
               Enable: true
               
+    mangaAutoBuy:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: mangaAutoBuy.main
+        Runtime: python3
+        CodeUri: './'
+        Timeout: 60
+      Events:
+        Timer:
+          Type: Timer
+          Properties:
+              CronExpression: '0 40 16 * * *'
+              Enable: true
+              
     SilverAward:
       Type: 'Aliyun::Serverless::Function'
       Properties:
