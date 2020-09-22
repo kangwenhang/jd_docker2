@@ -634,6 +634,26 @@ class BiliWebApi(object):
             }
         return self.__session.post(url, json=post_data).json()
 
+    def mangaGetPoint(self):
+        "获取漫画积分"
+        url = f'https://manga.bilibili.com/twirp/pointshop.v1.Pointshop/GetUserPoint'
+        return self.__session.post(url, json={}).json()
+
+    def mangaShopList(self):
+        "漫画积分商城列表"
+        url = f'https://manga.bilibili.com/twirp/pointshop.v1.Pointshop/ListProduct'
+        return self.__session.post(url, json={}).json()
+
+    def mangaShopExchange(self, product_id: int, point: int, product_num=1):
+        "漫画积分商城兑换"
+        url = f'https://manga.bilibili.com/twirp/pointshop.v1.Pointshop/Exchange'
+        post_data = {
+            "product_id": product_id,
+            "point": point,
+            "product_num": product_num
+            }
+        return self.__session.post(url, json=post_data).json()
+
     def mangaImageToken(self, urls=[], device='pc', platform='web'):
         "获取漫画图片token"
         url = f'https://manga.bilibili.com/twirp/comic.v1.Comic/ImageToken?device={device}&platform={platform}'
@@ -654,6 +674,22 @@ class BiliWebApi(object):
         "获取漫画图片"
         return self.__session.get(url).content
 
+    def vipPrivilegeMy(self):
+        "B站大会员权益列表"
+        url = 'https://api.bilibili.com/x/vip/privilege/my'
+        #{"code":0,"message":"0","ttl":1,"data":{"list":[{"type":1,"state":1,"expire_time":1601481599},{"type":2,"state":0,"expire_time":1601481599}]}}
+        return self.__session.get(url).json()
+
+    def vipPrivilegeReceive(self, type=1):
+        "领取B站大会员权益"
+        url = 'https://api.bilibili.com/x/vip/privilege/receive'
+        post_data = {
+            "type": type,
+            "csrf": self.__bili_jct
+            }
+        #{"code":69801,"message":"你已领取过该权益","ttl":1}
+        return self.__session.post(url, data=post_data).json()
+
     @staticmethod
     def webView(bvid: str):
         "通过bv号获取视频信息"
@@ -667,9 +703,12 @@ class BiliWebApi(object):
         return requests.get(url,headers={"User-Agent": "Mozilla/5.0","Referer": "https://www.bilibili.com/"}).json()
 
     @staticmethod
-    def playList(bvid: str):
+    def playList(bvid='', aid=0):
         "获取播放列表"
-        url = f'https://api.bilibili.com/x/player/pagelist?bvid={bvid}'
+        if bvid:
+            url = f'https://api.bilibili.com/x/player/pagelist?bvid={bvid}'
+        elif aid:
+            url = f'https://api.bilibili.com/x/player/pagelist?bvid={aid}'
         return requests.get(url).json()
 
     @staticmethod

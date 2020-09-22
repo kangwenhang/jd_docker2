@@ -12,6 +12,7 @@ Resources:
         Handler: BiliExp.main
         Runtime: python3
         CodeUri: './'
+        Description: 'B站自动领取经验'
         Timeout: 60
       Events:
         Timer:
@@ -26,6 +27,7 @@ Resources:
         Handler: BiliLottery.main
         Runtime: python3
         CodeUri: './'
+        Description: 'B站自动抽奖'
         Timeout: 60
       Events:
         Timer:
@@ -40,6 +42,7 @@ Resources:
         Handler: doActivity.main
         Runtime: python3
         CodeUri: './'
+        Description: 'B站自动领取抽奖活动'
         Timeout: 60
       Events:
         Timer:
@@ -47,48 +50,36 @@ Resources:
           Properties:
               CronExpression: '0 30 16 * * *'
               Enable: true
-
-    mangaClockIn:
+              
+    mangaTask:
       Type: 'Aliyun::Serverless::Function'
       Properties:
-        Handler: mangaClockIn.main
+        Handler: mangaTask.main
         Runtime: python3
         CodeUri: './'
+        Description: '漫画签到，自动花费即将过期漫读劵和自动兑换福利券'
         Timeout: 60
       Events:
         Timer:
           Type: Timer
           Properties:
-              CronExpression: '0 40 16 * * *'
+              CronExpression: '1 0 4 * * *'
               Enable: true
               
-    mangaAutoBuy:
-      Type: 'Aliyun::Serverless::Function'
-      Properties:
-        Handler: mangaAutoBuy.main
-        Runtime: python3
-        CodeUri: './'
-        Timeout: 60
-      Events:
-        Timer:
-          Type: Timer
-          Properties:
-              CronExpression: '0 40 16 * * *'
-              Enable: true
-              
-    SilverAward:
-      Type: 'Aliyun::Serverless::Function'
-      Properties:
-        Handler: SilverAward.main
-        Runtime: python3
-        CodeUri: './'
-        Timeout: 60
-      Events:
-        Timer:
-          Type: Timer
-          Properties:
-              CronExpression: '0 */10 17,18 * * *'
-              Enable: true
+#    SilverAward:
+#      Type: 'Aliyun::Serverless::Function'
+#      Properties:
+#        Handler: SilverAward.main
+#        Runtime: python3
+#        CodeUri: './'
+#        Description: '自动领取时间宝箱兑换银瓜子(已失效)'
+#        Timeout: 60
+#      Events:
+#        Timer:
+#          Type: Timer
+#          Properties:
+#              CronExpression: '0 */10 17,18 * * *'
+#              Enable: true
               
     silver2coin:
       Type: 'Aliyun::Serverless::Function'
@@ -96,6 +87,7 @@ Resources:
         Handler: silver2coin.main
         Runtime: python3
         CodeUri: './'
+        Description: '自动用银瓜子兑换硬币'
         Timeout: 60
       Events:
         Timer:
@@ -110,12 +102,13 @@ Resources:
         Handler: cleanDynamic.main
         Runtime: python3
         CodeUri: './'
+        Description: '自动清理B站转发动态'
         Timeout: 60
       Events:
         Timer:
           Type: Timer
           Properties:
-              CronExpression: '0 0 0 1,15 * *'
+              CronExpression: '0 0 0 * * 1'
               Enable: true
               
     check:
@@ -124,6 +117,7 @@ Resources:
         Handler: check.main
         Runtime: python3
         CodeUri: './'
+        Description: '登录状态每日检查'
         Timeout: 60
       Events:
         Timer:

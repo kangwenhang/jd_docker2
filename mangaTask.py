@@ -5,10 +5,11 @@ import json, logging
 inner_config = {
     "mode": 0,
     "filter": {
-        "8468742": "25900|1-30,35,55;25966|5,15,35-",
-        #这里表示为uid为8468742的账户购买漫画mc25900的第1话到30话和35话及55话，购买漫画mc25966的5话，15话 和 35话到最新话
+        "8507742": "25900|1-30,35,55;25966|5,15,35-",
+#这里表示为uid为8468742的账户用即将过期漫读劵购买漫画mc25900的第1话到30话和35话及55话，购买漫画mc25966的5话，15话 和 35话到最新话
         "账户2uid": "格式同上所示" #依次类推更多账号,uid(DedeUserID)必须在config/config.json文件中存在
-        }
+        },
+    "exchangeCoupons": 0  #积分商城抢购积分兑换福利劵数量
     }
 #注:当mode为0时，"filter"参数无效，脚本自动购买追漫列表里的漫画(默认)，当mode为1时，请手动在"filter"下设置每个账户购买的漫画列表
 #filter格式为 "账号uid": "漫画mc号1{竖线}漫画章数1(支持n-m和n-格式){逗号}漫画章数2{分号}漫画mc号2{竖线}漫画章数1......"
@@ -69,8 +70,23 @@ def get_filter_by_favorite(biliapi: 'BiliWebApi b站api接口实例'):
         result = f'{result};{x["comic_id"]}|1-'
     return result
 
-def manga_buy_by_coupons(cookie, filter=''):
-    '''用即将过期的漫读劵兑换漫画'''
+def exchange_coupons(biliapi: 'BiliWebApi b站api接口实例', num):
+    '''积分兑换福利劵'''
+    now_point = biliapi.mangaGetPoint()["data"]["point"]
+    buy_num = int(now_point) // 100
+    if buy_num < num:
+        num = buy_num
+    if num == 0:
+        raise Exception('积分不足')
+    data = biliapi.mangaShopExchange(195, 100, num)
+    if data["code"] != 0:
+        if data["code"] == 9:
+            raise Exception('手速太慢，库存不够了')
+        raise Exception(data["msg"])
+    return num
+
+def manga_task(cookie, filter=''):
+    '''用即将过期的漫读劵兑换漫画，兑换福利券，自动签到'''
     try:
         biliapi = BiliWebApi(cookie)
     except Exception as e: 
@@ -78,6 +94,23 @@ def manga_buy_by_coupons(cookie, filter=''):
         return
     
     logging.info(f'登录账户 {biliapi.getUserName()} 成功')
+
+    if inner_config["exchangeCoupons"] > 0:
+        try:
+            _n = exchange_coupons(biliapi, inner_config["exchangeCoupons"])
+            logging.info(f'成功兑换福利劵 {_n} 张')
+        except Exception as e: 
+            logging.error(f'兑换福利劵失败，原因为:{str(e)}')
+            pass
+
+    try:
+        _ret = biliapi.mangaClockIn()
+        if(_ret["code"] == 0):
+            logging.info(f'漫画签到成功')
+        else:
+            logging.error(f'漫画签到失败,信息为：{_ret["msg"]}')
+    except Exception as e: 
+        logging.error(f'漫画签到异常,原因为：{str(e)}')
 
     coupons_will_expire = 0
     try:
@@ -130,7 +163,7 @@ def manga_buy_by_coupons(cookie, filter=''):
 
 def main(*args):
     try:
-        logging.basicConfig(filename="mangaAutoBuy.log", filemode='a', level=logging.INFO, format="%(asctime)s: %(levelname)s, %(message)s", datefmt="%Y/%d/%m %H:%M:%S")
+        logging.basicConfig(filename="manga.log", filemode='a', level=logging.INFO, format="%(asctime)s: %(levelname)s, %(message)s", datefmt="%Y/%d/%m %H:%M:%S")
     except:
         pass
 
@@ -139,11 +172,11 @@ def main(*args):
 
     if inner_config["mode"] == 0:
         for x in configData["cookieDatas"]:
-            manga_buy_by_coupons(x)
+            manga_task(x)
     else:
         for x in configData["cookieDatas"]:
             if x["DedeUserID"] in inner_config["filter"]:
-                manga_buy_by_coupons(x, inner_config["filter"][x["DedeUserID"]])
+                manga_task(x, inner_config["filter"][x["DedeUserID"]])
 
 if __name__=="__main__":
     main()
