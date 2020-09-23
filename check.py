@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 from models.Biliapi import BiliWebApi
 from models.PushMessage import PushMessage
-import json
+import json, sys
+
 def main(*args):
-    with open('config/config.json','r',encoding='utf-8') as fp:
-        configData = json.load(fp)
+    try:
+        with open('config/config.json','r',encoding='utf-8') as fp:
+            configData = json.load(fp)
+    except:
+        print('配置文件加载错误')
+        sys.exit(6)
 
     pm = PushMessage(configData["SCKEY"], "B站经验脚本账户有效性检查")
 
@@ -23,6 +28,7 @@ def main(*args):
             print(f'消息推送信息为{str(info)}')
         except Exception as e: 
             print(f'消息推送异常，原因为{str(e)}。')
+        sys.exit(8)
     else:
         print(f'没有账号失效消息')
 

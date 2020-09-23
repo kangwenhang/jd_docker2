@@ -63,7 +63,7 @@ Resources:
         Timer:
           Type: Timer
           Properties:
-              CronExpression: '1 0 4 * * *'
+              CronExpression: '1 1 4 * * *'
               Enable: true
               
 #    SilverAward:
