@@ -14,6 +14,7 @@ topicRepost.py
 cancelAttention.py
 videoDownloader.py
 mangaDownloader.py
+doActivity.py
 models/Article.py
 models/Manga.py
 models/Video.py

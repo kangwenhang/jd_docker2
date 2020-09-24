@@ -439,6 +439,28 @@ class BiliWebApi(object):
             }
         return self.__session.post(url, post_data).json()
 
+    @staticmethod
+    def activityList(plat='2', mold=0, http=3, start_page=1, end_page=10):
+        "获取B站活动列表，生成器"
+        session = requests.session()
+        url = f'https://www.bilibili.com/activity/page/list?plat={plat}&mold={mold}&http={http}&page={start_page}'
+        list = session.get(url).json()["data"]["list"]
+        while len(list):
+            for x in list:
+                yield x
+            if start_page == end_page:
+                break
+            start_page += 1
+            url = f'https://www.bilibili.com/activity/page/list?plat={plat}&mold={mold}&http={http}&page={start_page}'
+            list = session.get(url).json()["data"]["list"]
+        session.close()
+
+    @staticmethod
+    def activityAll():
+        "获取B站活动列表"
+        url = 'https://member.bilibili.com/x/app/h5/activity/videoall'
+        return requests.get(url).json()
+
     def activityAddTimes(self, sid: 'str 活动sid', action_type: 'int 操作类型'):
         "增加B站活动的参与次数"
         url = 'https://api.bilibili.com/x/activity/lottery/addtimes'

@@ -11,7 +11,7 @@ BiliExp
 
 * [x] 自动获取经验(投币、点赞、分享视频) 
 * [x] 自动转发互动抽奖
-* [x] 参与官方抽奖活动(activity)
+* [ ] ~~参与官方抽奖活动(activity)(因太鸡肋已删除)~~
 * [x] 直播辅助(直播签到，直播挂机，直播自动送出快过期礼物) 
 * [x] 自动兑换银瓜子为硬币 
 * [x] 自动领取大会员每月权益(B币劵，优惠券) 
@@ -40,7 +40,14 @@ BiliExp
 
 ## 使用方式(仅自动操作脚本部分)
 
-### 方式一、使用阿里云函数
+### 方式一(推荐)、只使用github Actions
+* 请转至本项目的"<a href="https://github.com/happy888888/BiliExp/tree/BiliExp-Actions" title="B站经验脚本纯Actions版">BiliExp-Actions</a>"分支，请区分此分支的Actions与本主分支的不同，不要使用本主分支的Actions。
+* 为避免我收到大量无用的Actions消息，故不将此Actions添加到master主分支内。
+* fork后切换分支的方法如下
+![image](https://user-images.githubusercontent.com/67217225/94278277-34336600-ff7d-11ea-8cb5-d49e5e6884fc.png)
+
+
+### 方式二、使用阿里云函数
 * 1.准备
     *  1.1开通云函数计算的阿里云账号，以及账号的ACCOUNT_ID，ACCESS_KEY_ID，ACCESS_KEY_SECRET(**注意**！！获取后面两个参数时**不**要使用**子账户**！！会没有权限创建新的函数，请提前开启云函数服务)
     *  1.2一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图)
@@ -60,10 +67,14 @@ BiliExp
     自动兑换漫画积分为福利券功能默认关闭，mangaTask.py中手动指定兑换数量。
     最后注意不要在github上直接在config/config.json中填写账号信息，而是在Secrets中填写，避免账号信息泄露。
 ```
-### 方式二、只使用github Actions
-* 请转至本项目的"<a href="https://github.com/happy888888/BiliExp/tree/BiliExp-Actions" title="B站经验脚本纯Actions版">BiliExp-Actions</a>"分支，请区分此分支的Actions与本主分支的不同。
 
 </br></br></br>
+
+### 2020/09/24更新
+
+* 1.移除云函数脚本中的doActivity.py和其配置文件。
+
+</br></br>
 
 ### 2020/09/23更新
 

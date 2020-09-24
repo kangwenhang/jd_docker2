@@ -36,20 +36,20 @@ Resources:
               CronExpression: '0 */10 * * * *'
               Enable: true
             
-    doActivity:
-      Type: 'Aliyun::Serverless::Function'
-      Properties:
-        Handler: doActivity.main
-        Runtime: python3
-        CodeUri: './'
-        Description: 'B站自动领取抽奖活动'
-        Timeout: 60
-      Events:
-        Timer:
-          Type: Timer
-          Properties:
-              CronExpression: '0 30 16 * * *'
-              Enable: true
+#    doActivity:
+#      Type: 'Aliyun::Serverless::Function'
+#      Properties:
+#        Handler: doActivity.main
+#        Runtime: python3
+#        CodeUri: './'
+#        Description: 'B站自动领取抽奖活动'
+#        Timeout: 60
+#      Events:
+#        Timer:
+#          Type: Timer
+#          Properties:
+#              CronExpression: '0 30 16 * * *'
+#              Enable: true
               
     mangaTask:
       Type: 'Aliyun::Serverless::Function'
