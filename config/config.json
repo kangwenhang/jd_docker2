@@ -6,6 +6,7 @@
 			"DedeUserID": ""
 		}
 	],
-	"SCKEY":"",
-	"tag":"cookieDatas由浏览器获取，支持多用户，获取详情见首页说明；SCKEY用于微信消息推送(不用请留空)，详情见http://sc.ftqq.com/"
+	"email": "",
+	"SCKEY": "",
+	"说明":"cookieDatas由浏览器获取，获取详情见首页说明；email用于邮件消息推送，SCKEY用于微信消息推送，详情见http://sc.ftqq.com/，这两项不用请留空"
 }

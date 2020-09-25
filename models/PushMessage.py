@@ -1,31 +1,33 @@
-import requests
-import json
 class PushMessage(object):
-    "Server酱提供的将消息推送到微信的接口"
-    def __init__(self, SCKEY, title):
-        "绑定sckey"
-        self.__SCKEY = SCKEY
-        self.__sendUrl = f'https://sc.ftqq.com/{SCKEY}.send'
+    "消息推送"
+    def __init__(self, title, SCKEY=None, email=None):
+        "初始化"
+        self.__title = title
+        self.__message = ""
+        if SCKEY:
+            self.__send_serverchan = f'https://sc.ftqq.com/{SCKEY}.send'
+        if email:
+            self.__send_email = f'http://liuxingw.com/api/mail/api.php?address={email}'
         self.__title = title
         self.__message = ""
 
     def sendText(self, text, desp):
         "发送消息"
-        post_data = {
-            "text": text,
-            "desp": desp
-            }
-        content = requests.post(self.__sendUrl, data=post_data)
-        return json.loads(content.text)
+        import requests
+        if self.__send_email:
+            requests.get(self.__send_email, params={"name": text,"certno": desp.replace("\n","<br>")})
 
+        if self.__send_serverchan:
+            requests.post(self.__send_serverchan, data={"text": text,"desp": desp})
+        
     def addMsg(self, msg, newLine=True):
         "添加要推送的消息"
         self.__message = f"{self.__message}{msg}\n" if newLine else f"{self.__message}{msg}"
 
     def pushMessage(self):
         "推送已经添加消息"
-        return self.sendText(self.__title, self.__message)
-
+        self.sendText(self.__title, self.__message)
+    
     def setMsg(self, msg):
         "设置要推送的消息"
         self.__message = msg

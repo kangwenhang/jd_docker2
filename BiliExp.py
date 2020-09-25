@@ -117,18 +117,15 @@ def main(*args):
     with open('config/config.json','r',encoding='utf-8') as fp:
         configData = json.load(fp)
 
-    SCKEY = configData["SCKEY"]
-    pm = PushMessage(SCKEY, "B站经验脚本消息推送")
+    pm = PushMessage(title="B站经验脚本消息推送", email=configData["email"])
 
     for x in configData["cookieDatas"]:
         bili_exp(x, pm)
 
-    if SCKEY:
-        try:
-            info = pm.pushMessage()
-            logging.warning(f'消息推送信息为{str(info)}')
-        except Exception as e: 
-            logging.warning(f'消息推送异常，原因为{str(e)}')
+    try:
+        pm.pushMessage()
+    except Exception as e: 
+        logging.warning(f'消息推送异常，原因为{str(e)}')
 
 if __name__=="__main__":
     main()

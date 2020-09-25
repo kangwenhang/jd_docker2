@@ -11,7 +11,7 @@ def main(*args):
         print('配置文件加载错误')
         sys.exit(6)
 
-    pm = PushMessage(configData["SCKEY"], "B站经验脚本账户有效性检查")
+    pm = PushMessage("B站经验脚本账户有效性检查", SCKEY=configData["SCKEY"], email=configData["email"])
 
     for x in configData["cookieDatas"]:
         try:
@@ -24,13 +24,12 @@ def main(*args):
     if msg:
         print(msg)
         try:
-            info = pm.pushMessage()
-            print(f'消息推送信息为{str(info)}')
+            pm.pushMessage()
         except Exception as e: 
             print(f'消息推送异常，原因为{str(e)}。')
         sys.exit(8)
     else:
-        print(f'没有账号失效消息')
+        print('没有账号失效消息')
 
 if __name__=="__main__":
     main()

@@ -162,7 +162,7 @@ class BiliWebApi(object):
             }
         return self.__session.post(url, post_data).json()
 
-    def getFollowed(self, uid=0, pn=1, ps=50, order='desc'):
+    def getFollowing(self, uid=0, pn=1, ps=50, order='desc'):
         "获取指定账户的关注者(默认取本账户)"
         if uid == 0:
             uid = self.__uid
@@ -222,9 +222,11 @@ class BiliWebApi(object):
                 yield x
             offset = cards[len(cards) - 1]["desc"]["dynamic_id"]
 
-    def getMyDynamic(self):
-        "取B站用户自己的动态列表"
-        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid={self.__uid}&need_top=1&offset_dynamic_id='
+    def getMyDynamic(self, uid=0):
+        "取B站用户自己的动态列表，生成器"
+        if uid == 0:
+            uid = self.__uid
+        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid={uid}&need_top=1&offset_dynamic_id='
         hasnext = True
         offset = 0
         while hasnext:
