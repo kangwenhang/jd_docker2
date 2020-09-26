@@ -8,7 +8,7 @@ def main(*args):
         with open('config/config.json','r',encoding='utf-8') as fp:
             configData = json.load(fp)
     except:
-        print('配置文件加载错误')
+        print('配置文件加载错误，如果在actions中运行，请检查是否正确创建了secrets(biliconfig)，如果在本地和云函数中运行，请检查config.json文件是否填写正确，')
         sys.exit(6)
 
     pm = PushMessage("B站经验脚本账户有效性检查", SCKEY=configData["SCKEY"], email=configData["email"])

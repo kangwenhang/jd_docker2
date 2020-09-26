@@ -4,10 +4,8 @@ class PushMessage(object):
         "初始化"
         self.__title = title
         self.__message = ""
-        if SCKEY:
-            self.__send_serverchan = f'https://sc.ftqq.com/{SCKEY}.send'
-        if email:
-            self.__send_email = f'http://liuxingw.com/api/mail/api.php?address={email}'
+        self.__send_serverchan = f'https://sc.ftqq.com/{SCKEY}.send' if SCKEY else None
+        self.__send_email = f'http://liuxingw.com/api/mail/api.php?address={email}' if email else None
         self.__title = title
         self.__message = ""
 
@@ -43,4 +41,3 @@ class PushMessage(object):
     def getTitle(self):
         "获取当前消息标题"
         return self.__title
-

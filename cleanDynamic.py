@@ -9,8 +9,6 @@ startTime = 0 #开始时间戳(10位)，默认为0
 keywords = ("#抽奖#","#互动抽奖#") #包含此关键字且在2个月前的动态会满足删除条件
 
 
-
-
 nowTime = int(time.time())
 endTime = nowTime if endTime == 0 else endTime
 
@@ -35,10 +33,11 @@ def filterC(biliapi, card, timestamp):
         return False
     if 'origin' in card:
         origin = json.loads(card["origin"])
-        text = origin["item"]["description"]
-        for x in keywords:
-            if x in text:
-                return True
+        if 'item' in origin and 'description' in origin["item"]:
+            text = origin["item"]["description"]
+            for x in keywords:
+                if x in text:
+                    return True
     return False
 
 def filterD(biliapi, card, timestamp):
@@ -55,7 +54,7 @@ def filter(filters, *args):
 
 def cleanDynamic(cookieData, filters):
     biliapi = BiliWebApi(cookieData)
-    print(f'开始为id为{cookieData["DedeUserID"]}的账户清理动态')
+    print(f'开始为用户({biliapi.getUserName()}) 清理动态')
     datas = biliapi.getMyDynamic()
     for x in datas:
         timestamp = x["desc"]["timestamp"]
