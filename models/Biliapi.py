@@ -131,6 +131,21 @@ class BiliWebApi(object):
             }
         return self.__session.post(url, post_data).json()
 
+    def dynamicRepostReply(self, rid, content="", type=1, repost_code=3000, From="create.comment", extension='{"emoji_type":1}'):
+        "评论动态并转发"
+        url = "https://api.vc.bilibili.com/dynamic_repost/v1/dynamic_repost/reply"
+        post_data = {
+            "uid": self.__uid,
+            "rid": rid,
+            "type": type,
+            "content": content,
+            "extension": extension,
+            "repost_code": repost_code,
+            "from": From,
+            "csrf_token": self.__bili_jct
+            }
+        return self.__session.post(url, post_data).json()
+
     def followed(self, followid: 'up的uid', isfollow=True):
         "关注或取关up主"
         url = "https://api.vc.bilibili.com/feed/v1/feed/SetUserFollow"
@@ -200,9 +215,11 @@ class BiliWebApi(object):
         content.encoding = 'utf-8' #需要指定编码
         return json.loads(content.text)
 
-    def getDynamic(self, type_list='268435455'):
-        "取B站用户动态数据"
-        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self.__uid}&type_list={type_list}'
+    def getDynamic(self, uid=0, type_list='268435455'):
+        "取B站用户动态数据，生成器"
+        if not uid:
+            uid = self.__uid
+        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={uid}&type_list={type_list}'
         content = self.__session.get(url)
         content.encoding = 'utf-8' #需要指定编码
         jsobj = json.loads(content.text)
@@ -212,7 +229,7 @@ class BiliWebApi(object):
         hasnext = True
         offset = cards[len(cards) - 1]["desc"]["dynamic_id"]
         while hasnext:
-            content = self.__session.get(f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_history?uid={self.__uid}&offset_dynamic_id={offset}&type={type_list}')
+            content = self.__session.get(f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_history?uid={uid}&offset_dynamic_id={offset}&type={type_list}')
             content.encoding = 'utf-8'
             jsobj = json.loads(content.text)
             hasnext = (jsobj["data"]["has_more"] == 1)
@@ -224,20 +241,33 @@ class BiliWebApi(object):
 
     def getMyDynamic(self, uid=0):
         "取B站用户自己的动态列表，生成器"
+        import time
+        def retry_get(url):
+            times = 3
+            while times:
+                try:
+                    jsobj = self.__session.get(url).json()
+                    assert jsobj["code"] == 0
+                    return jsobj
+                except:
+                    times -= 1
+                    time.sleep(3)
+            raise Exception(str(jsobj))
+
         if uid == 0:
             uid = self.__uid
         url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid={uid}&need_top=1&offset_dynamic_id='
         hasnext = True
-        offset = 0
+        offset = ''
         while hasnext:
-            jsobj = self.__session.get(f'{url}{offset}').json()
+            jsobj = retry_get(f'{url}{offset}')
             hasnext = (jsobj["data"]["has_more"] == 1)
-            offset = jsobj["data"]["next_offset"]
             if not 'cards' in jsobj["data"]:
                 continue
             cards = jsobj["data"]["cards"]
             for x in cards:
                 yield x
+            offset = x["desc"]["dynamic_id_str"]
 
     def removeDynamic(self, dynamic_id: int):
         "删除自己的动态"
