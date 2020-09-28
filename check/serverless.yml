@@ -1,12 +1,12 @@
 #组件信息
 app: bilibili
 component: scf # (必填) 引用 component 的名称，当前用到的是 tencent-scf 组件
-name: scfdemo # (必填) 创建的实例名称，请修改成您的实例名称
+name: check # (必填) 创建的实例名称，请修改成您的实例名称
 
 #登录状态每日检查
 inputs:
-  name: check #函数名称
-  namespace: bilibili
+  name: ${app}-check #函数名称
+  #namespace: bilibili
   src: ../  #代码路径
   handler: check.main_handler #入口
   runtime: Python3.6 # 云函数运行时的环境

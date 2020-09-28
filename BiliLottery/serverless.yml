@@ -1,12 +1,12 @@
 #组件信息
 app: bilibili
 component: scf # (必填) 引用 component 的名称，当前用到的是 tencent-scf 组件
-name: scfdemo # (必填) 创建的实例名称，请修改成您的实例名称
+name: BiliLottery # (必填) 创建的实例名称，请修改成您的实例名称
 
 #B站自动抽奖
 inputs:
-  name: BiliLottery #函数名称
-  namespace: bilibili
+  name: ${app}-BiliLottery #函数名称
+  #namespace: bilibili
   src: ../  #代码路径
   handler: BiliLottery.main_handler #入口
   runtime: Python3.6 # 云函数运行时的环境
