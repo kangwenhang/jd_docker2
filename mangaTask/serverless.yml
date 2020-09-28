@@ -17,5 +17,5 @@ inputs:
     - timer: # 定时触发器
         name: #触发器名称，默认timer-${name}-${stage}
         parameters:
-          cronExpression: '1 1 4 * * *'
+          cronExpression: '1 1 4 * * * *'
           enable: true
