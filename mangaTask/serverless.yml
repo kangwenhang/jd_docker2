@@ -8,7 +8,7 @@ inputs:
   name: ${app}-mangaTask #函数名称
   #namespace: bilibili
   src: ../  #代码路径
-  handler: mangaTask.main_handler #入口
+  handler: mangaTask.main #入口
   runtime: Python3.6 # 云函数运行时的环境
   region: ap-shanghai # 云函数所在区域
   description: '漫画签到，自动花费即将过期漫读劵和自动兑换福利券'

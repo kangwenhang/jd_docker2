@@ -8,7 +8,7 @@ inputs:
   name: ${app}-BiliLottery #函数名称
   #namespace: bilibili
   src: ../  #代码路径
-  handler: BiliLottery.main_handler #入口
+  handler: BiliLottery.main #入口
   runtime: Python3.6 # 云函数运行时的环境
   region: ap-shanghai # 云函数所在区域
   description: 'B站自动抽奖'
