@@ -19,7 +19,7 @@ jobs:
       run: echo '${{ secrets.biliconfig }}' > ./config/config.json && python3 check.py
       
     - name: 安装ServerlessFramework
-      run: npm install -g serverless
+      run: sudo npm install -g serverless
     
     - name: 部署至腾讯云
       run: sls deploy --debug || (echo '检查到部署程序异常退出，请检查腾讯云函数参数是否配置正确(key名带下划线)，请不要使用子账户，并确认云函数功能已开启(云函数控制台 https://console.cloud.tencent.com/scf)' && exit -1)
