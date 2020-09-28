@@ -1,0 +1,29 @@
+name: 'deploy for tencentyun'
+
+on:
+  workflow_dispatch:
+  watch:
+    types: started
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: 安装python3，requests和unzip
+      run: sudo apt-get update && sudo apt-get install -y python3.8 python-requests unzip
+
+    - name: 配置用户信息并检查有效性
+      run: echo '${{ secrets.biliconfig }}' > ./config/config.json && python3 check.py
+      
+    - name: 安装ServerlessFramework
+      run: curl -o- -L https://slss.io/install | bash
+    
+    - name: 部署至腾讯云
+      run: serverless deploy || (echo '检查到部署程序异常退出，请检查腾讯云函数三个参数是否配置正确(key名带下划线)，请不要使用子账户，并确认云函数功能已开启(云函数控制台 https://console.cloud.tencent.com/scf)' && exit -1)
+      env:
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
+          ACCESS_KEY_SECRET: ${{ secrets.ACCESS_KEY_SECRET }}
