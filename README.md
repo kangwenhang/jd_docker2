@@ -64,17 +64,22 @@ BiliExp
 
 ### 方式三、使用腾讯云函数
 
-* 1.准备
-    *  1.1开通云函数 SCF 的腾讯云账号，以及账号的 TENCENT_SECRET_ID，TENCENT_SECRET_KEY(**注意**！！获取后面两个参数时**不**要使用**子账户**！！会没有权限创建新的函数，请提前开启云函数服务)
-    *  1.2一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图)
-    *  1.3SCKEY (可选，用于账号失效时用微信提醒,不用请留空，详情见http://sc.ftqq.com/)
-    *  1.4fork本项目
-* 2.部署
-    *  2.1在fork后的github仓库的 “Settings” --》“Secrets” 中添加"Secrets"，name和value分别为：
+详细部署教程可以参考[博客文章](https://my-hexo-bucket-1251971143.cos-website.ap-guangzhou.myqcloud.com/2020/09/30/bilibili/)。
+
+* 1. 准备
+    *  1.1 开通云函数 SCF 的腾讯云账号，在[访问秘钥页面](https://console.cloud.tencent.com/cam/capi)获取账号的 TENCENT_SECRET_ID，TENCENT_SECRET_KEY
+
+> 注意！为了确保权限足够，获取这两个参数时不要使用子账户！需要提前开启云函数服务。此外，腾讯云账户需要[实名认证](https://console.cloud.tencent.com/developer/auth)。
+
+    *  1.2 一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图)
+    *  1.3 SCKEY (可选，用于账号失效时用微信提醒,不用请留空，详情见http://sc.ftqq.com/)
+    *  1.4 fork本项目
+* 2. 部署
+    *  2.1 在fork后的github仓库的 “Settings” --》“Secrets” 中添加"Secrets"，name和value分别为：
         *  2.1.1 name为"TENCENT_SECRET_ID"           value为腾讯云用户SecretID(需要主账户，子账户可能没权限)
-        *  2.1.2 name为"TENCENT_SECRET_KEY"        value为阿里云账户SecretKey
+        *  2.1.2 name为"TENCENT_SECRET_KEY"        value为腾讯云账户SecretKey
         *  2.1.3 name为"biliconfig"           value为B站账号登录信息，格式参照config/config.json文件
-    *  2.2添加完上面 3 个"Secrets"后，进入"Actions" --》"deploy for tencentyun"，点击右边的"Run workflow"即可部署至腾讯云函数(如果出错请在红叉右边点击"deploy for tencentyun"查看部署任务的输出信息找出错误原因)
+    *  2.2 添加完上面 3 个"Secrets"后，进入"Actions" --》"deploy for tencentyun"，点击右边的"Run workflow"即可部署至腾讯云函数(如果出错请在红叉右边点击"deploy for tencentyun"查看部署任务的输出信息找出错误原因)
         *  2.2.1 首次fork可能要去actions里面同意使用actions条款，如果"Actions"里面没有"deploy for tencentyun"，点一下右上角的"star"，"deploy for tencentyun"就会出现在"Actions"里面
 
 ```
