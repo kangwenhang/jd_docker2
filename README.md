@@ -66,7 +66,7 @@ BiliExp
 
 详细部署教程可以参考[博客文章](https://my-hexo-bucket-1251971143.cos-website.ap-guangzhou.myqcloud.com/2020/09/30/bilibili/)。
 
-* 1. 准备
+##### 1. 准备
     *  1.1 开通云函数 SCF 的腾讯云账号，在[访问秘钥页面](https://console.cloud.tencent.com/cam/capi)获取账号的 TENCENT_SECRET_ID，TENCENT_SECRET_KEY
 
 > 注意！为了确保权限足够，获取这两个参数时不要使用子账户！需要提前开启云函数服务。此外，腾讯云账户需要[实名认证](https://console.cloud.tencent.com/developer/auth)。
@@ -74,7 +74,7 @@ BiliExp
     *  1.2 一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图)
     *  1.3 SCKEY (可选，用于账号失效时用微信提醒,不用请留空，详情见http://sc.ftqq.com/)
     *  1.4 fork本项目
-* 2. 部署
+##### 2. 部署
     *  2.1 在fork后的github仓库的 “Settings” --》“Secrets” 中添加"Secrets"，name和value分别为：
         *  2.1.1 name为"TENCENT_SECRET_ID"           value为腾讯云用户SecretID(需要主账户，子账户可能没权限)
         *  2.1.2 name为"TENCENT_SECRET_KEY"        value为腾讯云账户SecretKey
