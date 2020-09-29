@@ -67,20 +67,20 @@ BiliExp
 详细部署教程可以参考[博客文章](https://my-hexo-bucket-1251971143.cos-website.ap-guangzhou.myqcloud.com/2020/09/30/bilibili/)。
 
 ##### 1. 准备
-    *  1.1 开通云函数 SCF 的腾讯云账号，在[访问秘钥页面](https://console.cloud.tencent.com/cam/capi)获取账号的 TENCENT_SECRET_ID，TENCENT_SECRET_KEY
+* 1.1 开通云函数 SCF 的腾讯云账号，在[访问秘钥页面](https://console.cloud.tencent.com/cam/capi)获取账号的 TENCENT_SECRET_ID，TENCENT_SECRET_KEY
 
 > 注意！为了确保权限足够，获取这两个参数时不要使用子账户！需要提前开启云函数服务。此外，腾讯云账户需要[实名认证](https://console.cloud.tencent.com/developer/auth)。
 
-    *  1.2 一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图)
-    *  1.3 SCKEY (可选，用于账号失效时用微信提醒,不用请留空，详情见http://sc.ftqq.com/)
-    *  1.4 fork本项目
+* 1.2 一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图)
+*  1.3 SCKEY (可选，用于账号失效时用微信提醒,不用请留空，详情见http://sc.ftqq.com/)
+*  1.4 fork本项目
 ##### 2. 部署
-    *  2.1 在fork后的github仓库的 “Settings” --》“Secrets” 中添加"Secrets"，name和value分别为：
-        *  2.1.1 name为"TENCENT_SECRET_ID"           value为腾讯云用户SecretID(需要主账户，子账户可能没权限)
-        *  2.1.2 name为"TENCENT_SECRET_KEY"        value为腾讯云账户SecretKey
-        *  2.1.3 name为"biliconfig"           value为B站账号登录信息，格式参照config/config.json文件
-    *  2.2 添加完上面 3 个"Secrets"后，进入"Actions" --》"deploy for tencentyun"，点击右边的"Run workflow"即可部署至腾讯云函数(如果出错请在红叉右边点击"deploy for tencentyun"查看部署任务的输出信息找出错误原因)
-        *  2.2.1 首次fork可能要去actions里面同意使用actions条款，如果"Actions"里面没有"deploy for tencentyun"，点一下右上角的"star"，"deploy for tencentyun"就会出现在"Actions"里面
+*  2.1 在fork后的github仓库的 “Settings” --》“Secrets” 中添加"Secrets"，name和value分别为：
+    *  2.1.1 name为"TENCENT_SECRET_ID"           value为腾讯云用户SecretID(需要主账户，子账户可能没权限)
+    *  2.1.2 name为"TENCENT_SECRET_KEY"        value为腾讯云账户SecretKey
+    *  2.1.3 name为"biliconfig"           value为B站账号登录信息，格式参照config/config.json文件
+*  2.2 添加完上面 3 个"Secrets"后，进入"Actions" --》"deploy for tencentyun"，点击右边的"Run workflow"即可部署至腾讯云函数(如果出错请在红叉右边点击"deploy for tencentyun"查看部署任务的输出信息找出错误原因)
+    *  2.2.1 首次fork可能要去actions里面同意使用actions条款，如果"Actions"里面没有"deploy for tencentyun"，点一下右上角的"star"，"deploy for tencentyun"就会出现在"Actions"里面
 
 ```
     注:账号cookie检查每天0:10执行1次(填写SCKEY后账号登录状态失效会微信通知)；投币、点赞、分享视频，直播签到，送出直播即将过期礼物每天0:20执行1次；参与B站官方抽奖活动每天0:30执行1次；漫画app签到，花费即将过期漫读劵和积分兑换福利券功能每天12:00执行1次；将银瓜子兑换为硬币每天3:00执行1次；B站转发互动抽奖和发送直播在线心跳维持在线状态每隔10分钟运行1次；清理B站无效动态每周一执行1次。
