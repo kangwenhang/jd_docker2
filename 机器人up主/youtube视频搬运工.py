@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from models.Video import Video
+from models.Video import VideoUploader
 import time, json
 from pytube import YouTube
 
@@ -21,7 +21,7 @@ if itag:
 else:
     filename = video.streams.get_by_itag(22).download()
 
-bilivideo = Video(configData["cookieDatas"][0]) #创建B站视频发布任务
+bilivideo = VideoUploader(configData["cookieDatas"][0]) #创建B站视频发布任务
 print(f'开始将{filename}上传至B站，请耐心等待')
 vd = bilivideo.uploadFile(filename) #上传视频
 if vd["filename"] == "":
