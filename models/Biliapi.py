@@ -136,6 +136,18 @@ class BiliWebApi(object):
             }
         return self.__session.post(url, post_data).json()
 
+    def dynamicReplyAdd(self, oid: int, message="", type=11, plat=1):
+        "评论动态"
+        url = "https://api.bilibili.com/x/v2/reply/add"
+        post_data = {
+            "oid": oid,
+            "plat": plat,
+            "type": type,
+            "message": message,
+            "csrf": self.__bili_jct
+            }
+        return self.__session.post(url, post_data).json()
+
     def dynamicRepostReply(self, rid, content="", type=1, repost_code=3000, From="create.comment", extension='{"emoji_type":1}'):
         "评论动态并转发"
         url = "https://api.vc.bilibili.com/dynamic_repost/v1/dynamic_repost/reply"
@@ -212,6 +224,11 @@ class BiliWebApi(object):
             for x in cards:
                 yield x
             has_more = (jsobj["data"]["has_more"] == 1)
+
+    def getDynamicDetail(self, dynamic_id: int):
+        "获取动态内容"
+        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={dynamic_id}'
+        return self.__session.get(url).json()
 
     def getDynamicNew(self, type_list='268435455'):
         "取B站用户最新动态数据"

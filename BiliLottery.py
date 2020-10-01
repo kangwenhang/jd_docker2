@@ -29,7 +29,9 @@ def bili_lottery(data, stime, etime):
                 uname = x["desc"]["user_profile"]["info"]["uname"]  #动态的主人的用户名
                 dyid = x["desc"]["dynamic_id"]
                 try:
-                    biliapi.dynamicRepostReply(dyid, '从未中奖，从未放弃[doge]')
+                    oid = biliapi.getDynamicDetail(dyid)["data"]["card"]["desc"]["rid"]
+                    biliapi.dynamicReplyAdd(oid, '从未中奖，从未放弃[doge]')    #这里评论
+                    biliapi.dynamicRepostReply(dyid, '从未中奖，从未放弃[doge]')#这里转发到自己的动态
                     logging.info(f'id为{data["DedeUserID"]}的账户转发抽奖(用户名:{uname},动态id:{dyid})成功')
                 except Exception as e: 
                     logging.warning(f'转发抽奖失败，原因为{str(e)}')
