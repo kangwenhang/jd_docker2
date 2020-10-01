@@ -25,7 +25,8 @@ def bili_exp(cookieData, pm):
        "脚本执行前硬币": 0,
        }
 
-   if time.localtime(time.time() + 28800 + time.timezone).tm_mday == 1:
+   taday = time.localtime(time.time() + 28800 + time.timezone).tm_mday #获取今天是几号
+   if taday == 1:
        if biliapi.getVipType() == 2:
            logging.info('今天为1号，开始获取年度大会员权益')
            try:
@@ -38,9 +39,24 @@ def bili_exp(cookieData, pm):
                    rdata["领取会员购优惠券"] = True
                    logging.info('成功领取大会员优惠券')
                else:
-                   logging.warning('领取大会员B币失败')
+                   logging.warning('领取大会员优惠券失败')
            except:
                logging.warning('领取大会员权益异常')
+
+   elif taday == 28:
+       try:
+           cbp = biliapi.getUserWallet()["data"]["couponBalance"] #B币劵数量
+           if cbp > 0:
+               cbp *= 10
+               _ret = biliapi.elecPay(biliapi.getUid(), cbp)
+               if _ret["data"]["order_no"]:
+                   logging.info(f'成功给自己充电，订单编号为{_ret["data"]["order_no"]}')
+                   rdata["给自己充电订单"] = _ret["data"]["order_no"]
+               else:
+                   logging.info(f'给自己充电失败，信息为{_ret["data"]["msg"]}')
+                   rdata["给自己充电"] = '失败'
+       except Exception as e:
+           logging.warning(f'获取账户B币劵并给自己充电失败，原因为{str(e)}')
 
    try:
        xliveInfo = biliapi.xliveSign()

@@ -35,6 +35,10 @@ class BiliWebApi(object):
         "获取登录的账户用户名"
         return self.__name
 
+    def getUid(self):
+        "获取登录的账户uid"
+        return self.__uid
+
     def getReward(self):
         "取B站经验信息"
         url = "https://account.bilibili.com/home/reward"
@@ -291,7 +295,7 @@ class BiliWebApi(object):
 
     def removeDynamic(self, dynamic_id: int):
         "删除自己的动态"
-        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic'
+        url = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/rm_dynamic'
         post_data = {
             "dynamic_id": dynamic_id,
             "csrf_token": self.__bili_jct
@@ -313,6 +317,39 @@ class BiliWebApi(object):
     def getSpaceInfo(self, uid: int):
         "取指定账户空间信息"
         url = f'https://api.bilibili.com/x/space/acc/info?mid={uid}'
+        return self.__session.get(url).json()
+
+    def getUserWallet(self, platformType=3):
+        "获取账户钱包信息"
+        url = 'https://pay.bilibili.com/paywallet/wallet/getUserWallet'
+        post_data = {
+            "platformType": platformType
+            #"panelType": panelType,
+            #"traceId": 'traceId',
+            #"timestamp": timestamp,
+            #"version": "1.0"
+            }
+        #{"code":0,"errno":0,"msg":"SUCCESS","message":"SUCCESS","showMsg":"","errtag":0,"data":{"mid":203984353,"totalBp":0.00,"defaultBp":0.00,"iosBp":0.00,"couponBalance":0,"availableBp":0.00,"unavailableBp":0.00,"unavailableReason":"苹果设备上充值的B币不能在其他平台的设备上进行使用","tip":null}}
+        return self.__session.post(url, json=post_data).json()
+
+    def elecPay(self, uid: int, num=50):
+        "用B币给up主充电，num >= 20"
+        url = 'https://api.bilibili.com/x/ugcpay/trade/elec/pay/quick'
+        post_data = {
+            "elec_num": num,
+            "up_mid": uid,
+            "otype": 'up',
+            "oid": uid,
+            "csrf": self.__bili_jct
+            }
+        #{"code":0,"message":"0","ttl":1,"data":{"mid":203984353,"up_mid":8466742,"order_no":"BTQPTQ8PQ95DN6CV46AG","elec_num":20,"exp":2,"status":4,"msg":""}}
+        #{"code":0,"message":"0","ttl":1,"data":{"mid":0,"up_mid":0,"order_no":"","elec_num":0,"exp":0,"status":-4,"msg":"bp.to.battery http failed, invalid args, errNo=800409904: B 币余额不足"}}
+        return self.__session.post(url, post_data).json()
+
+    def elecPayStatus(self, order_no: 'str 订单编号'):
+        "充电订单状态查询"
+        url = f'https://api.bilibili.com/x/ugcpay/trade/elec/pay/order/status?order_no={order_no}'
+        #{"code":0,"message":"0","ttl":1,"data":{"order_no":"BTQPTQ8PQ95DN6CV46AG","mid":203984353,"status":1}}
         return self.__session.get(url).json()
 
     def xliveSign(self):
