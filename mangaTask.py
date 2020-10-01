@@ -5,11 +5,13 @@ import json, logging
 inner_config = {
     "mode": 0,
     "filter": {
-        "8507742": "25900|1-30,35,55;25966|5,15,35-",
+        "8467742": "25900|1-30,35,55;25966|5,15,35-",
 #这里表示为uid为8468742的账户用即将过期漫读劵购买漫画mc25900的第1话到30话和35话及55话，购买漫画mc25966的5话，15话 和 35话到最新话
         "账户2uid": "格式同上所示" #依次类推更多账号,uid(DedeUserID)必须在config/config.json文件中存在
         },
-    "exchangeCoupons": 0  #积分商城抢购积分兑换福利劵数量
+    "exchangeCoupons": 0,  #积分商城抢购积分兑换福利劵数量,0为关闭兑换
+    "vip_reward_day": [1], #尝试获取大会员漫读劵权益的日期,[1,2]为指定每月1号和2号尝试获取
+    "comrade_day": []      #尝试参加站友日活动的日期,[1]为每月1号,[1,2]为每月1号和2号，指定多天为每天都尝试参与，为空则不参与
     }
 #注:当mode为0时，"filter"参数无效，脚本自动购买追漫列表里的漫画(默认)，当mode为1时，请手动在"filter"下设置每个账户购买的漫画列表
 #filter格式为 "账号uid": "漫画mc号1{竖线}漫画章数1(支持n-m和n-格式){逗号}漫画章数2{分号}漫画mc号2{竖线}漫画章数1......"
@@ -111,6 +113,35 @@ def manga_task(cookie, filter=''):
             logging.error(f'漫画签到失败,信息为：{_ret["msg"]}')
     except Exception as e: 
         logging.error(f'漫画签到异常,原因为：{str(e)}')
+
+    now_day = time.localtime(time.time() + 28800 + time.timezone).tm_mday #获取今天是几号
+                                            #上面用于修正时区差
+    if now_day in inner_config["vip_reward_day"]:
+        try:
+            _ret = biliapi.mangaGetVipReward()
+            if _ret["code"] == 0:
+                logging.info(f'大会员成功领取{_ret["data"]["amount"]}张漫读劵')
+            else:
+                logging.error(f'大会员权益领取失败,信息为：{_ret["msg"]}')
+        except Exception as e: 
+            logging.error(f'漫画大会员权益领取异常,原因为：{str(e)}')
+
+    if now_day in inner_config["comrade_day"]:
+        try:
+            _ret = biliapi.mangaComrade()
+            if _ret["data"]["active"] == 1:
+                if _ret["data"]["received"] == 0:
+                    _ret = biliapi.mangaPayBCoin(5) #只有兑换5B币才能参加活动
+                    if _ret["code"] == 0:
+                        logging.info(f'成功参与站友日活动，订单号为{_ret["data"]["id"]}')
+                    else:
+                        logging.error(f'站友日活动参与失败，可能是B币不足')
+                else:
+                    logging.info('您貌似今天已经参与过站友日活动了')
+            else:
+                logging.info(f'站友日还未启动，请看看这月{now_day}号是否是站友日')
+        except Exception as e: 
+            logging.error(f'站友日活动参与异常,原因为：{str(e)}')
 
     coupons_will_expire = 0
     try:

@@ -24,7 +24,12 @@ class BiliWebApi(object):
             raise Exception("参数验证失败，登录状态失效")
         self.__name = data["data"]["uname"]
         self.__uid = data["data"]["mid"]
+        self.__vip = data["data"]["vipType"]
         #print(self.__session.cookies)
+
+    def getVipType(self):
+        "获取登录的账户的vip类型"
+        return self.__vip
 
     def getUserName(self):
         "获取登录的账户用户名"
@@ -215,11 +220,9 @@ class BiliWebApi(object):
         content.encoding = 'utf-8' #需要指定编码
         return json.loads(content.text)
 
-    def getDynamic(self, uid=0, type_list='268435455'):
+    def getDynamic(self, type_list='268435455'):
         "取B站用户动态数据，生成器"
-        if not uid:
-            uid = self.__uid
-        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={uid}&type_list={type_list}'
+        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self.__uid}&type_list={type_list}'
         content = self.__session.get(url)
         content.encoding = 'utf-8' #需要指定编码
         jsobj = json.loads(content.text)
@@ -229,7 +232,7 @@ class BiliWebApi(object):
         hasnext = True
         offset = cards[len(cards) - 1]["desc"]["dynamic_id"]
         while hasnext:
-            content = self.__session.get(f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_history?uid={uid}&offset_dynamic_id={offset}&type={type_list}')
+            content = self.__session.get(f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_history?uid={self.__uid}&offset_dynamic_id={offset}&type={type_list}')
             content.encoding = 'utf-8'
             jsobj = json.loads(content.text)
             hasnext = (jsobj["data"]["has_more"] == 1)
@@ -246,7 +249,7 @@ class BiliWebApi(object):
             times = 3
             while times:
                 try:
-                    jsobj = self.__session.get(url).json()
+                    jsobj = self.__session.get(url, timeout=(10, 20)).json()
                     assert jsobj["code"] == 0
                     return jsobj
                 except:
@@ -285,6 +288,16 @@ class BiliWebApi(object):
         content.encoding = 'utf-8'#不指定会出错
         return json.loads(content.text)
 
+    def getRelationStat(self, uid: int):
+        "取指定账户关注信息"
+        url = f'https://api.bilibili.com/x/relation/stat?vmid={uid}'
+        return self.__session.get(url).json()
+
+    def getSpaceInfo(self, uid: int):
+        "取指定账户空间信息"
+        url = f'https://api.bilibili.com/x/space/acc/info?mid={uid}'
+        return self.__session.get(url).json()
+
     def xliveSign(self):
         "B站直播签到"
         url = "https://api.live.bilibili.com/xlive/web-ucenter/v1/sign/DoSign"
@@ -302,6 +315,11 @@ class BiliWebApi(object):
             "csrf_token": self.__bili_jct
             }
         return self.__session.post(url, post_data).json()
+
+    def listArticlesAll(self, id: int):
+        "获取专栏文集信息"
+        url =  f'https://api.bilibili.com/x/article/creative/list/articles/all?id={id}'
+        return self.__session.get(url).json()
 
     def createArticle(self, tilte="", content="", aid=0, category=0, list_id=0, tid=4, original=1, image_urls="", origin_image_urls="", submit=False):
         "发表专栏"
@@ -603,7 +621,7 @@ class BiliWebApi(object):
         return self.__session.post(url, json={}).json()
 
     def mangaComrade(self, platform="web"):
-        "站友日漫画卷兑换"
+        "站友日漫画卷兑换查询"
         url = f'https://manga.bilibili.com/twirp/activity.v1.Activity/Comrade?platform={platform}'
         #{"code":0,"msg":"","data":{"now":"2020-09-20T21:10:38+08:00","received":0,"active":0,"lottery":0,"svip":1}}
         return self.__session.post(url, json={}).json()
@@ -727,6 +745,11 @@ class BiliWebApi(object):
     def mangaGetImageBytes(self, url: str):
         "获取漫画图片"
         return self.__session.get(url).content
+
+    def mangaGetVipReward(self):
+        "获取漫画大会员福利"
+        url = 'https://manga.bilibili.com/twirp/user.v1.User/GetVipReward'
+        return self.__session.post(url, json={"reason_id":1}).json()
 
     def vipPrivilegeMy(self):
         "B站大会员权益列表"
