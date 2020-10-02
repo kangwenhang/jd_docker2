@@ -17,7 +17,7 @@ def silver2coin(cookieData):
        info = biliapi.xliveGetStatus()
    except Exception as e: 
        logging.warning(f'获取瓜子信息异常，原因为{str(e)}')
-   print(info)
+
    if(info["code"] != 0):
        logging.warning(f'获取瓜子信息失败，信息为({info["msg"]})，跳过此账户后续所有操作')
        return
