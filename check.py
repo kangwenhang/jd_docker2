@@ -13,12 +13,18 @@ def main(*args):
 
     pm = PushMessage("B站经验脚本账户有效性检查", SCKEY=configData["SCKEY"], email=configData["email"])
 
+    ii = 0
     for x in configData["cookieDatas"]:
+        ii += 1
         try:
             biliapi = BiliWebApi(x)
-            print(f'id为{x["DedeUserID"]}的账户验证有效')
+            like = biliapi.likeCv(7793107)
+            if like["code"] != 0 and like["code"] != 65006:
+                print(f'{ii}.id为{x["DedeUserID"]}的账户可能账号有异常，检查bili_jct参数是否有效或账号是否被封禁({biliapi.getLevel()},{biliapi.verified})')
+            else:
+                print(f'{ii}.id为{x["DedeUserID"]}的账户验证有效({biliapi.getLevel()},{biliapi.verified})')
         except Exception as e: 
-            pm.addMsg(f'id为{x["DedeUserID"]}的账户登录验证失败,原因为{str(e)}。')
+            pm.addMsg(f'{ii}.id为{x["DedeUserID"]}的账户登录验证失败,原因为{str(e)}。')
 
     msg = pm.getMsg()
     if msg:
