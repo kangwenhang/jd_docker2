@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-import requests
-import json
+import requests, json
 class BiliWebApi(object):
     "B站web的api接口"
     def __init__(self, cookieData=None):
@@ -25,6 +24,8 @@ class BiliWebApi(object):
         self.__name = data["data"]["uname"]
         self.__uid = data["data"]["mid"]
         self.__vip = data["data"]["vipType"]
+        self.__level = data["data"]["level_info"]["current_level"]
+        self.verified = data["data"]["mobile_verified"]
         #print(self.__session.cookies)
 
     def getVipType(self):
@@ -49,6 +50,15 @@ class BiliWebApi(object):
         url = "https://api.bilibili.com/x/web-interface/nav"
         return self.__session.get(url).json()["data"]
 
+    def getLevel(self):
+        "获取登录的账户等级"
+        return self.__level
+
+    def spaceArcSearch(self, uid: int, ps=50, pn=1, tid=0, keyword='', order='pubdate'):
+        "取空间投稿信息"
+        url = 'https://api.bilibili.com/x/space/arc/search?mid={uid}&ps={ps}&tid=0&pn={pn}&keyword={keyword}&order={order}'
+        return self.__session.get(url).json()
+
     @staticmethod
     def getId(url):
         "取B站指定视频链接的aid和cid号"
@@ -60,12 +70,50 @@ class BiliWebApi(object):
         cid = match.group(1)
         return {"aid": aid, "cid": cid}
 
+    def like(self, aid: int, like=1):
+        "点赞视频"
+        url = "https://api.bilibili.com/x/web-interface/archive/like"
+        post_data = {
+            "aid": aid,
+            "like": like,
+            "csrf": self.__bili_jct
+            }
+        return self.__session.post(url, post_data).json()
+
+    def likeCv(self, cvid: int, type=1):
+        "点赞专栏"
+        url = 'https://api.bilibili.com/x/article/like'
+        post_data = {
+            "id": cvid,
+            "type": type,
+            "csrf": self.__bili_jct
+            }
+        return self.__session.post(url, post_data).json()
+
     def getCoin(self):
         "获取剩余硬币数"
         url = "https://api.bilibili.com/x/web-interface/nav?build=0&mobi_app=web"
         return int(self.__session.get(url).json()["data"]["money"])
 
-    def coin(self, aid, num, select_like):
+    def coinCv(self, cvid: int, num=1, upid=0, select_like=1):
+        "给指定cv号专栏投币"
+        url = "https://api.bilibili.com/x/web-interface/coin/add"
+        if upid == 0:
+            info = self.articleViewInfo(cvid)["data"]
+            if info["coin"]: #官方限制专栏只能投一个币，但其实原创作品无论视频专栏都可以投两个币
+                return {'code': 34005, 'message': '超过投币上限啦~', 'ttl': 1, 'data': {'like': False}}
+            upid = info["mid"]
+        post_data = {
+            "aid": cvid,
+            "multiply": num,
+            "select_like": select_like,
+            "upid": upid,
+            "avtype": 2,#专栏必为2，否则投到视频上面去了
+            "csrf": self.__bili_jct
+            }
+        return self.__session.post(url, post_data).json()
+
+    def coin(self, aid: int, num=1, select_like=1):
         "给指定av号视频投币"
         url = "https://api.bilibili.com/x/web-interface/coin/add"
         post_data = {
@@ -370,9 +418,29 @@ class BiliWebApi(object):
             }
         return self.__session.post(url, post_data).json()
 
-    def listArticlesAll(self, id: int):
+    def articleViewInfo(self, cvid: int):
+        "获取专栏信息"
+        url = f'https://api.bilibili.com/x/article/viewinfo?id={cvid}'
+        return self.__session.get(url).json()
+
+    def articleReplyMain(self, cvid: int, type=12):
+        "获取专栏回复信息"
+        url = f'https://api.bilibili.com/x/v2/reply/main?oid={cvid}&type={type}'
+        return self.__session.get(url).json()
+
+    def articleListInfo(self, cvid: int):
+        "通过单个专栏获取专栏文集信息"
+        url = f'https://api.bilibili.com/x/article/listinfo?id={cvid}'
+        return self.__session.get(url).json()
+
+    def listArticles(self, cvid: int):
         "获取专栏文集信息"
-        url =  f'https://api.bilibili.com/x/article/creative/list/articles/all?id={id}'
+        url =  f'https://api.bilibili.com/x/article/list/web/articles?id={cvid}'
+        return self.__session.get(url).json()
+
+    def listArticlesAll(self, cvid: int):
+        "获取本人专栏文集信息"
+        url =  f'https://api.bilibili.com/x/article/creative/list/articles/all?id={cvid}'
         return self.__session.get(url).json()
 
     def createArticle(self, tilte="", content="", aid=0, category=0, list_id=0, tid=4, original=1, image_urls="", origin_image_urls="", submit=False):
