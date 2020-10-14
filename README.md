@@ -63,6 +63,8 @@ BiliExp
         *  2.1.2 name为"ACCESS_KEY_ID"        value为阿里云账户AccessKeyID(需要主账户，子账户可能没权限)
         *  2.1.3 name为"ACCESS_KEY_SECRET"    value为阿里云账户accessKeySecret
         *  2.1.4 name为"biliconfig"           value为B站账号登录信息，格式参照config/config.json文件
+		![image](https://user-images.githubusercontent.com/67217225/95950703-a209d980-0e27-11eb-80c8-0d756d25ff45.png)
+		
     *  2.2添加完上面4个"Secrets"后，进入"Actions" --》"deploy for aliyun"，点击右边的"Run workflow"即可部署至阿里云函数(如果出错请在红叉右边点击"deploy for aliyun"查看部署任务的输出信息找出错误原因)
         *  2.2.1 首次fork可能要去actions里面同意使用actions条款，如果"Actions"里面没有"deploy for aliyun"，点一下右上角的"star"，"deploy for aliyun"就会出现在"Actions"里面
 
