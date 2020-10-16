@@ -1,156 +1,105 @@
 # -*- coding: utf-8 -*-
-from models.Biliapi import BiliWebApi
-from models.PushMessage import PushMessage
-import json, time
-import logging
+import asyncio, json, time, logging, sys, re, io
+from models.asyncBiliApi import asyncBiliApi
+#from tasks import * #所有任务模块通过动态加载
 
-def bili_exp(cookieData, pm):
-   "B站直播签到，投币分享获取经验，模拟观看一个视频"
-   try:
-       biliapi = BiliWebApi(cookieData)
-   except Exception as e: 
-       logging.info(f'登录验证id为{cookieData["DedeUserID"]}的账户失败，原因为({str(e)})，跳过此账户后续所有操作')
-       pm.addMsg(f'id为：{cookieData["DedeUserID"]} 的账户登录失败')
-       return
+log_stream = io.StringIO() #用于记录日志
 
-   pm.addMsg(f'目前账户为：({biliapi.getUserName()})')
-   logging.info(f'登录账户 ({biliapi.getUserName()}) 成功')
+def push_message(SCKEY=None,
+                 email=None
+                 ) -> None:
+    if not (SCKEY or email):
+        return
 
-   rdata = {
-       "直播签到": False,
-       "投币数量": 0,
-       "视频观看": False,
-       "视频分享": False,
-       "脚本执行前经验": 0,
-       "脚本执行前硬币": 0,
-       }
+    log = log_stream.getvalue()
+    import urllib
+    if SCKEY:
+        data_string = urllib.parse.urlencode({"text": "B站经验脚本消息推送","desp": log})
+        urllib.request.urlopen(f'https://sc.ftqq.com/{SCKEY}.send', data=data_string.encode())
+    if email:
+        data_string = urllib.parse.urlencode({"address":email, "name": "B站经验脚本消息推送", "certno": log.replace("\n","<br>")})
+        #这辣鸡接口居然还要User-Agent才能访问....
+        req = urllib.request.Request(url=f'http://liuxingw.com/api/mail/api.php?{data_string}', headers={"User-Agent":"Mozilla/5.0"})
+        urllib.request.urlopen(req)
 
-   taday = time.localtime(time.time() + 28800 + time.timezone).tm_mday #获取今天是几号
-   if taday == 1:
-       if biliapi.getVipType() == 2:
-           logging.info('今天为1号，开始获取年度大会员权益')
-           try:
-               if biliapi.vipPrivilegeReceive(1)["code"] == 0:
-                   rdata["领取大会员B币"] = True
-                   logging.info('成功领取大会员B币')
-               else:
-                   logging.warning('领取大会员B币失败')
-               if biliapi.vipPrivilegeReceive(2)["code"] == 0:
-                   rdata["领取会员购优惠券"] = True
-                   logging.info('成功领取大会员优惠券')
-               else:
-                   logging.warning('领取大会员优惠券失败')
-           except:
-               logging.warning('领取大会员权益异常')
+async def run_user_tasks(user,           #用户配置
+                        default          #默认配置
+                        ) -> None:
 
-   elif taday == 28:
-       try:
-           cbp = biliapi.getUserWallet()["data"]["couponBalance"] #B币劵数量
-           if cbp > 0:
-               cbp *= 10
-               _ret = biliapi.elecPay(biliapi.getUid(), cbp)
-               if _ret["data"]["order_no"]:
-                   logging.info(f'成功给自己充电，订单编号为{_ret["data"]["order_no"]}')
-                   rdata["给自己充电订单"] = _ret["data"]["order_no"]
-               else:
-                   logging.info(f'给自己充电失败，信息为{_ret["data"]["msg"]}')
-                   rdata["给自己充电"] = '失败'
-       except Exception as e:
-           logging.warning(f'获取账户B币劵并给自己充电失败，原因为{str(e)}')
+    async with asyncBiliApi() as biliapi:
+        try:
+            if not await biliapi.login_by_cookie(user["cookieDatas"]):
+                logging.warning(f'id为{user["cookieDatas"]["DedeUserID"]}的账户cookie失效，跳过此账户后续操作')
+                return
+        except Exception as e: 
+            logging.warning(f'登录验证id为{user["cookieDatas"]["DedeUserID"]}的账户失败，原因为{str(e)}，跳过此账户后续操作')
+            return
 
-   try:
-       xliveInfo = biliapi.xliveSign()
-       logging.info(f'bilibili直播签到信息：{str(xliveInfo)}')
-       rdata["直播签到"] = (xliveInfo["code"] == 0)
-   except Exception as e:
-       logging.warning(f'直播签到异常，原因为{str(e)}')
+        tasks = []
 
-   try:
-        room_id = biliapi.xliveGetRecommendList()["data"]["list"][6]["roomid"]
-        uid = biliapi.xliveGetRoomInfo(room_id)["data"]["room_info"]["uid"]
-        now_time = int(time.time())
-        bagList = biliapi.xliveGiftBagList()["data"]["list"]
-        for x in bagList:
-            if x["expire_at"] - now_time < 172800: #礼物到期时间小于2天
-                ret = biliapi.xliveBagSend(room_id, uid, x["bag_id"], x["gift_id"], x["gift_num"])
-                if ret["code"] == 0:
-                    logging.info(f'{ret["data"]["send_tips"]} {ret["data"]["gift_name"]} 数量{ret["data"]["gift_num"]}')
-   except Exception as e:
-       logging.warning(f'直播送出即将过期礼物异常，原因为{str(e)}')
+        for task in default: #遍历任务列表，把需要运行的任务添加到tasks
+            if isinstance(default[task], bool):
+                if task in user["tasks"]:
+                    if user["tasks"][task]:
+                        task_module = __import__(f'tasks.{task}') #载入任务模块
+                        task_function = getattr(getattr(task_module, task), task)#载入任务入口方法
+                        tasks.append(task_function(biliapi))               #放进任务列表
+                elif default[task]:
+                    task_module = __import__(f'tasks.{task}')
+                    task_function = getattr(getattr(task_module, task), task)
+                    tasks.append(task_function(biliapi))
+            elif isinstance(default[task], dict):
+                if task in user["tasks"]:
+                    if user["tasks"][task]["enable"]:
+                        task_module = __import__(f'tasks.{task}')
+                        task_function = getattr(getattr(task_module, task), task)
+                        tasks.append(task_function(biliapi, user["tasks"][task]))
+                elif default[task]["enable"]:
+                    task_module = __import__(f'tasks.{task}')
+                    task_function = getattr(getattr(task_module, task), task)
+                    tasks.append(task_function(biliapi, default[task]))
+        if tasks:
+            await asyncio.wait(tasks)        #异步等待所有任务完成
 
-   try:
-       reward = biliapi.getReward()
-       logging.info(f'经验脚本开始前经验信息 ：{str(reward)}')
-   except Exception as e: 
-       logging.warning(f'获取账户经验信息异常，原因为{str(e)}，跳过此账户后续所有操作')
-       pm.addMsg(str(rdata))
-       return
+def initlog(log_file_name):
+    '''初始化日志参数'''
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    console_handler = logging.StreamHandler(stream=sys.stdout) #输出到控制台
+    strio_handler = logging.StreamHandler(stream=log_stream) #输出到log_stream用于消息推送
+    formatter1 = logging.Formatter("[%(levelname)s]; %(message)s")
+    formatter2 = logging.Formatter("%(message)s")
+    console_handler.setFormatter(formatter1)
+    strio_handler.setFormatter(formatter2)
+    logger.addHandler(console_handler)
+    logger.addHandler(strio_handler)
 
-   rdata["脚本执行前经验"] = reward["level_info"]["current_exp"]
-
-   try:
-       coin_num = biliapi.getCoin()
-   except Exception as e: 
-       logging.warning(f'获取账户剩余硬币数异常，原因为{str(e)}')
-       coin_num = 0
-
-   rdata["脚本执行前硬币"] = coin_num
-
-   coin_exp_num = (50 - reward["coins_av"]) // 10
-   toubi_num = coin_exp_num if coin_num > coin_exp_num else coin_num
-
-   try:
-       datas = biliapi.getRegions()
-   except Exception as e: 
-       logging.warning(f'获取B站分区视频信息异常，原因为{str(e)}，跳过此账户后续所有操作')
-       pm.addMsg(str(rdata))
-       return
-
-   if(toubi_num > 0):
-       for i in range(toubi_num):
-           try:
-               info = biliapi.coin(datas[i]["aid"], 1, 1)
-               logging.info(f'投币信息 ：{str(info)}')
-               if(info["code"] == 0):
-                   rdata["投币数量"] += 1
-           except Exception as e: 
-               logging.warning(f'投币异常，原因为{str(e)}')
-
-   try:
-       info = biliapi.report(datas[5]["aid"], datas[5]["cid"], 300)
-       logging.info(f'模拟视频观看进度上报：{str(info)}')
-       rdata["视频观看"] = (info["code"] == 0)
-   except Exception as e: 
-       logging.warning(f'模拟视频观看异常，原因为{str(e)}')
-
-   try:
-       info = biliapi.share(datas[5]["aid"])
-       logging.info(f'分享视频结果：{str(info)}')
-       rdata["视频分享"] = (info["code"] == 0)
-   except Exception as e: 
-       logging.warning(f'分享视频异常，原因为{str(e)}')
-
-   pm.addMsg(str(rdata))
-   logging.info('本账户操作全部完成')
+    #云函数上 下面的代码会抛出异常，因为云函数是只读环境
+    file_handler = logging.FileHandler(log_file_name)#输出到日志文件
+    file_handler.setFormatter(formatter1)
+    logger.addHandler(file_handler)
 
 def main(*args):
     try:
-        logging.basicConfig(filename="exp.log", filemode='a', level=logging.INFO, format="%(asctime)s: %(levelname)s, %(message)s", datefmt="%Y/%d/%m %H:%M:%S")
-    except:
-        pass
-
-    with open('config/config.json','r',encoding='utf-8') as fp:
-        configData = json.load(fp)
-
-    pm = PushMessage(title="B站经验脚本消息推送", email=configData["email"])
-
-    for x in configData["cookieDatas"]:
-        bili_exp(x, pm)
+        initlog("BiliExp.log")
+    except Exception as e: 
+        print(f'日志配置异常，原因为{str(e)}')
 
     try:
-        pm.pushMessage()
+        with open('config/config.json','r',encoding='utf-8') as fp:
+            configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
     except Exception as e: 
-        logging.warning(f'消息推送异常，原因为{str(e)}')
+        logging.error(f'配置加载异常，原因为{str(e)}，退出程序')
+        sys.exit(6)
+    
+    #启动任务
+    loop = asyncio.get_event_loop()
+    tasks = [asyncio.ensure_future(run_user_tasks(user, configData["default"])) for user in configData["users"]]
+    loop.run_until_complete(asyncio.wait(tasks))
 
-if __name__=="__main__":
-    main()
+    try:
+        push_message(configData["SCKEY"], configData["email"])
+    except Exception as e: 
+        logging.error(f'消息推送异常，原因为{str(e)}')
+
+__name__=="__main__" and main()

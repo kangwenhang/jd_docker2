@@ -83,7 +83,7 @@ def main(*args):
     now_time = int(time.time())
     endtime = now_time - now_time % 86400 + time.timezone #今天0点
     starttime = time1 - 86400 #昨天0点
-    list = listLott(configData["cookieDatas"][0], endtime, starttime) #返回自己动态里从starttime到endtime的所有抽奖信息
+    list = listLott(configData["users"][0]["cookieDatas"], endtime, starttime) #返回自己动态里从starttime到endtime的所有抽奖信息
     article = Article(configData["cookieDatas"][0], "互动抽奖系列--每日一抽") #创建B站专栏,并设置标题
     article.DoNotDel = True #在程序退出时不删除创建的文章草稿，文章草稿可在article.getAid(True)返回的网址查看，修改，提交
     content = buildContent(article, list) #创建文章内容

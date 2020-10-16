@@ -45,8 +45,8 @@ def main(*args):
     with open('config/config.json','r',encoding='utf-8') as fp:
         configData = json.load(fp)
 
-    for x in configData["cookieDatas"]:
-        bili_topic_repost(x, topiclist, (start_time, end_time))
+    for x in configData["users"]:
+        bili_topic_repost(x["cookieDatas"], topiclist, (start_time, end_time))
 
 if __name__=="__main__":
     main()

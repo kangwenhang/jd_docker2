@@ -12,7 +12,7 @@ path = path.replace('\\', '/')
 if co.upper() == 'Y':
     with open('config/config.json','r',encoding='utf-8') as fp:
         configData = json.load(fp)
-    mag = Manga(id, configData["cookieDatas"][0])
+    mag = Manga(id, configData["users"][0]["cookieDatas"])
 else:
     mag = Manga(id)
 

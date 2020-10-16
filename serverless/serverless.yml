@@ -1,21 +1,21 @@
 #组件信息
 app: bilibili
 component: scf # (必填) 引用 component 的名称，当前用到的是 tencent-scf 组件
-name: silver2coin # (必填) 创建的实例名称，请修改成您的实例名称
+name: BiliExp # (必填) 创建的实例名称，请修改成您的实例名称
 
-#自动用银瓜子兑换硬币
+#B站自动领取经验
 inputs:
-  name: ${app}-silver2coin #函数名称
+  name: ${app}-BiliExp #函数名称
   #namespace: bilibili
-  src: ../  #代码路径
-  handler: silver2coin.main #入口
+  src: ./  #代码路径
+  handler: BiliExp.main #入口
   runtime: Python3.6 # 云函数运行时的环境
   region: ap-shanghai # 云函数所在区域
-  description: '自动用银瓜子兑换硬币'
-  timeout: 60
+  description: 'B站经验脚本'
+  timeout: 900
   events: # 触发器
     - timer: # 定时触发器
         name: #触发器名称，默认timer-${name}-${stage}
         parameters:
-          cronExpression: '0 0 19 * * * *'
+          cronExpression: '0 0 12 * * * *' #中午12点
           enable: true

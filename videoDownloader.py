@@ -26,7 +26,7 @@ else:
     video = video_list[P-1]
 
 if configData["cookieDatas"][0]['SESSDATA']:
-    video_stream_list = video.allStream(configData["cookieDatas"][1], reverse_proxy=ReverseProxy)
+    video_stream_list = video.allStream(configData["users"][0]["cookieDatas"], reverse_proxy=ReverseProxy)
 else:
     video_stream_list = video.allStream(reverse_proxy=ReverseProxy)
 

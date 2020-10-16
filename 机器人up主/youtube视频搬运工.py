@@ -21,7 +21,7 @@ if itag:
 else:
     filename = video.streams.get_by_itag(22).download()
 
-bilivideo = VideoUploader(configData["cookieDatas"][0]) #创建B站视频发布任务
+bilivideo = VideoUploader(configData["users"][0]["cookieDatas"]) #创建B站视频发布任务
 print(f'开始将{filename}上传至B站，请耐心等待')
 vd = bilivideo.uploadFile(filename) #上传视频
 if vd["filename"] == "":
