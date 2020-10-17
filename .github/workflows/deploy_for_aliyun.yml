@@ -1,0 +1,60 @@
+name: 'deploy for aliyun'
+
+on:
+  workflow_dispatch:
+  watch:
+    types: started
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: 配置用户信息(必须先配置secrets)并生成配置文件config.json
+      run: |
+        string='${{ secrets.advconfig }}'
+        if [ -n "$string" ]; then
+        echo "$string" > ./config/config.json
+        echo "成功将secrets(advconfig)内容输出到配置文件config.json"
+        exit 0
+        fi
+        echo "未填写secrets(advconfig)尝试读取secrets(biliconfig)"
+        string='${{ secrets.biliconfig }}'
+        if [ -z "$string" ]; then
+        echo "secrets(biliconfig)未填写"
+        exit -1
+        fi
+        array=(${string})
+        sed -i "s/账号SESSDATA/${array[0]}/g" ./config/config.json
+        sed -i "s/账号bili_jct/${array[1]}/g" ./config/config.json
+        sed -i "s/账号uid/${array[2]}/g" ./config/config.json
+        echo "成功用secrets(biliconfig)生成配置文件config.json"
+
+    - name: 安装依赖模块(aiohttp)
+      run: |
+        sudo -H pip3 install --upgrade pip
+        sudo -H pip3 install setuptools
+        mkdir other_models
+        sudo -H pip3 install -t ./other_models aiohttp
+
+    - name: 下载Funcraft(阿里云部署工具)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y unzip zip
+        wget --no-check-certificate -O fun-linux.zip https://gosspublic.alicdn.com/fun/fun-v3.6.14-linux.zip
+        unzip fun-linux.zip
+        sudo mv fun-*-linux /usr/local/bin/fun
+
+    - name: 打包所有云函数文件(代码+依赖模块)
+      run: |
+        zip -m ./upload.zip ./BiliExp.py ./tasks/* ./config/*.json ./models/asyncBiliApi.py ./other_models/*
+
+    - name: 部署至阿里云
+      run: fun deploy -t ./serverless/aliyun_serverless.yml
+      env:
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          REGION: cn-shanghai
+          ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
+          ACCESS_KEY_SECRET: ${{ secrets.ACCESS_KEY_SECRET }}
