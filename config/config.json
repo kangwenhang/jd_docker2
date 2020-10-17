@@ -17,11 +17,12 @@
         "lottery_task": {/* 互动抽奖转发，范围是当天中午12点到昨天中午12点自己动态中的互动抽奖 */
             "enable": true,
             "reply": "从未中奖，从未放弃[doge]",/* 回复原动态评论 */
-            "repost": "从未中奖，从未放弃[doge]"/* 转到自己动态的评论 */
+            "repost": "从未中奖，从未放弃[doge],"/* 转到自己动态的评论 */
+            "keywords": ["#抽奖#", "#互动抽奖#"]
         },
         "clean_dynamic_task": {/* 清理自己的动态，包括过期抽奖，失效动态 */
             "enable": true,
-            "black_keywords": ["#抽奖#", "#互动抽奖#"]/* 黑名单关键字 */
+            "black_keywords": []/* 黑名单关键字 */
         },
         "manga_sign_task": true,/* 漫画签到 */
         "exchangeCoupons_task": {/* 漫画积分兑换福利券，请保证程序在中午12点整启动 */

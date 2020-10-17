@@ -1,5 +1,6 @@
 from models.asyncBiliApi import asyncBiliApi
-import logging
+import logging, json
+from tasks.import_once import now_time
 
 async def clean_dynamic_task(biliapi: asyncBiliApi,
                        task_config: dict
@@ -31,10 +32,16 @@ async def clean_dynamic_task(biliapi: asyncBiliApi,
             if 'origin' in card:
                 origin = json.loads(card["origin"])
                 if 'item' in origin and 'description' in origin["item"]:
-                    text = origin["item"]["description"]
-                    for x in task_config["black_keywords"]:
-                        if x in text:
-                            logging.info(f'{biliapi.name}: 已删除id为{dyid}的动态，原因为：包含黑名单关键字{x}')
-                            continue
+                    if 'description' in card["item"]:
+                        text = origin["item"]["description"]
+                    elif 'content' in card["item"]:
+                        text = card["item"]["content"]
+                    else:
+                        text = None
+                    if text:
+                        for x in task_config["black_keywords"]:
+                            if x in text:
+                                logging.info(f'{biliapi.name}: 已删除id为{dyid}的动态，原因为：包含黑名单关键字{x}')
+                                continue
     except Exception as e: 
         logging.warning(f'{biliapi.name}: 获取动态列表、异常，原因为{str(e)}，跳过动态清理')

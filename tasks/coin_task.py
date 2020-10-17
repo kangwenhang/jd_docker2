@@ -1,6 +1,6 @@
 from models.asyncBiliApi import asyncBiliApi
 from tasks.import_once import get_ids
-import logging
+import logging, asyncio
 
 async def coin_task(biliapi: asyncBiliApi, 
                     task_config: dict

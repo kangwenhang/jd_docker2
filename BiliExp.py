@@ -14,7 +14,7 @@ def push_message(SCKEY=None,
     log = log_stream.getvalue()
     import urllib
     if SCKEY:
-        data_string = urllib.parse.urlencode({"text": "B站经验脚本消息推送","desp": log})
+        data_string = urllib.parse.urlencode({"text": "B站经验脚本消息推送","desp": log.replace("\n","\n\n")})
         urllib.request.urlopen(f'https://sc.ftqq.com/{SCKEY}.send', data=data_string.encode())
     if email:
         data_string = urllib.parse.urlencode({"address":email, "name": "B站经验脚本消息推送", "certno": log.replace("\n","<br>")})
