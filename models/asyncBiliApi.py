@@ -676,6 +676,86 @@ class asyncBiliApi(object):
             ret = await r.json()
         return ret
 
+    async def juryInfo(self) -> dict:
+        '''
+        取当前账户风纪委员状态
+        '''
+        url = 'https://api.bilibili.com/x/credit/jury/jury'
+        async with self._session.get(url, verify_ssl=False) as r:
+            ret = await r.json()
+        return ret
+
+    async def juryCaseObtain(self) -> dict:
+        '''
+        拉取一个案件用于风纪委员投票
+        '''
+        url = 'https://api.bilibili.com/x/credit/jury/caseObtain'
+        post_data = {
+            "csrf": self._bili_jct
+            }
+        async with self._session.post(url, data=post_data, verify_ssl=False) as r:
+            ret = await r.json()
+        return ret
+
+    async def juryVote(self,
+                       cid: int,
+                       **kwargs #非必选参数太多以可变参数列表传入
+                       ) -> dict:
+        '''
+        风纪委员投票
+        cid int 案件ID
+        以下为可选参数，如果需要必须用参数名称的方式调用本函数
+        vote int 投票类型 0 未投票；1 封禁；2 否；3 弃权；4 删除
+        content str 理由
+        likes list[int] 整数数组，支持的观点
+        hates list[int] 整数数组，反对的观点
+        attr int 是否匿名 0 匿名；1 不匿名
+        apply_type int 是否更改原因 0 保持原来原因；1 投票给新原因
+        origin_reason int 原始原因
+        apply_reason int 新原因
+            1 刷屏
+            2 抢楼
+            3 发布色情低俗信息
+            4 发布赌博诈骗信息
+            5 发布违禁相关信息
+            6 发布垃圾广告信息
+            7 发布人身攻击言论
+            8 发布侵犯他人隐私信息
+            9 发布引战言论
+            10 发布剧透信息
+            11 恶意添加无关标签
+            12 恶意删除他人标签
+            13 发布色情信息
+            14 发布低俗信息
+            15 发布暴力血腥信息
+            16 涉及恶意投稿行为
+            17 发布非法网站信息
+            18 发布传播不实信息
+            19 发布怂恿教唆信息
+            20 恶意刷屏
+            21 账号违规
+            22 恶意抄袭
+            23 冒充自制原创
+            24 发布青少年不良内容
+            25 破坏网络安全
+            26 发布虚假误导信息
+            27 仿冒官方认证账号
+            28 发布不适宜内容
+            29 违反运营规则
+            30 恶意创建话题
+            31 发布违规抽奖
+            32 恶意冒充他人
+        '''
+        url = 'https://api.bilibili.com/x/credit/jury/vote'
+        post_data = {
+            "cid": cid,
+            "csrf": self._bili_jct,
+            **kwargs #所有可选参数
+            }
+        async with self._session.post(url, data=post_data, verify_ssl=False) as r:
+            ret = await r.json()
+        return ret
+
     async def __aenter__(self) -> 'aioBiliClient':
         return self
 
