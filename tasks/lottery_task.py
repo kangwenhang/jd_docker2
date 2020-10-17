@@ -38,11 +38,12 @@ async def lottery_task(biliapi: asyncBiliApi,
                                 uname = x["desc"]["user_profile"]["info"]["uname"]  #动态的主人的用户名
                                 dyid = x["desc"]["dynamic_id"]
                                 try:
+                                    oid = (await biliapi.getDynamicDetail(dyid))["data"]["card"]["desc"]["rid"]
                                     await biliapi.dynamicReplyAdd(oid, task_config["reply"])
                                     await biliapi.dynamicRepostReply(dyid, task_config["repost"])
                                     logging.info(f'{biliapi.name}: 转发关键字动态(用户名:{uname},动态id:{dyid})成功')
                                 except Exception as e: 
-                                    logging.info(f'{biliapi.name}: 转发关键字动态(用户名:{uname},动态id:{dyid})异常，原因为{str(e)}')
+                                    logging.warning(f'{biliapi.name}: 转发关键字动态(用户名:{uname},动态id:{dyid})异常，原因为{str(e)}')
                                 flag = True
                                 break
                     if flag:
