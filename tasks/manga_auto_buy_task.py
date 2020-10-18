@@ -17,7 +17,7 @@ async def manga_auto_buy_task(biliapi: asyncBiliApi,
 
     async def _get_filter_by_favorite() -> str:
         '''通过漫画关注列表获取filter字符串'''
-        _list = await biliapi.mangaListFavorite()["data"]
+        _list = (await biliapi.mangaListFavorite())["data"]
         result = ''
         for x in _list:
             result = f'{result};{x["comic_id"]}|1-'
@@ -67,7 +67,7 @@ async def manga_auto_buy_task(biliapi: asyncBiliApi,
     except Exception as e: 
         logging.warning(f'{biliapi.name}: 获取漫读劵数量失败，原因为:{str(e)}，跳过漫画兑换')
         return
-    
+
     if coupons_will_expire == 0:
         logging.info(f'{biliapi.name}: 没有即将过期的漫读劵，跳过购买')
         return
@@ -76,13 +76,13 @@ async def manga_auto_buy_task(biliapi: asyncBiliApi,
         buy_list = _filter2list(task_config["filter"])
     elif task_config["mode"] == 1:
         try:
-            buy_list = _filter2list(await _get_filter_by_favorite())
+            buy_list = _filter2list((await _get_filter_by_favorite()))
         except Exception as e: 
-            logging.warning('{biliapi.name}: 获取追漫列表失败，原因为:{str(e)}，跳过漫画兑换')
+            logging.warning(f'{biliapi.name}: 获取追漫列表失败，原因为:{str(e)}，跳过漫画兑换')
             return
 
     if len(buy_list) == 0:
-        logging.info('{biliapi.name}: 没有需要购买的漫画，跳过消费即将过期漫读劵')
+        logging.info('f{biliapi.name}: 没有需要购买的漫画，跳过消费即将过期漫读劵')
         return
 
     for x in buy_list:
