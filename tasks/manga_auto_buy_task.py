@@ -1,7 +1,7 @@
-from models.asyncBiliApi import asyncBiliApi
+from BiliClient import asyncbili
 import logging
 
-async def manga_auto_buy_task(biliapi: asyncBiliApi, 
+async def manga_auto_buy_task(biliapi: asyncbili, 
                               task_config: dict #任务配置
                               ) -> None: 
 

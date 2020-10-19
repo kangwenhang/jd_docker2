@@ -1,8 +1,8 @@
-from models.asyncBiliApi import asyncBiliApi
+from BiliClient import asyncbili
 import logging, json
-from tasks.import_once import now_time
+from .import_once import now_time
 
-async def clean_dynamic_task(biliapi: asyncBiliApi,
+async def clean_dynamic_task(biliapi: asyncbili,
                        task_config: dict
                        ) -> None:
     try:

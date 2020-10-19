@@ -1,6 +1,6 @@
-from models.asyncBiliApi import asyncBiliApi
+from BiliClient import asyncbili
 
-async def exchangeCoupons_task(biliapi: asyncBiliApi, 
+async def exchangeCoupons_task(biliapi: asyncbili, 
                          task_config: dict
                          ):
     '''积分兑换福利劵'''

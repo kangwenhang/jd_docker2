@@ -1,7 +1,7 @@
-from models.asyncBiliApi import asyncBiliApi
+from BiliClient import asyncbili
 import logging
 
-async def manga_sign_task(biliapi: asyncBiliApi) -> None:
+async def manga_sign_task(biliapi: asyncbili) -> None:
     try:
         ret = await biliapi.mangaClockIn()
         if(ret["code"] == 0):

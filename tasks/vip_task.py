@@ -1,8 +1,8 @@
-from models.asyncBiliApi import asyncBiliApi
-from tasks.import_once import taday
+from BiliClient import asyncbili
+from .import_once import taday
 import logging
 
-async def vip_task(biliapi: asyncBiliApi) -> None:
+async def vip_task(biliapi: asyncbili) -> None:
     if taday == 1:
         try:
             ret = await biliapi.vipPrivilegeReceive(1)

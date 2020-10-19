@@ -46,10 +46,9 @@ jobs:
       run: |
         sudo mv BiliExp.py ./serverless
         sudo mv ./tasks ./serverless
+        sudo mv ./BiliClient ./serverless
         sudo mv ./other_models/* ./serverless
-        sudo mkdir ./serverless/models
         sudo mkdir ./serverless/config
-        sudo mv ./models/asyncBiliApi.py ./serverless/models
         sudo mv ./config/*.json ./serverless/config
         cd ./serverless
         sudo rm -f aliyun_serverless.yml

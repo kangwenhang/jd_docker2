@@ -1,7 +1,7 @@
-from models.asyncBiliApi import asyncBiliApi
+from BiliClient import asyncbili
 import logging
 
-async def xliveSign_task(biliapi: asyncBiliApi) -> None:
+async def xliveSign_task(biliapi: asyncbili) -> None:
     try:
         ret = await biliapi.xliveSign()
         if ret["code"] == 0:

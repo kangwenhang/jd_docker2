@@ -1,12 +1,12 @@
-from models.asyncBiliApi import asyncBiliApi
-import asyncio, json, logging
-
-with open('config/activity.json','r',encoding='utf-8') as fp:
-    activityData = json.load(fp)
+from BiliClient import asyncbili
+import asyncio, logging
 
 activity_task_lock = asyncio.Lock()
-async def activity_task(biliapi: asyncBiliApi) -> None:
-    for x in activityData:
+async def activity_task(biliapi: asyncbili,
+                        task_config: dict
+                        ) -> None:
+
+    for x in task_config["activities"]:
         for y in range(2, 5):
             try:
                 await biliapi.activityAddTimes(x["sid"], y) #执行增加抽奖次数操作,一般是分享转发

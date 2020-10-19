@@ -1,7 +1,7 @@
-from models.asyncBiliApi import asyncBiliApi
+from BiliClient import asyncbili
 import logging
 
-async def silver2coin_task(biliapi: asyncBiliApi) -> None:
+async def silver2coin_task(biliapi: asyncbili) -> None:
    try:
        ret = await biliapi.xliveGetStatus()
        if ret["code"] != 0:

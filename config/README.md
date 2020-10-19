@@ -235,6 +235,3 @@ config
       <td class=xl6627348 width=102 style='width:76pt'>······</td>
      </tr>
     </table>
-    
-* 2.activity.json(转盘抽奖活动配置文件)
-    文件为活动的数组，每个活动包含name(可为空)与sid(必须)两个属性。sid在活动页面查看源代码在LotteryId处可查到

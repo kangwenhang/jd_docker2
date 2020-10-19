@@ -1,8 +1,8 @@
-from models.asyncBiliApi import asyncBiliApi
-from tasks.import_once import taday
+from BiliClient import asyncbili
+from .import_once import taday
 import logging
 
-async def manga_vip_reward_task(biliapi: asyncBiliApi,
+async def manga_vip_reward_task(biliapi: asyncbili,
                                 task_config: dict
                                 ) -> None:
     if not taday in task_config["days"]:

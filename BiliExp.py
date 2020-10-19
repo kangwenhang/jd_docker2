@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import asyncio, json, time, logging, sys, re, io
-from models.asyncBiliApi import asyncBiliApi
-#from tasks import * #所有任务模块通过动态加载
+from getopt import getopt
+from BiliClient import asyncbili
+import tasks
 
 def push_message(SCKEY=None,
                  email=None
@@ -21,8 +22,7 @@ def push_message(SCKEY=None,
 async def run_user_tasks(user,           #用户配置
                         default          #默认配置
                         ) -> None:
-
-    async with asyncBiliApi() as biliapi:
+    async with asyncbili() as biliapi:
         try:
             if not await biliapi.login_by_cookie(user["cookieDatas"]):
                 logging.warning(f'id为{user["cookieDatas"]["DedeUserID"]}的账户cookie失效，跳过此账户后续操作')
@@ -31,31 +31,27 @@ async def run_user_tasks(user,           #用户配置
             logging.warning(f'登录验证id为{user["cookieDatas"]["DedeUserID"]}的账户失败，原因为{str(e)}，跳过此账户后续操作')
             return
 
-        tasks = []
+        task_array = [] #存放本账户所有任务
 
-        for task in default: #遍历任务列表，把需要运行的任务添加到tasks
+        for task in default: #遍历任务列表，把需要运行的任务添加到task_array
             if isinstance(default[task], bool):
                 if task in user["tasks"]:
                     if user["tasks"][task]:
-                        task_module = __import__(f'tasks.{task}') #载入任务模块
-                        task_function = getattr(getattr(task_module, task), task)#载入任务入口方法
-                        tasks.append(task_function(biliapi))               #放进任务列表
+                        task_function = getattr(tasks, task)#载入任务入口方法
+                        task_array.append(task_function(biliapi))               #放进任务列表
                 elif default[task]:
-                    task_module = __import__(f'tasks.{task}')
-                    task_function = getattr(getattr(task_module, task), task)
-                    tasks.append(task_function(biliapi))
+                    task_function = getattr(tasks, task)
+                    task_array.append(task_function(biliapi))
             elif isinstance(default[task], dict):
                 if task in user["tasks"]:
                     if user["tasks"][task]["enable"]:
-                        task_module = __import__(f'tasks.{task}')
-                        task_function = getattr(getattr(task_module, task), task)
-                        tasks.append(task_function(biliapi, user["tasks"][task]))
+                        task_function = getattr(tasks, task)
+                        task_array.append(task_function(biliapi, user["tasks"][task]))
                 elif default[task]["enable"]:
-                    task_module = __import__(f'tasks.{task}')
-                    task_function = getattr(getattr(task_module, task), task)
-                    tasks.append(task_function(biliapi, default[task]))
-        if tasks:
-            await asyncio.wait(tasks)        #异步等待所有任务完成
+                    task_function = getattr(tasks, task)
+                    task_array.append(task_function(biliapi, default[task]))
+        if task_array:
+            await asyncio.wait(task_array)        #异步等待所有任务完成
 
 def initlog(log_file: str, log_console: bool, log_stream: bool):
     '''初始化日志参数'''
@@ -78,17 +74,25 @@ def initlog(log_file: str, log_console: bool, log_stream: bool):
          file_handler.setFormatter(formatter1)
          logger.addHandler(file_handler)
 
-def main(*args):
+def main(*args, **kwargs):
+    if 'config' in kwargs:
+        config = kwargs["config"]
+    else:
+        config = './config/config.json'
     try:
-        with open('config/config.json','r',encoding='utf-8') as fp:
+        with open(config,'r',encoding='utf-8') as fp:
             configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
     except Exception as e: 
         print(f'配置加载异常，原因为{str(e)}，退出程序')
         sys.exit(6)
-    
+
+    if 'log' in kwargs:
+        logfile = kwargs["log"]
+    else:
+        logfile = configData["log_file"]
     try:
         is_push_message = bool(configData["email"] or configData["SCKEY"])
-        initlog(configData["log_file"], configData["log_console"], is_push_message)
+        initlog(logfile, configData["log_console"], is_push_message)
     except Exception as e: 
         print(f'日志配置异常，原因为{str(e)}')
 
@@ -103,4 +107,18 @@ def main(*args):
         except Exception as e: 
             logging.error(f'消息推送异常，原因为{str(e)}')
 
-__name__=="__main__" and main()
+if __name__=="__main__":
+    kwargs = {}
+    opts, args = getopt(sys.argv[1:], "hvc:l:",["configfile=","logfile="])
+    for opt, arg in opts:
+        if opt in ('-c','--configfile'):
+            kwargs["config"] = arg
+        elif opt in ('-l','--logfile'):
+            kwargs["log"] = arg
+        elif opt == '-h':
+            print('BliExp -c <configfile> -l <logfile>')
+            sys.exit()
+        elif opt == '-v':
+            print('BiliExp v1.0.0')
+            sys.exit()
+    main(**kwargs)

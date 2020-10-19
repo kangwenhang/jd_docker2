@@ -1,8 +1,8 @@
-from models.asyncBiliApi import asyncBiliApi
-from tasks.import_once import get_ids
+from BiliClient import asyncbili
+from .import_once import get_ids
 import logging, asyncio
 
-async def coin_task(biliapi: asyncBiliApi, 
+async def coin_task(biliapi: asyncbili, 
                     task_config: dict
                     ) -> None:
 

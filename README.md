@@ -14,7 +14,7 @@ BiliExp
 </div>
 
 ## 主要功能
-**一、B站自动操作脚本(云函数)**
+**一、B站自动操作脚本**
 
 * [x] 自动获取经验(投币、点赞、分享视频) 
 * [x] 自动转发互动抽奖并评论(自己关注的up主,目前没有自动关注功能,需要可以提issue)
@@ -48,6 +48,19 @@ BiliExp
 * [x] 使用账号cookie下载大会员视频
 * [x] 支持下载港澳台番剧(内置一个反向代理接口，接口源码见"player_proxy"文件夹，支持云函数部署此接口)
 </br>
+
+# 目录
+
+- [主要功能](#主要功能)
+- [目录](#目录)
+- [使用说明(仅自动操作脚本部分)](#使用方式仅自动操作脚本部分)
+  - [一、只使用Actions(推荐)](#方式一推荐只使用github-actions)
+  - [二、使用腾讯云函数(Actions部署)](#方式二使用腾讯云函数)
+  - [三、使用阿里云函数(Actions部署)(不推荐)](#方式三不推荐使用阿里云函数)
+  - [四、windows本地部署(依靠任务计划启动)](#方式四windows本地部署)
+  - [五、linux本地部署(依靠crontab启动,shell自动下载安装)](#方式五linux本地部署)
+- [更新日志](#更新日志)
+- [获得B站账户cookies方法](#获得cookies方法)
 
 </br>
 
@@ -120,7 +133,38 @@ BiliExp
     *  2.2添加完上面4个"Secrets"后，进入"Actions" --》"deploy for aliyun"，点击右边的"Run workflow"即可部署至阿里云函数(如果出错请在红叉右边点击"deploy for aliyun"查看部署任务的输出信息找出错误原因)
         *  2.2.1 首次fork可能要去actions里面同意使用actions条款，如果"Actions"里面没有"deploy for aliyun"，点一下右上角的"star"，"deploy for aliyun"就会出现在"Actions"里面
 
+### 方式四、windows本地部署
+
+* 1.准备
+    *  1.1一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图),可选：SCKEY，email用于微信或邮箱的消息推送
+    *  1.2进入右边的release,下载BiliExp-win32_64开头的压缩包
+
+* 2.部署
+    *  2.1解压步骤1.2下载的压缩包，并放置到合适位置(比如E:\Program Files)
+    *  2.2进入解压后产生的config文件夹，配置config.json文件(包含功能的启用和账号cookie的配置)
+    *  2.3退出config文件夹返回上层，运行setup_for_windows.bat文件(需要管理员权限)，按照提示即可完成安装。脚本将会在每天12:00启动(依赖于计划任务)。
+	
+### 方式五、linux本地部署
+
+* 1.准备
+    *  1.1一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图),可选：SCKEY，email用于微信或邮箱的消息推送
+
+* 2.部署
+    *  2.1执行如下命令，并按照提示安装
+	      ```
+		  wget https://glare.now.sh/happy888888/BiliExp/BiliExp-Linux-64 && mv BiliExp-Linux-64* BiliExp.tar && tar xvf BiliExp.tar && cd BiliExp && sudo chmod 755 setup_for_linux.sh && sudo ./setup_for_linux.sh
+		  ```
+    *  2.2安装成功后，可去/etc/BiliExp/config.json文件中进行详细配置，脚本将会在每天12:00启动(依赖于crontab)。
+
 </br></br></br>
+
+## 更新日志
+
+### 2020/10/20更新
+
+* 1.发布release版
+
+</br></br>
 
 ### 2020/10/16更新
 
@@ -233,8 +277,8 @@ BiliExp
 * 4.利用B站专栏的图片上传接口可能能实现把B站当做免费图床？(大雾)？
 
 </br></br>
-    
 
+#### 获得cookies方法
 B站操作需要的cookie数据可以按照以下方式获取
 浏览器打开B站主页--》按F12打开开发者工具--》application--》cookies
 <div align="center"><img src="https://s1.ax1x.com/2020/09/23/wjM09e.png" width="800" height="450" title="获取cookies示例"></div>

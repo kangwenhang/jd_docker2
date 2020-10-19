@@ -1,7 +1,7 @@
-from models.asyncBiliApi import asyncBiliApi
+from BiliClient import asyncbili
 import logging
 
-async def judgement_task(biliapi: asyncBiliApi, 
+async def judgement_task(biliapi: asyncbili, 
                          task_config: dict
                          ) -> None:
     '''风纪委员会投票任务'''

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from models.Manga import Manga
-import json
+from BiliClient import MangaDownloader
+import json, re
 
 id = int(input('请输入B站漫画id(整数，不带mc前缀)：'))
 path = input('请输入保存路径：')
@@ -11,10 +11,10 @@ path = path.replace('\\', '/')
 
 if co.upper() == 'Y':
     with open('config/config.json','r',encoding='utf-8') as fp:
-        configData = json.load(fp)
-    mag = Manga(id, configData["users"][0]["cookieDatas"])
+        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
+    mag = MangaDownloader(id, configData["users"][0]["cookieDatas"])
 else:
-    mag = Manga(id)
+    mag = MangaDownloader(id)
 
 mag.downloadAll(path)
 print('下载任务结束')

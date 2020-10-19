@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from models.Biliapi import BiliWebApi
-from models.Article import Article
-import time, json
+from BiliClient import bili
+from BiliClient import Article
+import time, json, re
 
 # 本程序为B站专栏机器人，可以收集整理动态中一段时间内的抽奖消息，并整理
 # 后发布到B站专栏中，效果看例子 https://www.bilibili.com/read/cv7055733
@@ -26,7 +26,7 @@ def listLott(data, endTime, startTime):
         return array
 
     try:
-        biliapi = BiliWebApi(data)
+        biliapi = bili(data)
     except Exception as e: 
         print(f'登录验证id为{data["DedeUserID"]}的账户失败，原因为{str(e)}，跳过后续所有操作')
         return
@@ -78,14 +78,13 @@ def buildContent(article, list):
 
 def main(*args):
     with open('config/config.json','r',encoding='utf-8') as fp:
-        configData = json.load(fp)
+        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
 
     now_time = int(time.time())
     endtime = now_time - now_time % 86400 + time.timezone #今天0点
-    starttime = time1 - 86400 #昨天0点
+    starttime = endtime - 86400 #昨天0点
     list = listLott(configData["users"][0]["cookieDatas"], endtime, starttime) #返回自己动态里从starttime到endtime的所有抽奖信息
     article = Article(configData["cookieDatas"][0], "互动抽奖系列--每日一抽") #创建B站专栏,并设置标题
-    article.DoNotDel = True #在程序退出时不删除创建的文章草稿，文章草稿可在article.getAid(True)返回的网址查看，修改，提交
     content = buildContent(article, list) #创建文章内容
     article.setContent(content.output()) #将文章内容保存至专栏
 

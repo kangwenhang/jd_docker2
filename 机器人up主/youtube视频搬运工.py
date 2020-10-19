@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from models.Video import VideoUploader
-import time, json
+from BiliClient import VideoUploader
+import time, json, re
 from pytube import YouTube
 
 with open('config/config.json','r',encoding='utf-8') as fp:
-        configData = json.load(fp)
+        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
 
 url = input("请粘贴youtube视频完整链接后按回车：")
 title = input("请输入B站发布标题(直接回车默认为视频标题)：")

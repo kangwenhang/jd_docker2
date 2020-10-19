@@ -1,8 +1,8 @@
-from models.asyncBiliApi import asyncBiliApi
-from tasks.import_once import now_time
+from BiliClient import asyncbili
+from .import_once import now_time
 import logging
 
-async def xlive_bag_send_task(biliapi: asyncBiliApi):
+async def xlive_bag_send_task(biliapi: asyncbili):
     try:
          room_id = (await biliapi.xliveGetRecommendList())["data"]["list"][6]["roomid"]
          uid = (await biliapi.xliveGetRoomInfo(room_id))["data"]["room_info"]["uid"]

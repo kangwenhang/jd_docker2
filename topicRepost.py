@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from models.Biliapi import BiliWebApi
-import json, time
+from BiliClient import bili
+import json, time, re
 
 topiclist = ('抽奖','动态抽奖','互动抽奖')#话题列表
 islike = True #转发前是否关注
@@ -14,11 +14,16 @@ def bili_topic_repost(data, list, time):
     '''转发指定时间段内的话题'''
     alr = []#记录已经转发的动态用于去重
     try:
-        biliapi = BiliWebApi(data)
+        biliapi = bili()
+        bili.login_by_cookie(data)
     except Exception as e: 
         print(f'登录验证id为{data["DedeUserID"]}的账户失败，原因为{str(e)}，跳过后续所有操作')
         return
     
+    if not biliapi.islogin:
+        print(f'id为{data["DedeUserID"]}的账户登录失效，跳过后续所有操作')
+        return
+
     for tpn in list:
         topic = biliapi.getTopicList(tpn)
         for x in topic:
@@ -43,7 +48,7 @@ def bili_topic_repost(data, list, time):
 
 def main(*args):
     with open('config/config.json','r',encoding='utf-8') as fp:
-        configData = json.load(fp)
+        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
 
     for x in configData["users"]:
         bili_topic_repost(x["cookieDatas"], topiclist, (start_time, end_time))

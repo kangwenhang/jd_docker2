@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
-import requests
-import json
-import re
-from models.Biliapi import BiliWebApi
-from models.Article import Article
+import requests, json, re
+from BiliClient import Article
 
 with open('config/config.json','r',encoding='utf-8') as fp:
-    configData = json.load(fp)
+    configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
 
 num = 18 #只爬取18张图,可以调大，如果中间网络异常会丢失几张图，最终数量可能达不到
 
-biliapi = BiliWebApi(configData["users"][0]["cookieDatas"])
+#创建B站专栏
+article = Article(configData["users"][0]["cookieDatas"], "每日美图") #创建B站专栏草稿,并设置标题
+content = Article.Content() #创建content类编写文章正文
+content.startP().add('所有图片均转载于').startB().add('网络').endB().add('，如有侵权请联系我，我会立即').startB().add('删除').endB().endP().br()
+     #开始一段正文    添加正文           开始加粗  加粗文字  结束加粗                                                           结束一段文字  换行
+
 #下面开始爬取P站图片
 datas = []
 headers = {
@@ -31,19 +33,13 @@ for i in range(num):
         content = session.get(url, headers=headers)
         findurl = re.findall('.*?\"original\":\"(.*?)\"\}.*',content.text)[0]
         content = session.get(findurl, headers=headers) #这里得到P站图片
-        ret = biliapi.articleUpcover(content.content) #这里上传到B站
+        ret = article.articleUpcover(content.content) #这里上传到B站
     except:
         continue
     tourl = ret["data"]["url"]
     tourl = tourl.replace("http", "https")
     datas.append({"url":tourl,"title":title}) #将上传到B站的url和图片的标题保存
 
-#下面开始发表B站专栏
-article = Article(configData["users"][0]["cookieDatas"], "每日美图") #创建B站专栏草稿,并设置标题
-article.DoNotDel = True #在程序退出时不删除创建的文章草稿，文章草稿可在article.getAid(True)返回的网址查看，修改，提交
-content = Article.Content() #创建content类编写文章正文
-content.startP().add('所有图片均转载于').startB().add('网络').endB().add('，如有侵权请联系我，我会立即').startB().add('删除').endB().endP().br()
-     #开始一段正文    添加正文           开始加粗  加粗文字  结束加粗                                                           结束一段文字  换行
 i = 0
 for x in datas:
     i += 1

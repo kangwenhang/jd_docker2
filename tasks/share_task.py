@@ -1,8 +1,8 @@
-from models.asyncBiliApi import asyncBiliApi
-from tasks.import_once import get_ids
+from BiliClient import asyncbili
+from .import_once import get_ids
 import logging
 
-async def share_task(biliapi: asyncBiliApi) -> None:
+async def share_task(biliapi: asyncbili) -> None:
     try:
         ret = await get_ids(biliapi)
     except Exception as e:

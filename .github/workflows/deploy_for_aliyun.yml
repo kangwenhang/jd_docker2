@@ -49,7 +49,7 @@ jobs:
 
     - name: 打包所有云函数文件(代码+依赖模块)
       run: |
-        zip -m ./upload.zip ./BiliExp.py ./tasks/* ./config/*.json ./models/asyncBiliApi.py ./other_models/*
+        zip -m ./upload.zip ./BiliExp.py ./tasks ./config/*.json ./BiliClient ./other_models/*
 
     - name: 部署至阿里云
       run: fun deploy -t ./serverless/aliyun_serverless.yml

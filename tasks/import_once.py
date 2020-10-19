@@ -1,8 +1,8 @@
-from models.asyncBiliApi import asyncBiliApi
+from BiliClient import asyncbili
 import time
 
 ids = None
-async def get_ids(biliapi: asyncBiliApi):
+async def get_ids(biliapi: asyncbili):
     '''全局单例ids，避免重复请求'''
     global ids
     if not ids:

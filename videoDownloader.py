@@ -1,10 +1,7 @@
-from models.Video import VideoDownloader
-import sys, json
+from BiliClient import VideoDownloader
+import sys, json, re
 
 ReverseProxy = 'http://biliapi.8box.top/playerproxy' #解析接口代理
-
-with open('config/config.json','r',encoding='utf-8') as fp:
-    configData = json.load(fp)
 
 def callback(per):
     '''进度条回调'''
@@ -25,10 +22,21 @@ else:
     P = int(input('请输入要下载的分P序号：'))
     video = video_list[P-1]
 
-if configData["cookieDatas"][0]['SESSDATA']:
-    video_stream_list = video.allStream(configData["users"][0]["cookieDatas"], reverse_proxy=ReverseProxy)
+cookie = input('是否加载账号cookie(y/n)：')
+reverse = input('是否使用内部代理(可下载港澳台)(y/n)：')
+
+if cookie.upper() == 'Y':
+    with open('config/config.json','r',encoding='utf-8') as fp:
+        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
+    if reverse.upper() == 'Y':
+        video_stream_list = video.allStream(configData["users"][0]["cookieDatas"], reverse_proxy=ReverseProxy)
+    else:
+        video_stream_list = video.allStream(configData["users"][0]["cookieDatas"])
 else:
-    video_stream_list = video.allStream(reverse_proxy=ReverseProxy)
+    if reverse.upper() == 'Y':
+        video_stream_list = video.allStream(reverse_proxy=ReverseProxy)
+    else:
+        video_stream_list = video.allStream()
 
 for ii in range(len(video_stream_list)):
     print(f'{ii+1}. {video_stream_list[ii]}')
@@ -39,4 +47,3 @@ print('正在下载.....')
 video_stream.download(callback=callback)
 print('\n','结束')
 input('按任意键退出')
-exit(0)
