@@ -67,6 +67,7 @@ BiliExp
   - [三、使用阿里云函数(Actions部署)(不推荐)](#方式三不推荐使用阿里云函数)
   - [四、windows本地部署(依靠任务计划启动)](#方式四windows本地部署)
   - [五、linux本地部署(依靠crontab启动,shell自动下载安装)](#方式五linux本地部署)
+- [使用说明(下载器部分)](#使用方式下载器部分)
 - [更新日志](#更新日志)
 - [获得B站账户cookies方法](#获得cookies方法)
 
@@ -168,6 +169,14 @@ BiliExp
 
 </br></br></br>
 
+## 使用方式(下载器部分)
+
+* 1.转至[release](https://github.com/happy888888/BiliExp/releases) ，下载BiliDownloader，解压。
+* 2.从浏览器获取SESSDATA，bili_jct，DedeUserID这三个参数 ([获得B站账户cookies方法](#获得cookies方法))
+* 3.将上述获取的三个参数填入config文件夹中的config.json文件
+* 4.执行mangaDownloader.exe或videoDownloader.exe开始下载...
+
+</br></br></br>
 ## 更新日志
 
 ### 2020/10/20更新
