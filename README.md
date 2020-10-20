@@ -70,7 +70,15 @@ BiliExp
 - [使用说明(下载器部分)](#使用方式下载器部分)
 - [更新日志](#更新日志)
 - [获得B站账户cookies方法](#获得cookies方法)
-
+- [一些实用的B站PC浏览器辅助小脚本](/browser_assist#这里是一些用于b站的浏览器辅助脚本)
+  - [使用方式(仅适用pc浏览器)](/browser_assist#使用方式)
+  - [脚本](/browser_assist#脚本列表)
+    - [过期抽奖动态删除(目前已集成到自动操作脚本)](/browser_assist#所有过期抽奖动态删除)
+    - [破解专栏不可复制](/browser_assist#b站专栏不可复制破解)
+    - [删除关注up主](/browser_assist#删除关注的up主慎用)
+    - [删除互粉粉丝](/browser_assist#删除互粉的粉丝慎用)
+    - [关注话题页面up主(抽奖话题)](/browser_assist#关注话题页面up主主要是抽奖话题)
+    - [b站自动新人答题](/browser_assist#b站自动答题非原创未测试)
 </br>
 
 ## 使用方式(仅自动操作脚本部分)
