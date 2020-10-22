@@ -9,7 +9,7 @@ async def xlive_bag_send_task(biliapi: asyncbili):
          bagList = (await biliapi.xliveGiftBagList())["data"]["list"]
          ishave = False
          for x in bagList:
-             if x["expire_at"] - now_time < 172800: #礼物到期时间小于2天
+             if x["expire_at"] - now_time < 172800 and x["expire_at"] - now_time > 0: #礼物到期时间小于2天
                  ishave = True
                  ret = await biliapi.xliveBagSend(room_id, uid, x["bag_id"], x["gift_id"], x["gift_num"])
                  if ret["code"] == 0:
