@@ -121,7 +121,7 @@ class asyncBiliApi(object):
         post_data = {
             "platformType": platformType
             }
-        async with self._session.post(url, data=post_data, verify_ssl=False) as r:
+        async with self._session.post(url, json=post_data, verify_ssl=False) as r:
             ret = await r.json()
         return ret
 
