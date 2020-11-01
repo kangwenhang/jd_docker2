@@ -18,8 +18,8 @@ class BiliApi(object):
         '''
         requests.utils.add_dict_to_cookiejar(self._session.cookies, cookieData)
 
-        data = self._session.get("https://api.bilibili.com/x/web-interface/nav").json()
-        if data["code"] != 0:
+        ret = self._session.get("https://api.bilibili.com/x/web-interface/nav").json()
+        if ret["code"] != 0:
             return False
 
         self._islogin = True
@@ -36,7 +36,7 @@ class BiliApi(object):
         self._coin = ret["data"]["money"]
         self._exp = ret["data"]["level_info"]["current_exp"]
 
-        code = self.likeCv(7793107)["code"]
+        code = BiliApi.likeCv(self, 7793107)["code"]
         if code != 0 and code != 65006 and code != -404:
             import warnings
             warnings.warn(f'{self._name}:账号异常，请检查bili_jct参数是否有效或本账号是否被封禁')
@@ -90,7 +90,7 @@ class BiliApi(object):
 
     def getLevel(self):
         "获取登录的账户等级"
-        return self.__level
+        return self._level
 
     def spaceArcSearch(self, uid: int, ps=50, pn=1, tid=0, keyword='', order='pubdate'):
         "取空间投稿信息"
@@ -107,6 +107,20 @@ class BiliApi(object):
         match = re.search( '\"cid\":(.*?),', content.text, 0)
         cid = match.group(1)
         return {"aid": aid, "cid": cid}
+
+    def likeCv(self, cvid: int, type=1) -> dict:
+        '''
+        点赞专栏
+        cvid int 专栏id
+        type int 类型
+        '''
+        url = 'https://api.bilibili.com/x/article/like'
+        post_data = {
+            "id": cvid,
+            "type": type,
+            "csrf": self._bili_jct
+            }
+        return self._session.post(url, post_data).json()
 
     def like(self, aid: int, like=1):
         "点赞视频"
@@ -1008,3 +1022,37 @@ class BiliApi(object):
         content = requests.get(url)
         content.encoding = 'utf-8'
         return content.text
+
+    @staticmethod
+    def bv2av(bvid: str):
+        '''B站bv号转av号'''
+        tr = {'f': 0, 'Z': 1, 'o': 2, 'd': 3, 'R': 4, '9': 5, 'X': 6, 'Q': 7, 'D': 8, 'S': 9, 'U': 10, 'm': 11, '2': 12, '1': 13, 'y': 14, 'C': 15, 'k': 16, 'r': 17, '6': 18, 'z': 19, 'B': 20, 'q': 21, 'i': 22, 'v': 23, 'e': 24, 'Y': 25, 'a': 26, 'h': 27, '8': 28, 'b': 29, 't': 30, '4': 31, 'x': 32, 's': 33, 'W': 34, 'p': 35, 'H': 36, 'n': 37, 'J': 38, 'E': 39, '7': 40, 'j': 41, 'L': 42, '5': 43, 'V': 44, 'G': 45, '3': 46, 'g': 47, 'u': 48, 'M': 49, 'T': 50, 'K': 51, 'N': 52, 'P': 53, 'A': 54, 'w': 55, 'c': 56, 'F': 57}
+        s = (11,10,3,8,4,6)
+        xor = 177451812
+        add = 8728348608
+        r = 0
+        for i in range(6):
+            r += tr[bvid[s[i]]]*58**i
+        return (r - add) ^ xor
+        #return BiliApi.webView(bvid)["data"]["aid"]
+
+    @staticmethod
+    def av2bv(aid: int):
+        '''B站av号转bv号'''
+        table='fZodR9XQDSUm21yCkr6zBqiveYah8bt4xsWpHnJE7jL5VG3guMTKNPAwcF'
+        s = (11,10,3,8,4,6)
+        xor = 177451812
+        add = 8728348608
+        aid = (aid ^ xor) + add
+        r = list('BV1  4 1 7  ')
+        for i in range(6):
+            r[s[i]] = table[aid//58**i%58]
+        return ''.join(r)
+        #return BiliApi.webStat(aid)["data"]["bvid"]
+
+    def close(self):
+        '''关闭'''
+        self._session.close()
+
+    def __del__(self):
+        self.close()
