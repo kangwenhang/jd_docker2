@@ -6,11 +6,13 @@ from .BiliApi import BiliApi as bili
 from .Manga import MangaDownloader as MangaDownloader
 from .Video import VideoUploader as VideoUploader
 from .Video import VideoDownloader as VideoDownloader
+from .Article import Article as Article
 
 __all__ = (
     'asyncbili',
     "bili",
     "MangaDownloader",
     "VideoUploader",
-    "VideoDownloader"
+    "VideoDownloader",
+    "Article"
 )
