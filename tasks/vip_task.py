@@ -9,15 +9,15 @@ async def vip_task(biliapi: asyncbili) -> None:
             if ret["code"] == 0:
                 logging.info(f'{biliapi.name}: 成功领取大会员B币')
             else:
-                logging.warning('{biliapi.name}: 领取大会员B币失败')
+                logging.warning(f'{biliapi.name}: 领取大会员B币失败，信息为({ret["message"]})')
 
             ret = await biliapi.vipPrivilegeReceive(2)
             if ret["code"] == 0:
-                logging.info('{biliapi.name}: 成功领取大会员优惠券')
+                logging.info(f'{biliapi.name}: 成功领取大会员优惠券')
             else:
-                logging.warning('{biliapi.name}: 领取大会员优惠券失败')
+                logging.warning(f'{biliapi.name}: 领取大会员优惠券失败，信息为({ret["message"]})')
         except:
-            logging.warning('{biliapi.name}: 领取大会员权益异常')
+            logging.warning(f'{biliapi.name}: 领取大会员权益异常')
 
     elif taday == 28:
         try:
