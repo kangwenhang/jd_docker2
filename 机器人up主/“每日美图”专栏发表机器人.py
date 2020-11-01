@@ -19,21 +19,19 @@ headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36",
             "Referer": "https://www.pixiv.net/",
             "Accept-Encoding": "gzip, deflate, br",
-            "Cookie": "PHPSESSID=52458727_sAt5kuqMf4cHifp7uVHYA8PzfUcSFhK0"
+            "Cookie": "PHPSESSID=52458727_XCU5bBe4NFv5C79C3TYwJLnRjZxfRslb"
             }
 session = requests.session()
-content = session.get("https://www.pixiv.net/ajax/top/illust?mode=all&lang=zh", headers=headers)
-jsobj = json.loads(content.text)
-list = jsobj["body"]["thumbnails"]["illust"]
+list = session.get("https://www.pixiv.net/ajax/top/illust?mode=all&lang=zh", headers=headers).json()["body"]["thumbnails"]["illust"]
 for i in range(num):
-    id = list[i]["illustId"]
-    title = list[i]["illustTitle"]
+    id = list[i]["id"]
+    title = list[i]["title"]
     url = f'https://www.pixiv.net/artworks/{id}'
     try:
-        content = session.get(url, headers=headers)
-        findurl = re.findall('.*?\"original\":\"(.*?)\"\}.*',content.text)[0]
-        content = session.get(findurl, headers=headers) #这里得到P站图片
-        ret = article.articleUpcover(content.content) #这里上传到B站
+        res = session.get(url, headers=headers)
+        findurl = re.findall('.*?\"original\":\"(.*?)\"\}.*',res.text)[0]
+        res = session.get(findurl, headers=headers) #这里得到P站图片
+        ret = article.articleUpcover(res.content) #这里上传到B站
     except:
         continue
     tourl = ret["data"]["url"]
