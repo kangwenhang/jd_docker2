@@ -1,4 +1,5 @@
 from BiliClient import asyncbili
+import logging
 
 async def exchangeCoupons_task(biliapi: asyncbili, 
                          task_config: dict
