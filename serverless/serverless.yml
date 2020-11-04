@@ -15,7 +15,7 @@ inputs:
   timeout: 900
   events: # 触发器
     - timer: # 定时触发器
-        name: #触发器名称，默认timer-${name}-${stage}
+        name: timer-${name} #触发器名称，默认timer-${name}-${stage}
         parameters:
           cronExpression: '0 0 12 * * * *' #中午12点
           enable: true
