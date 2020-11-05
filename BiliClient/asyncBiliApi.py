@@ -11,36 +11,37 @@ class asyncBiliApi(object):
                 headers = headers
                 )
         
-    async def login_by_cookie(self, cookieData) -> bool:
+    async def login_by_cookie(self, cookieData, checkBanned=True) -> bool:
         '''
         登录并获取账户信息
         cookieData dict 账户cookie
         '''
         self._session.cookie_jar.update_cookies(cookieData)
-        ret = await self.getWebNav()
-        if ret["code"] != 0:
+        await self.refreshInfo()
+        if not self._islogin:
             return False
 
-        self._islogin = True
         if 'bili_jct' in cookieData:
             self._bili_jct = cookieData["bili_jct"]
         else:
             self._bili_jct = ''
 
-        self._name = ret["data"]["uname"]
-        self._uid = ret["data"]["mid"]
-        self._vip = ret["data"]["vipType"]
-        self._level = ret["data"]["level_info"]["current_level"]
-        self._verified = ret["data"]["mobile_verified"]
-        self._coin = ret["data"]["money"]
-        self._exp = ret["data"]["level_info"]["current_exp"]
-
-        code = (await self.likeCv(7793107))["code"]
-        if code != 0 and code != 65006 and code != -404:
-            import warnings
-            warnings.warn(f'{self._name}:账号异常，请检查bili_jct参数是否有效或本账号是否被封禁')
+        self._isBanned = None
+        if checkBanned:
+            code = (await self.likeCv(7793107))["code"]
+            if code != 0 and code != 65006 and code != -404:
+                self._isBanned = True
+                import warnings
+                warnings.warn(f'{self._name}:账号异常，请检查bili_jct参数是否有效或本账号是否被封禁')
+            else:
+                self._isBanned = False
 
         return True
+
+    @property
+    def banned(self):
+        '''是否账号被异常封禁'''
+        return self._isBanned
 
     @property
     def islogin(self):
@@ -71,6 +72,23 @@ class asyncBiliApi(object):
     def uid(self) -> int:
         '''获取登录的账户uid'''
         return self._uid
+
+    async def refreshInfo(self) -> None:
+        '''刷新账户信息(需要先登录)'''
+        ret = await self.getWebNav()
+        if ret["code"] != 0:
+            self._islogin = False
+            return
+
+        self._islogin = True
+        self._name = ret["data"]["uname"]
+        self._uid = ret["data"]["mid"]
+        self._vip = ret["data"]["vipType"]
+        self._level = ret["data"]["level_info"]["current_level"]
+        self._verified = ret["data"]["mobile_verified"]
+        self._coin = ret["data"]["money"]
+        self._exp = ret["data"]["level_info"]["current_exp"]
+
 
     async def getWebNav(self) -> dict:
         '''取导航信息'''
@@ -104,8 +122,13 @@ class asyncBiliApi(object):
             ret = await r.json()
         return ret
 
-    async def vipPrivilegeReceive(self, type=1) -> dict:
-        '''领取B站大会员权益'''
+    async def vipPrivilegeReceive(self, 
+                                  type: int = 1
+                                  ) -> dict:
+        '''
+        领取B站大会员权益
+        type int 权益类型，1为B币劵，2为优惠券
+        '''
         url = 'https://api.bilibili.com/x/vip/privilege/receive'
         post_data = {
             "type": type,
@@ -115,8 +138,13 @@ class asyncBiliApi(object):
             ret = await r.json()
         return ret
 
-    async def getUserWallet(self, platformType=3) -> dict:
-        '''获取账户钱包信息'''
+    async def getUserWallet(self, 
+                            platformType: int = 3
+                            ) -> dict:
+        '''
+        获取账户钱包信息
+        platformType int 平台类型
+        '''
         url = 'https://pay.bilibili.com/paywallet/wallet/getUserWallet'
         post_data = {
             "platformType": platformType
@@ -125,7 +153,10 @@ class asyncBiliApi(object):
             ret = await r.json()
         return ret
 
-    async def elecPay(self, uid: int, num=50) -> dict:
+    async def elecPay(self, 
+                      uid: int, 
+                      num: int = 50
+                      ) -> dict:
         '''
         用B币给up主充电
         uid int up主uid
@@ -143,6 +174,34 @@ class asyncBiliApi(object):
             ret = await r.json()
         return ret
 
+    async def xliveBp2Gold(self, 
+                           num: int = 5, 
+                           platform: str = 'pc'
+                           ) -> dict:
+        '''
+        B币劵购买金瓜子
+        num int 花费B币劵数量，目前1B币=1000金瓜子
+        platform str 平台
+        '''
+        #此接口抓包于网页https://link.bilibili.com/p/center/index中金瓜子购买
+        url = 'https://api.live.bilibili.com/xlive/revenue/v1/order/createOrder'
+        post_data = {
+            "platform": platform,
+            "pay_bp": num * 1000, #兑换瓜子数量，目前1B币=1000金瓜子
+            "context_id": 1, #未知作用
+            "context_type": 11, #未知作用
+            "goods_id": 1, #商品id
+            "goods_num": num, #商品数量，这里是B币数量
+            #"csrf_token": self._bili_jct,
+            #"visit_id": 'acq5hn53owg0',#这两个不需要也能请求成功，csrf_token与csrf一致
+            "csrf": self._bili_jct
+            }
+        async with self._session.post(url, data=post_data, verify_ssl=False) as r:
+            ret = await r.json()
+        #返回示例{"code":1300014,"message":"b币余额不足","ttl":1,"data":null}
+        #{"code":0,"message":"0","ttl":1,"data":{"status":2,"order_id":"2011042258413961167422787","gold":0,"bp":0}}
+        return ret
+
     async def xliveSign(self) -> dict:
         '''B站直播签到'''
         url = "https://api.live.bilibili.com/xlive/web-ucenter/v1/sign/DoSign"
@@ -158,7 +217,8 @@ class asyncBiliApi(object):
         return ret
 
     async def xliveGetRoomInfo(self,
-                               room_id: int) -> dict:
+                               room_id: int
+                               ) -> dict:
         '''
         B站直播获取房间信息
         room_id int 房间id
@@ -183,7 +243,8 @@ class asyncBiliApi(object):
                            gift_num, 
                            storm_beat_id=0, 
                            price=0, 
-                           platform="pc") -> dict:
+                           platform="pc"
+                           ) -> dict:
         '''
         B站直播送出背包礼物
         biz_id int 房间号
@@ -218,7 +279,8 @@ class asyncBiliApi(object):
     async def coin(self, 
              aid: int, 
              num=1, 
-             select_like=1) -> dict:
+             select_like=1
+             ) -> dict:
         '''
         给指定av号视频投币
         aid int 视频av号
@@ -240,7 +302,8 @@ class asyncBiliApi(object):
     async def report(self, 
                      aid, 
                      cid, 
-                     progres) -> dict:
+                     progres
+                     ) -> dict:
         '''
         B站上报视频观看进度
         aid int 视频av号
@@ -259,7 +322,8 @@ class asyncBiliApi(object):
         return ret
 
     async def share(self, 
-                    aid) -> dict:
+                    aid
+                    ) -> dict:
         '''
         分享指定av号视频
         aid int 视频av号
@@ -292,7 +356,8 @@ class asyncBiliApi(object):
 
     async def getRegions(self, 
                          rid=1, 
-                         num=6) -> dict:
+                         num=6
+                         ) -> dict:
         '''
         获取B站分区视频信息
         rid int 分区号
@@ -304,7 +369,8 @@ class asyncBiliApi(object):
         return ret
 
     async def mangaClockIn(self, 
-                     platform="android") -> dict:
+                     platform="android"
+                     ) -> dict:
         '''
         模拟B站漫画客户端签到
         platform str 平台
@@ -352,7 +418,8 @@ class asyncBiliApi(object):
         return ret
 
     async def mangaComrade(self, 
-                           platform="web") -> dict:
+                           platform="web"
+                           ) -> dict:
         '''
         站友日漫画卷兑换查询
         platform str 平台
@@ -365,7 +432,8 @@ class asyncBiliApi(object):
     async def mangaPayBCoin(self, 
                             pay_amount: int, 
                             product_id=1, 
-                            platform='web') -> dict:
+                            platform='web'
+                            ) -> dict:
         '''
         B币购买漫画
         pay_amount int 购买数量
@@ -386,7 +454,8 @@ class asyncBiliApi(object):
                               page_num=1, 
                               page_size=50, 
                               tab_type=1,
-                              platform="web") -> dict:
+                              platform="web"
+                              ) -> dict:
         '''
         获取账户中的漫读劵信息
         not_expired bool
@@ -411,7 +480,8 @@ class asyncBiliApi(object):
                                 page_size=50, 
                                 order=1, 
                                 wait_free=0, 
-                                platform='web') -> dict:
+                                platform='web'
+                                ) -> dict:
         '''
         B站漫画追漫列表
         page_num int 页数
@@ -434,7 +504,8 @@ class asyncBiliApi(object):
     async def mangaDetail(self, 
                           comic_id: int, 
                           device='pc', 
-                          platform='web') -> dict:
+                          platform='web'
+                          ) -> dict:
         '''
         获取漫画信息
         comic_id int 漫画id
@@ -451,7 +522,8 @@ class asyncBiliApi(object):
 
     async def mangaGetEpisodeBuyInfo(self, 
                                ep_id: int, 
-                               platform="web") -> dict:
+                               platform="web"
+                               ) -> dict:
         '''
         获取漫画购买信息
         ep_id int 漫画章节id
@@ -470,7 +542,8 @@ class asyncBiliApi(object):
                         buy_method=1, 
                         coupon_id=0, 
                         auto_pay_gold_status=0, 
-                        platform="web") -> dict:
+                        platform="web"
+                        ) -> dict:
         '''
         购买漫画
         ep_id int 漫画章节id
@@ -495,7 +568,8 @@ class asyncBiliApi(object):
 
     async def activityAddTimes(self, 
                                sid: str, 
-                               action_type: int) -> dict:
+                               action_type: int
+                               ) -> dict:
         '''
         增加B站活动的参与次数
         sid str 活动的id
@@ -513,7 +587,8 @@ class asyncBiliApi(object):
 
     async def activityDo(self, 
                          sid: str, 
-                         type: int) -> dict:
+                         type: int
+                         ) -> dict:
         '''
         参与B站活动
         sid str 活动的id
@@ -762,7 +837,7 @@ class asyncBiliApi(object):
             ret = await r.json()
         return ret
 
-    async def __aenter__(self) -> 'aioBiliClient':
+    async def __aenter__(self):
         return self
 
     async def __aexit__(self, *exc) -> None:

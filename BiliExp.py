@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import asyncio, json, time, logging, sys, re, io
+from collections import OrderedDict
 from getopt import getopt
 from BiliClient import asyncbili
 import tasks
@@ -81,7 +82,7 @@ def main(*args, **kwargs):
         config = './config/config.json'
     try:
         with open(config,'r',encoding='utf-8') as fp:
-            configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
+            configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()), object_pairs_hook=OrderedDict)
     except Exception as e: 
         print(f'配置加载异常，原因为{str(e)}，退出程序')
         sys.exit(6)
