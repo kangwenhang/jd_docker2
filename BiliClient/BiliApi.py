@@ -230,7 +230,7 @@ class BiliApi(object):
         "转发B站动态"
         url = "https://api.vc.bilibili.com/dynamic_repost/v1/dynamic_repost/repost"
         post_data = {
-            "uid": self.__uid,
+            "uid": self._uid,
             "dynamic_id": dynamic_id,
             "content": content,
             "extension": extension,
@@ -256,7 +256,7 @@ class BiliApi(object):
         "评论动态并转发"
         url = "https://api.vc.bilibili.com/dynamic_repost/v1/dynamic_repost/reply"
         post_data = {
-            "uid": self.__uid,
+            "uid": self._uid,
             "rid": rid,
             "type": type,
             "content": content,
@@ -301,7 +301,7 @@ class BiliApi(object):
     def getFollowing(self, uid=0, pn=1, ps=50, order='desc'):
         "获取指定账户的关注者(默认取本账户)"
         if uid == 0:
-            uid = self.__uid
+            uid = self._uid
         url = f"https://api.bilibili.com/x/relation/followings?vmid={uid}&pn={pn}&ps={ps}&order={order}"
         return self._session.get(url).json()
 
@@ -336,14 +336,14 @@ class BiliApi(object):
 
     def getDynamicNew(self, type_list='268435455'):
         "取B站用户最新动态数据"
-        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self.__uid}&type_list={type_list}'
+        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self._uid}&type_list={type_list}'
         content = self._session.get(url)
         content.encoding = 'utf-8' #需要指定编码
         return json.loads(content.text)
 
     def getDynamic(self, type_list='268435455'):
         "取B站用户动态数据，生成器"
-        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self.__uid}&type_list={type_list}'
+        url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self._uid}&type_list={type_list}'
         content = self._session.get(url)
         content.encoding = 'utf-8' #需要指定编码
         jsobj = json.loads(content.text)
@@ -353,7 +353,7 @@ class BiliApi(object):
         hasnext = True
         offset = cards[len(cards) - 1]["desc"]["dynamic_id"]
         while hasnext:
-            content = self._session.get(f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_history?uid={self.__uid}&offset_dynamic_id={offset}&type={type_list}')
+            content = self._session.get(f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_history?uid={self._uid}&offset_dynamic_id={offset}&type={type_list}')
             content.encoding = 'utf-8'
             jsobj = json.loads(content.text)
             hasnext = (jsobj["data"]["has_more"] == 1)
@@ -379,7 +379,7 @@ class BiliApi(object):
             raise Exception(str(jsobj))
 
         if uid == 0:
-            uid = self.__uid
+            uid = self._uid
         url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid={uid}&need_top=1&offset_dynamic_id='
         hasnext = True
         offset = ''
@@ -737,7 +737,7 @@ class BiliApi(object):
         "B站直播送出背包礼物"
         url = 'https://api.live.bilibili.com/gift/v2/live/bag_send'
         post_data = {
-            "uid": self.__uid,
+            "uid": self._uid,
             "gift_id": gift_id, #背包里的礼物id
             "ruid": ruid, #up主的uid
             "send_ruid": 0,
