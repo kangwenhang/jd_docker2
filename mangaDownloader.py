@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 from BiliClient import MangaDownloader
-import json, re
+import json, re, os
+
+with open('config/config.json','r',encoding='utf-8') as fp:
+    configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
 
 id = int(input('请输入B站漫画id(整数，不带mc前缀)：'))
-path = input('请输入保存路径：')
-co = input('是否加载cookie以用户身份登录(y/n)：')
-pdf = input('下载后是否合并为一个pdf(需要安装pymupdf模块)(y/n)：')
+path = input('请输入保存路径(默认当前目录)：')
+pdf = input('下载后是否合并为一个pdf(y/n)：')
+
+if not path:
+    path = os.getcwd()
 
 path = path.replace('\\', '/')
-
-if co.upper() == 'Y':
-    with open('config/config.json','r',encoding='utf-8') as fp:
-        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
-    mag = MangaDownloader(id, configData["users"][0]["cookieDatas"])
-else:
-    mag = MangaDownloader(id)
-
+mag = MangaDownloader(id, configData["users"][0]["cookieDatas"])
+print(f'开始下载漫画 "{mag.getTitle()}"')
 mag.downloadAll(path)
 print('下载任务结束')
 

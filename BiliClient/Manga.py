@@ -73,15 +73,15 @@ class MangaDownloader(object):
         "下载漫画所有可下载章节"
         import os
         if not os.path.exists(path):
-            os.mkdir(path)
+            os.makedirs(path)
         title = self.getTitle()
         if path[-1] == '/':
             path = f'{path}{title}'
         else:
             path = f'{path}/{title}'
         if not os.path.exists(path):
-            os.mkdir(path)
-        print(f'开始下载漫画 "{title}"')
+            os.makedirs(path)
+        
         bq = len(str(self.getNum()))
         for x in self.getIndex():
             name = x["title"]
