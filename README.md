@@ -3,7 +3,6 @@
 BiliExp
 </h1>
 
-
 ![image](https://user-images.githubusercontent.com/67217225/96542531-d6bcdb80-12d4-11eb-81e1-49f3d3b85dfe.png)
 <br>
 [![](https://img.shields.io/badge/author-%E6%98%9F%E8%BE%B0-red "作者")](https://github.com/happy888888/ )
@@ -47,13 +46,13 @@ BiliExp
 </br>
 
 **三、B站漫画下载mangaDownloader.py**支持合并为单个pdf文件,允许使用账号cookie下载已解锁部分
-* [x] 使用账号cookie下载已解锁部分
+* [x] 支持使用账号cookie下载已解锁部分
 * [x] 合并为单个pdf文件
 </br>
 
-**四、B站视频下载videoDownloader.py(需要提前安装aria2)**
-* [x] 使用账号cookie下载大会员视频
-* [x] 支持下载港澳台番剧(内置一个反向代理接口，接口源码见"player_proxy"文件夹，支持云函数部署此接口)
+**四、B站视频下载videoDownloader.py**
+* [x] 支持使用账号cookie下载大会员视频
+* [x] 支持下载港澳台番剧(内置一个反向代理接口，接口源码见"player_proxy"文件夹，支持阿里/腾讯云函数部署此接口)
 </br>
 
 # 目录
@@ -186,6 +185,13 @@ BiliExp
 
 </br></br></br>
 ## 更新日志
+
+### 2020/11/06更新
+
+* 1.修复若干bug
+* 2.增加一个Downloader.py类用于视频下载，移除对aria2的依赖
+
+</br></br>
 
 ### 2020/10/20更新
 

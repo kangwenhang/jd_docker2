@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from . import bili
 import os, math, time
-from .aria2py import Aria2Py
 
 class VideoUploader(object):
     "B站视频上传类"
@@ -168,123 +167,104 @@ class VideoUploader(object):
         "设置subtitle"
         self._data["subtitle"] = subtitle
 
-class VideoDownloader(object):
-    '''B站视频下载类'''
-    class __videos(object):
-        class __videostream(object):
-            def __init__(self, name: str,url: str, resolution: str, size: int):
-                self._name = name
-                self._url = url
-                self._resolution = resolution
-                self._size = size
+class _videoStream(object):
+    def __init__(self, name: str,url: str, resolution: str, size: int):
+        self._name = name
+        self._url = url
+        self._resolution = resolution
+        self._size = size
 
-            def __repr__(self):
-                return f'<name={self._name};resolution={self._resolution};size={self._size};cid={self._size}>'
+    def __repr__(self):
+        return f'<name={self._name};resolution={self._resolution};size={self._size};cid={self._size}>'
 
-            def __str__(self):
-                return f'filename={self._name} ; resolution={self._resolution} ; size={self._size / 1024 / 1024:0.2f}MB'
+    def __str__(self):
+        return f'filename={self._name} ; resolution={self._resolution} ; size={self._size / 1024 / 1024:0.2f}MB'
 
-            def download(self, path='', callback=None):
-                '''下载当前视频流'''
-                if path != '':
-                    if path[-1] == '/':
-                        path = f'{path}{self._name}'
-                    else:
-                        path = f'{path}/{self._name}'
+    @property
+    def url(self) -> str:
+        '''返回下载流url'''
+        return self._url
+
+    @property
+    def fliename(self) -> str:
+        '''返回下载文件名'''
+        return self._name
+
+class _videos(object):
+    def __init__(self, subtitle, bvid='', cid=0, epid=''):
+        self._title = subtitle.replace('/',' ')
+        self._bvid = bvid
+        self._cid = cid
+
+    def __repr__(self):
+        return f'<title={self._title};bvid={self._bvid};cid={self._cid}>'
+
+    def __str__(self):
+        return self._title
+
+    def getTitle(self):
+        '''获取当前视频标题'''
+        return self._title
+
+    def allStream(self, cookieData: dict = None, reverse_proxy='', force_use_proxy=False):
+        '''
+        获取所有视频流
+        cookieData dict :包含"SESSDATA"值的字典，模拟用户登录
+        reverse_proxy str :B站接口代理地址
+        force_use_proxy bool :强制使用代理地址(默认请求失败才尝试代理地址)
+        '''
+        biliapi = bili()
+        if cookieData:
+            biliapi.login_by_cookie(cookieData)
+
+        if force_use_proxy:
+            RP = reverse_proxy
+            data = biliapi.playerUrl(cid=self._cid, bvid=self._bvid, reverse_proxy=RP)
+            if data["code"] != 0:
+                raise Exception(f'解析失败，请尝试使用会员账号(错误信息：{data["message"]})')
+        else:
+            RP = ''
+            data = biliapi.playerUrl(cid=self._cid, bvid=self._bvid, reverse_proxy=RP)
+            if data["code"] != 0:
+                if reverse_proxy == '':
+                    raise Exception(f'解析失败，请尝试使用代理或会员账号(错误信息：{data["message"]})')
                 else:
-                    path = self._name
-
-                aria2 = Aria2Py()
-                ret = aria2.addUri(self._url, {'max-connection-per-server':8,'referer': "https://www.bilibili.com","header":["User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)"],'out':path})
-                gid = ret["result"]
-                while aria2.tellStatus(gid, ["status","completedLength","totalLength"])["result"]["status"] == 'waiting':
-                    time.sleep(2)
-                while True:
-                    time.sleep(2)
-                    ret = aria2.tellStatus(gid, ["status","completedLength","totalLength"])["result"]
-                    if callback:
-                        if int(ret["totalLength"])!=0:
-                            callback(float(ret["completedLength"])/float(ret["totalLength"]))
-                    if ret["status"] != 'active':
-                        if ret["status"] != 'complete':
-                            raise Exception(f'下载失败(status: {ret["status"]})')
-                        break
-                    if callback:
-                        if int(ret["totalLength"])==0:
-                            continue
-                        callback(float(ret["completedLength"])/float(ret["totalLength"]))
-
-        def __init__(self, subtitle, bvid='', cid=0, epid=''):
-            self._title = subtitle.replace('/',' ')
-            self._bvid = bvid
-            self._cid = cid
-
-        def __repr__(self):
-            return f'<title={self._title};bvid={self._bvid};cid={self._cid}>'
-
-        def __str__(self):
-            return self._title
-
-        def getTitle(self):
-            '''获取当前视频标题'''
-            return self._title
-
-        def allStream(self, cookieData: dict = None, reverse_proxy='', force_use_proxy=False):
-            '''
-            获取所有视频流
-            cookieData dict :包含"SESSDATA"值的字典，模拟用户登录
-            reverse_proxy str :B站接口代理地址
-            force_use_proxy bool :强制使用代理地址(默认请求失败才尝试代理地址)
-            '''
-            biliapi = bili()
-            if cookieData:
-                bili.login_by_cookie(cookieData)
-
-            if force_use_proxy:
-                RP = reverse_proxy
-                data = biliapi.playerUrl(cid=self._cid, bvid=self._bvid, reverse_proxy=RP)
-                if data["code"] != 0:
-                    raise Exception(f'解析失败，请尝试使用会员账号(错误信息：{data["message"]})')
+                    RP = reverse_proxy
+                    data = biliapi.playerUrl(cid=self._cid, bvid=self._bvid, reverse_proxy=RP)
+                    if data["code"] != 0:
+                        print(self._bvid, self._cid)
+                        raise Exception(f'解析失败，请尝试更换代理地区或使用会员账号(错误信息：{data["message"]})')
+        
+        accept_quality = data["data"]["accept_quality"]
+        accept_description = data["data"]["accept_description"]
+        ret = []
+        for ii in range(len(accept_quality)):
+            data = biliapi.playerUrl(cid=self._cid, bvid=self._bvid, qn=accept_quality[ii], reverse_proxy=RP)["data"]
+            if data["quality"] != accept_quality[ii]:
+                continue
+            if 'flv' in data["format"]:
+                ret.append(_videoStream(f'{self._title}.flv', data["durl"][0]["url"].replace('http:','https:'),accept_description[ii],data["durl"][0]["size"]))
             else:
-                RP = ''
-                data = biliapi.playerUrl(cid=self._cid, bvid=self._bvid, reverse_proxy=RP)
-                if data["code"] != 0:
-                    if reverse_proxy == '':
-                        raise Exception(f'解析失败，请尝试使用代理或会员账号(错误信息：{data["message"]})')
-                    else:
-                        RP = reverse_proxy
-                        data = biliapi.playerUrl(cid=self._cid, bvid=self._bvid, reverse_proxy=RP)
-                        if data["code"] != 0:
-                            print(self._bvid, self._cid)
-                            raise Exception(f'解析失败，请尝试更换代理地区或使用会员账号(错误信息：{data["message"]})')
-            
-            accept_quality = data["data"]["accept_quality"]
-            accept_description = data["data"]["accept_description"]
-            ret = []
-            for ii in range(len(accept_quality)):
-                data = biliapi.playerUrl(cid=self._cid, bvid=self._bvid, qn=accept_quality[ii], reverse_proxy=RP)["data"]
-                if data["quality"] != accept_quality[ii]:
-                    continue
-                if 'flv' in data["format"]:
-                    ret.append(self.__videostream(f'{self._title}.flv', data["durl"][0]["url"].replace('http:','https:'),accept_description[ii],data["durl"][0]["size"]))
-                else:
-                    ret.append(self.__videostream(f'{self._title}.mp4', data["durl"][0]["url"].replace('http:','https:'),accept_description[ii],data["durl"][0]["size"]))
-            return ret
+                ret.append(_videoStream(f'{self._title}.mp4', data["durl"][0]["url"].replace('http:','https:'),accept_description[ii],data["durl"][0]["size"]))
+        return ret
+
+class VideoParser(object):
+    '''B站视频解析类'''
 
     def __init__(self, url: str):
-        self.set(url)
+        self.parser(url)
 
     def all(self):
         '''取得当前所有视频(分P)'''
         if self._type == 1:
             list = bili.playList(self._bvid)["data"]
-            return [self.__videos(x["part"], self._bvid, x["cid"]) for x in list]
+            return [_videos(x["part"], self._bvid, x["cid"]) for x in list]
         elif self._type == 2:
-            return [self.__videos(x[0], x[1], x[2]) for x in self._eplist]
+            return [_videos(x[0], x[1], x[2]) for x in self._eplist]
         else:
             return []
 
-    def set(self, url: str):
+    def parser(self, url: str):
         '''
         解析视频
         url  str: BV，av，ep，ss号以及包含这些号的网址
@@ -298,7 +278,7 @@ class VideoDownloader(object):
                 self._title = bili.webView(self._bvid)["data"]["title"]
                 self._type = 1
             elif find[0][0] == 'av':
-                self._bvid = self.av2bv(find[0][1])
+                self._bvid = bili.av2bv(int(find[0][1]))
                 self._title = bili.webView(self._bvid)["data"]["title"]
                 self._type = 1
             elif find[0][0] == 'ep' or find[0][0] == 'ss':
@@ -312,13 +292,3 @@ class VideoDownloader(object):
     def getTitle(self):
         '''获取标题'''
         return self._title
-
-    @staticmethod
-    def bv2av(bvid: str):
-        '''B站bv号转av号'''
-        return bili.webView(bvid)["data"]["aid"]
-
-    @staticmethod
-    def av2bv(aid: int):
-        "B站av号转bv号"
-        return bili.webStat(aid)["data"]["bvid"]
