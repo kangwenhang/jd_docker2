@@ -131,7 +131,7 @@ def read(cookies):
     result = response.json()
     # print(result)
     if result["status"] == -2:
-        print("无法阅读,尝试从安卓端手动开启")
+        # print("无法阅读,尝试从安卓端手动开启")
         return
     # print(result["completeList"])
     if result["isComplete"]:
