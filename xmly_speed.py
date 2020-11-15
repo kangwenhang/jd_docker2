@@ -16,6 +16,7 @@ import os
 # 对应方案2: 下载到本地,需要此处填写
 cookies1 = ""  # iPhone7P
 cookies2 = ""  # huawei
+
 cookiesList = [cookies1, ]  # 多账号准备
 
 
@@ -433,7 +434,7 @@ def checkin(cookies, _datatime):
         print("网络请求异常,为避免GitHub action报错,直接跳过")
         return
     result = json.loads(response.text)
-    # print(result)
+    print(result)
     print(f"""连续签到{result["continuousDays"]}/{result["historyDays"]}天""")
     print(result["isTickedToday"])
     if not result["isTickedToday"]:
@@ -457,6 +458,7 @@ def checkin(cookies, _datatime):
         response = requests.post('https://m.ximalaya.com/speed/task-center/check-in/check',
                                  headers=headers, cookies=cookies, data=json.dumps(data))
         print(response.text)
+    return result["continuousDays"]
 
 
 def ad_score(cookies, businessType, taskId):
@@ -909,7 +911,7 @@ def run():
             listenData(cookies, date_stamp)
         read(cookies)  # 阅读
         bubble(cookies)  # 收金币气泡
-        checkin(cookies, _datatime)  # 自动签到
+        continuousDays=checkin(cookies, _datatime)  # 自动签到
         # lottery_info(cookies)  # 大转盘4次
         answer(cookies)      # 答题赚金币
         cardReportTime(cookies, mins, date_stamp, _datatime)  # 卡牌
@@ -917,16 +919,17 @@ def run():
         card(cookies, _datatime)  # 抽卡
         index_baoxiang_award(cookies)  # 首页、宝箱奖励及翻倍
         total, todayTotal, historyTotal = account(cookies)
-        table.append((total, todayTotal, historyTotal))
+        table.append((total, todayTotal, historyTotal,continuousDays))
 
         print("###"*20)
         print("\n"*4)
     if BARK and notify_time.split()[0] == str(bark_time) and int(notify_time.split()[1]) > 30:
-        message = "【设备】     total    today   history  \n"
+        message = "【设备】| total| today| history| continuousDays\n"
         for i in zip(devices, table):
-            message += f"[{i[0]}]   {i[1][0]:<6.2f}(＋{i[1][1]:<4.2f})  {i[1][2]:<7.2f} \n"
-        message += "          By zero_s1, (*^_^*)"
-        bark("【喜马拉雅极速版】通知", message)
+            message += f"[{i[0]:<9}]      {i[1][0]:<6.2f}   (＋{i[1][1]:<4.2f})   {i[1][2]:<7.2f}   {i[1][3]}\\30\n"
+        message += "\ntips:第30天需要手动签到,By zero_s1, (*^_^*)"
+        print(message)
+        bark("⏰ 喜马拉雅极速版", message)
 
 
 if __name__ == "__main__":
