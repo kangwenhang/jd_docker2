@@ -911,7 +911,7 @@ def run():
             listenData(cookies, date_stamp)
         read(cookies)  # 阅读
         bubble(cookies)  # 收金币气泡
-        continuousDays=checkin(cookies, _datatime)  # 自动签到
+        continuousDays = checkin(cookies, _datatime)  # 自动签到
         # lottery_info(cookies)  # 大转盘4次
         answer(cookies)      # 答题赚金币
         cardReportTime(cookies, mins, date_stamp, _datatime)  # 卡牌
@@ -919,7 +919,7 @@ def run():
         card(cookies, _datatime)  # 抽卡
         index_baoxiang_award(cookies)  # 首页、宝箱奖励及翻倍
         total, todayTotal, historyTotal = account(cookies)
-        table.append((total, todayTotal, historyTotal,continuousDays))
+        table.append((total, todayTotal, historyTotal, continuousDays))
 
         print("###"*20)
         print("\n"*4)
