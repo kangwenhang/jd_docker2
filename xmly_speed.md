@@ -54,10 +54,11 @@
 - star一下，立即执行，观察运行情况
 -  **必须**  修改一次文件（比如自己库中的README.md文件）才能定时运行   (！！！！不要再问为什么不能自动运行;不懂不要修改cron )  
 - 需要刷时长的，Secrets 新增 `XMLY_ACCUMULATE_TIME`，填入`zero_s1`；可能会黑号，请知悉
-- 需要bark通知服务的(自行搜索)，Secrets 新增 `BARK`；
+- 需要bark通知服务的(自行搜索)，Secrets 新增 `BARK`；还需修改[devices参数](https://github.com/Zero-S1/xmly_speed/issues/30) 
 
 2、下载到本地运行   
    需要第三方库`requests`  
+   通知服务填写BARK，以及devices
 
 ### 如何抓包cookie
 - [手机抓包工具汇总](https://blog.zengrong.net/post/capture-package-on-phone/)
