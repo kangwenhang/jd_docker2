@@ -5,7 +5,7 @@
 喜马拉雅**极速版**自动化脚本    
 请仔细阅读本说明     
 
- [xmly_speed](xmly_speed.py) 
+ [xmly_speed](xmly_speed.py)   
  cron   */30 * * * *   (30分钟运行一次,不要修改)
 
 ### 支持功能
@@ -24,8 +24,8 @@
 如果你的手机以及手机号之前没有注册过喜马拉雅的话，可以帮我完成一个邀请任务，感谢。
 
 ### 账号注册以及风控
-1、使用**不同的手机设备**进行注册、刚注册的账号**不要退出**和切换账号，以免账号被封禁  
-2、~~刚注册的账号**不要立刻跑脚本**，以免账号被封禁，无法提现~~ 好像也没啥影响，完成前三天的几个新手任务就行
+1、使用**不同的手机设备**进行注册、刚注册的账号**不要退出**和切换账号，以免账号被封禁   
+2、~~刚注册的账号**不要立刻跑脚本**，以免账号被封禁，无法提现~~ 好像也没啥影响，完成前三天的几个新手任务就行  
 3、同一手机最好不要切换账号，以免cookie过期 (待测) 
 
 
@@ -50,15 +50,16 @@
 
 - cookie 信息抓包自**手机app(喜马拉雅极速版)**，域名为 `m.ximalaya.com`的可以
 - fork 本项目
-- Secrets 新增 `XMLY_SPEED_COOKIE`，填入cookie信息 ，多账号换行
+- **必须**  Secrets 新增 `XMLY_SPEED_COOKIE`，填入cookie信息 ，多账号换行
 - star一下，立即执行，观察运行情况
 -  **必须**  修改一次文件（比如自己库中的README.md文件）才能定时运行   (！！！！不要再问为什么不能自动运行;不懂不要修改cron )  
-- 需要刷时长的，Secrets 新增 `XMLY_ACCUMULATE_TIME`，填入`zero_s1`；可能会黑号，请知悉
-- 需要bark通知服务的(自行搜索)，Secrets 新增 `BARK`；还需修改[devices参数](https://github.com/Zero-S1/xmly_speed/issues/30) 
+- **可选**  通知服务, bark服务与server酱可选, 分别在`Repo-Setting-Secrets` 新增`BARK` 或者 `SCKEY`
 
 2、下载到本地运行   
-   需要第三方库`requests`  
-   通知服务填写BARK，以及devices
+   - 需要第三方库 `requests`  
+   - 填写方案2  
+   - **必须**  本地填写cookies  
+   - **可选**  `BARK`、 `SCKEY` 通知服务
 
 ### 如何抓包cookie
 - [手机抓包工具汇总](https://blog.zengrong.net/post/capture-package-on-phone/)

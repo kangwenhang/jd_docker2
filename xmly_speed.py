@@ -14,18 +14,15 @@ import os
 
 ###################################################
 # 对应方案2: 下载到本地,需要此处填写
-cookies1 = ""  # iPhone7P
-cookies2 = ""  # huawei
+cookies1 = ""  
+cookies2 = "" 
 
-cookiesList = [cookies1, ]  # 多账号准备
+cookiesList = [cookies1,]   # 多账号准备
 
+# 通知服务
+BARK = ''                   # bark服务,自行搜索; secrets可填;形如jfjqxDx3xxxxxxxxSaK的字符串
+SCKEY = ''                  # Server酱的SCKEY; secrets可填
 
-BARK = ''                               # bark服务,自行搜索;secrets可填;形如jfjqxDx3xxxxxxxxSaK的字符串
-devices = ["iPhone7P", ]                # 设备命名,需要与cookiesList一一对应;尽量简短
-bark_time = 19                          # bark通知时间,24小时制,默认19
-
-
-XMLY_ACCUMULATE_TIME = 1    # 希望刷时长的,此处置1,默认打开
 ###################################################
 # 对应方案1:  GitHub action自动运行,此处无需填写;
 if "XMLY_SPEED_COOKIE" in os.environ:
@@ -40,15 +37,19 @@ if "XMLY_SPEED_COOKIE" in os.environ:
             continue
         cookiesList.append(line)
     # GitHub action运行需要填写对应的secrets
-    if "XMLY_ACCUMULATE_TIME" in os.environ and os.environ["XMLY_ACCUMULATE_TIME"] == 'zero_s1':
-        XMLY_ACCUMULATE_TIME = 1
-        print("action 自动刷时长打开")
     if "BARK" in os.environ and os.environ["BARK"]:
         BARK = os.environ["BARK"]
-        print("BARK推送打开")
+        print("BARK 推送打开")
+    if "SCKEY" in os.environ and os.environ["SCKEY"]:
+        BARK = os.environ["SCKEY"]
+        print("serverJ 推送打开")
 
 
 ###################################################
+#可选项
+devices = []                                # 自定义设备命名,非必须 ;devices=["iPhone7P","huawei"];与cookiesList对应
+notify_time = 19                            # 通知时间,24小时制,默认19
+XMLY_ACCUMULATE_TIME = 1                    # 希望刷时长的,此处置1,默认打开;关闭置0
 UserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 iting/1.0.12 kdtunion_iting/1.0 iting(main)/1.0.12/ios_1"
 # 非iOS设备的需要的自行修改,自己抓包 与cookie形式类似
 
@@ -66,6 +67,7 @@ def str2dict(str_cookie):
             dict_cookie[j[0].strip()] = j[1].strip()
 
         assert dict_cookie["1&_token"].split("&")[0]
+        assert dict_cookie['device_model']
 
     except (IndexError, KeyError):
         print("cookie填写出错 ❌,仔细查看说明")
@@ -883,28 +885,46 @@ def card(cookies, _datatime):
 def get_uid(cookies):
     return cookies["1&_token"].split("&")[0]
 
+def serverJ(title, content):
+    print("\n")
+    sckey = SCKEY
+    if "SCKEY" in os.environ:
+        """
+        判断是否运行自GitHub action,"SCKEY" 该参数与 repo里的Secrets的名称保持一致
+        """
+        sckey = os.environ["SCKEY"]
+
+    if not sckey:
+        print("server酱服务的SCKEY未设置!!\n取消推送")
+        return
+    print("serverJ服务启动")
+    data = {
+        "text": title,
+        "desp": content.replace("\n","\n\n")+"\n\n [打赏作者](https://github.com/Zero-S1/xmly_speed/blob/master/thanks.md)"
+    }
+    response = requests.post(f"https://sc.ftqq.com/{sckey}.send", data=data)
+    print(response.text)
 
 def bark(title, content):
-    assert len(cookiesList) == len(devices), "❌ cookie数量与devices不等"
+    print("\n")
     bark_token = BARK
     if "BARK" in os.environ:
         bark_token = os.environ["BARK"]
     if not bark_token:
         print("bark服务的bark_token未设置!!\n取消推送")
         return
+    print("bark服务启动")
     response = requests.get(
         f"""https://api.day.app/{bark_token}/{title}/{content}""")
     print(response.text)
 
 
 def run():
-    print("喜马拉雅极速版 (https://github.com/Zero-S1/xmly_speed)")
-    if not BARK:
-        print("Bark通知未开启")
-    mins, date_stamp, _datatime, notify_time = get_time()
+    print(f"喜马拉雅极速版 (https://github.com/Zero-S1/xmly_speed/blob/master/xmly_speed.md) ,欢迎打赏¯\(°_o)/¯")
+    mins, date_stamp, _datatime, _notify_time = get_time()
     table = []
-    for k, v in enumerate(cookiesList, 1):
-        print(f">>>>>>>【账号开始{k}】\n")
+    for k, v in enumerate(cookiesList):
+        print(f">>>>>>>【账号开始{k+1}】\n")
         cookies = str2dict(v)
         if XMLY_ACCUMULATE_TIME == 1:
             saveListenTime(cookies, date_stamp)
@@ -919,17 +939,29 @@ def run():
         card(cookies, _datatime)  # 抽卡
         index_baoxiang_award(cookies)  # 首页、宝箱奖励及翻倍
         total, todayTotal, historyTotal = account(cookies)
-        table.append((total, todayTotal, historyTotal, continuousDays))
+        try:
+            device = devices[k]
+        except IndexError:
+            device = cookies['device_model']
+        else:
+            device = f"设备{k+1}"
+
+        table.append((device, total, todayTotal,
+                      historyTotal, continuousDays,))
 
         print("###"*20)
         print("\n"*4)
-    if BARK and notify_time.split()[0] == str(bark_time) and int(notify_time.split()[1]) > 30:
-        message = "【设备】| total| today| history| continuousDays\n"
-        for i in zip(devices, table):
-            message += f"[{i[0]:<9}]      {i[1][0]:<6.2f}   (＋{i[1][1]:<4.2f})   {i[1][2]:<7.2f}   {i[1][3]}\\30\n"
-        message += "\ntips:第30天需要手动签到,By zero_s1, (*^_^*)"
-        print(message)
+    if _notify_time.split()[0] == str(notify_time) and int(_notify_time.split()[1]) > 30:
+    # if 1:
+        message=''
+        for i in table:
+            message += f"[{i[0].replace(' ',''):<9}]: {i[1]:<6.2f} (＋{i[2]:<4.2f}) {i[3]:<7.2f} {i[4]}\\30\n"
+        message += "⭕tips:第30天需要手动签到 by zero_s1, (*^_^*)欢迎打赏 "
+        if len(table)<=4:
+            message="【设备】| 当前剩余 | 今天| 历史| 连续签到\n"+message
+        
         bark("⏰ 喜马拉雅极速版", message)
+        serverJ("⏰ 喜马拉雅极速版", message)
 
 
 if __name__ == "__main__":
