@@ -46,14 +46,14 @@
 
 ### 运行方案
 
-1、GitHub action自动运行，账号信息读取自`Repo-Setting-Secrets`  
+1、GitHub action自动运行，账号信息读取自 `Setting -> Secrets` 仓库位置 
 
 - cookie 信息抓包自**手机app(喜马拉雅极速版)**，域名为 `m.ximalaya.com`的可以
 - fork 本项目
 - **必须**  Secrets 新增 `XMLY_SPEED_COOKIE`，填入cookie信息 ，多账号换行
 - star一下，立即执行，观察运行情况
 -  **必须**  修改一次文件（比如自己库中的README.md文件）才能定时运行   (！！！！不要再问为什么不能自动运行;不懂不要修改cron )  
-- **可选**  通知服务, bark服务与server酱可选, 分别在`Repo-Setting-Secrets` 新增`BARK` 或者 `SCKEY`
+- **可选**  通知服务, bark服务与server酱可选, 分别在 Secrets  新增 `BARK` 或者 `SCKEY`, 并填写对应的参数
 
 2、下载到本地运行   
    - 需要第三方库 `requests`  
