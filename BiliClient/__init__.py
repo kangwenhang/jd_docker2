@@ -1,5 +1,5 @@
 
-__version__ = '1.1.0'
+__version__ = '1.1.5'
 
 from .asyncBiliApi import asyncBiliApi as asyncbili
 from .BiliApi import BiliApi as bili

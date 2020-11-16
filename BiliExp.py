@@ -20,9 +20,9 @@ def push_message(SCKEY=None,
         req = urllib.request.Request(url=f'http://liuxingw.com/api/mail/api.php?{data_string}', headers={"User-Agent":"Mozilla/5.0"})
         urllib.request.urlopen(req)
 
-async def run_user_tasks(user,           #用户配置
-                        default          #默认配置
-                        ) -> None:
+async def run_user_tasks(user: dict,           #用户配置
+                         default: dict          #默认配置
+                         ) -> None:
     async with asyncbili() as biliapi:
         try:
             if not await biliapi.login_by_cookie(user["cookieDatas"]):
@@ -31,6 +31,10 @@ async def run_user_tasks(user,           #用户配置
         except Exception as e: 
             logging.warning(f'登录验证id为{user["cookieDatas"]["DedeUserID"]}的账户失败，原因为{str(e)}，跳过此账户后续操作')
             return
+
+        show_name = user.get("show_name", "")
+        if show_name:
+            biliapi.name = show_name
 
         task_array = [] #存放本账户所有任务
 
@@ -71,7 +75,7 @@ def initlog(log_file: str, log_console: bool, log_stream: bool):
         strio_handler.setFormatter(formatter2)
         logger.addHandler(strio_handler)
     if log_file:
-         file_handler = logging.FileHandler(log_file)#输出到日志文件
+         file_handler = logging.FileHandler(log_file, encoding='utf-8')#输出到日志文件
          file_handler.setFormatter(formatter1)
          logger.addHandler(file_handler)
 

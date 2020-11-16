@@ -1,5 +1,7 @@
 from BiliClient import asyncbili
-import logging
+import logging, aiohttp
+
+voteInfo = ("未投票", "封禁", "否认", "弃权", "删除")
 
 async def judgement_task(biliapi: asyncbili, 
                          task_config: dict
@@ -20,7 +22,7 @@ async def judgement_task(biliapi: asyncbili,
         logging.warning(f'{biliapi.name}: 风纪委员投票失败，风纪委员资格失效')
         return
     rightRadio =  ret["data"]["rightRadio"]
-
+    
     while True:
         try:
             ret = await biliapi.juryCaseObtain()
@@ -38,13 +40,48 @@ async def judgement_task(biliapi: asyncbili,
             break
 
         cid = ret["data"]["id"]  #案件id
-        params = task_config["params"]  #配置文件里的投票参数
+        params = task_config["params"] #获取默认投票参数
+
+        if 'baiduNLP' in task_config and task_config["baiduNLP"]["confidence"] > 0:
+            try:
+                ret = await biliapi.juryCaseInfo(cid)
+            except Exception as e:
+                logging.warning(f'{biliapi.name}: 获取id为{cid}的案件信息异常，原因为{str(e)}，使用默认投票参数')
+            else:
+                if ret["code"] != 0:
+                    logging.warning(f'{biliapi.name}: 获取id为{cid}的案件信息失败，原因为{ret["message"]}，使用默认投票参数')
+                else:
+                    try:
+                        ret = await baiduNLP(ret["data"]["originContent"][0:255])
+                    except Exception as e:
+                        logging.warning(f'{biliapi.name}: 百度NLP接口异常，原因为{str(e)}，使用默认投票参数')
+                    else:
+                        if ret["errno"] != 0:
+                            logging.warning(f'{biliapi.name}: 调用百度NLP接口失败，原因为{ret["msg"]}，使用默认投票参数')
+                        elif ret["data"]["items"][0]["confidence"] > task_config["baiduNLP"]["confidence"]:
+                            params = params.copy()
+                            if ret["data"]["items"][0]["negative_prob"] > task_config["baiduNLP"]["negative_prob"]:
+                                params["vote"] = params["vote"] if 'vote' in params and params["vote"] in (1, 4) else 4
+                            elif ret["data"]["items"][0]["positive_prob"] > task_config["baiduNLP"]["positive_prob"]:
+                                params["vote"] = 2
+                            else:
+                                params["vote"] = 3
         try:
             ret = await biliapi.juryVote(cid, **params) #将参数params展开后传参
         except Exception as e:
             logging.warning(f'{biliapi.name}: 风纪委员投票id为{cid}的案件异常，原因为{str(e)}，跳过投票')
             continue
         if ret["code"] == 0:
-            logging.warning(f'{biliapi.name}: 风纪委员成功为id为{cid}的案件投票，当前裁决正确率为：{rightRadio}%')
+            logging.info(f'{biliapi.name}: 风纪委员成功为id为{cid}的案件投({voteInfo[params["vote"]]})票，当前裁决正确率为：{rightRadio}%')
         else:
             logging.warning(f'{biliapi.name}: 风纪委员投票id为{cid}的案件失败，信息为：{ret["message"]}，当前裁决正确率为：{rightRadio}%')
+
+async def baiduNLP(text: str) -> dict:
+    '''百度NLP语言情感识别'''
+    async with aiohttp.request("post",
+                               url='https://ai.baidu.com/aidemo', 
+                               data={"apiType": "nlp", "type": "sentimentClassify", "t1": text}, 
+                               headers={"Cookie": "BAIDUID=0"}
+                               ) as r:
+        ret = await r.json(content_type=None)
+    return ret
