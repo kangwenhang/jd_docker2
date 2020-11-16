@@ -66,6 +66,7 @@ BiliExp
   - [三、使用阿里云函数(Actions部署)(不推荐)](#方式三不推荐使用阿里云函数)
   - [四、windows本地部署(依靠任务计划启动)](#方式四windows本地部署)
   - [五、linux本地部署(依靠crontab启动,shell自动下载安装)](#方式五linux本地部署)
+  - [配置文件config.json详解](/config#目录)
 - [使用说明(下载器部分)](#使用方式下载器部分)
 - [更新日志](#更新日志)
 - [获得B站账户cookies方法](#获得cookies方法)
@@ -83,6 +84,7 @@ BiliExp
 ## 使用方式(仅自动操作脚本部分)
 
 注意：方式一需要转到```BiliExp-Actions```分支,方式二和三一定要正确配置相应的secrets再执行Actions,方式五和方式六需要去release下载压缩包再部署。**请尽量按照使用步骤进行！！**
+如果需要设置配置文件config.json，建议先观看[配置文件详解](/config#目录) 
 
 ### 方式一(推荐)、只使用github Actions
 * 请转至本项目的"<a href="https://github.com/happy888888/BiliExp/tree/BiliExp-Actions" title="B站经验脚本纯Actions版">BiliExp-Actions</a>"分支，请区分此分支的Actions与本主分支的不同，不要使用本主分支的Actions。
