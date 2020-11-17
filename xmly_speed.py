@@ -231,7 +231,8 @@ def ans_getTimes(cookies):
             'https://m.ximalaya.com/speed/web-earn/topic/user', headers=headers, cookies=cookies)
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
-        return
+        return {"stamina": 0,
+            "remainingTimes": 0}
     result = json.loads(response.text)
     stamina = result["data"]["stamina"]
     remainingTimes = result["data"]["remainingTimes"]
@@ -347,9 +348,11 @@ def index_baoxiang_award(cookies):
     }
     uid = cookies["1&_token"].split("&")[0]
     currentTimeMillis = int(time.time()*1000)-2
-    response = requests.post('https://mobile.ximalaya.com/pizza-category/activity/getAward?activtyId=baoxiangAward',
+    try:
+        response = requests.post('https://mobile.ximalaya.com/pizza-category/activity/getAward?activtyId=baoxiangAward',
                              headers=headers, cookies=cookies)
-
+    except:
+        return
     result = response.json()
     print("宝箱奖励: ", result)
     if "ret" in result and result["ret"] == 0:
@@ -434,16 +437,16 @@ def checkin(cookies, _datatime):
                                 headers=headers, params=params, cookies=cookies)
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
-        return
+        return 0
     result = json.loads(response.text)
     print(result)
     print(f"""连续签到{result["continuousDays"]}/{result["historyDays"]}天""")
     print(result["isTickedToday"])
     if not result["isTickedToday"]:
         print("!!!开始签到")
-        if result["canMakeUp"]:
-            print("canMakeUp 第30天需要手动")
-            return
+        # if result["canMakeUp"]:
+        #     print("canMakeUp 第30天需要手动")
+        #     return
         headers = {
             'User-Agent': UserAgent,
             'Content-Type': 'application/json;charset=utf-8',
@@ -640,6 +643,8 @@ def account(cookies):
 def answer(cookies):
     print("\n【答题】")
     ans_times = ans_getTimes(cookies)
+    if not ans_times:
+        return
     if ans_times["stamina"] == 0:
         print("时间未到")
     for _ in range(ans_times["stamina"]):
@@ -841,8 +846,11 @@ def card(cookies, _datatime):
         8: [28, 29, 30, 31, 32],
         9: [33, 34, 35, 36, 37]
     }
-    response = requests.get(
+    try:
+        response = requests.get(
         'https://m.ximalaya.com/speed/web-earn/card/userCardInfo', headers=headers, cookies=cookies)
+    except:
+        return
     data = response.json()["data"]
     userCardsList = data["userCardsList"]  # 手牌
     lstg = groupby(userCardsList, key=lambda x: x["themeId"])
@@ -920,7 +928,7 @@ def bark(title, content):
 
 
 def run():
-    print(f"喜马拉雅极速版 (https://github.com/Zero-S1/xmly_speed/blob/master/xmly_speed.md) ,欢迎打赏¯\(°_o)/¯")
+    print(f"喜马拉雅极速版 (https://github.com/Zero-S1/xmly_speed/blob/master/xmly_speed.md ) ,欢迎打赏¯\(°_o)/¯")
     mins, date_stamp, _datatime, _notify_time = get_time()
     table = []
     for k, v in enumerate(cookiesList):
