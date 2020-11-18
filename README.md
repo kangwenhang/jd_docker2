@@ -61,12 +61,13 @@ BiliExp
   - [主要功能](#主要功能)
 - [目录](#目录)
 - [使用说明(仅自动操作脚本部分)](#使用方式仅自动操作脚本部分)
+  - [零、配置文件config.json详解](/config#目录)
   - [一、只使用Actions(推荐)](#方式一推荐只使用github-actions)
   - [二、使用腾讯云函数(Actions部署)](#方式二使用腾讯云函数)
   - [三、使用阿里云函数(Actions部署)(不推荐)](#方式三不推荐使用阿里云函数)
   - [四、windows本地部署(依靠任务计划启动)](#方式四windows本地部署)
   - [五、linux本地部署(依靠crontab启动,shell自动下载安装)](#方式五linux本地部署)
-  - [配置文件config.json详解](/config#目录)
+  - [六、docker部署](#方式六docker安装)
 - [使用说明(下载器部分)](#使用方式下载器部分)
 - [更新日志](#更新日志)
 - [获得B站账户cookies方法](#获得cookies方法)
@@ -176,6 +177,20 @@ BiliExp
 		  ```
     *  2.2安装成功后，可去/etc/BiliExp/config.json文件中进行详细配置，脚本将会在每天12:00启动(依赖于crontab)。
 
+### 方式六、docker安装
+
+* 1.准备
+    *  1.1一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图),可选：SCKEY，email用于微信或邮箱的消息推送
+    *  1.2安装docker(以安装可忽略) `curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun`
+
+* 2.部署
+    *  2.1填写config/config.json文件，放到本地任意文件夹下(以路径 '/etc/BiliExp' 为例)
+    *  2.2执行如下命令，运行BiliExp
+	      ```
+		  docker run -v /etc/BiliExp:/etc/BiliExp registry.cn-shanghai.aliyuncs.com/happy888888/biliexp:1.1.5
+		  ```
+    *  2.3配置crontab
+
 </br></br></br>
 
 ## 使用方式(下载器部分)
@@ -187,6 +202,12 @@ BiliExp
 
 </br></br></br>
 ## 更新日志
+
+### 2020/11/18更新
+
+* 1.增加docker部署方式
+
+</br></br>
 
 ### 2020/11/06更新
 
