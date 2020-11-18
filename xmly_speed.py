@@ -212,8 +212,9 @@ def ans_restore(cookies):
                                  headers=headers, cookies=cookies, data=json.dumps(data))
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
-        return
+        return 0
     print(response.text)
+    return 1
 
 
 def ans_getTimes(cookies):
@@ -255,7 +256,7 @@ def ans_start(cookies):
             'https://m.ximalaya.com/speed/web-earn/topic/start', headers=headers, cookies=cookies)
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
-        return
+        return 0,0,0
     result = json.loads(response.text)
     paperId = result["data"]["paperId"]
     dateStr = result["data"]["dateStr"]
@@ -605,8 +606,11 @@ def cardReportTime(cookies, mins, date_stamp, _datatime):
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
         return
-    if response["data"]["upperLimit"]:
+    try:
+        response["data"]["upperLimit"]
         print("今日已达上限")
+    except:
+        return
 
 
 def account(cookies):
@@ -649,6 +653,8 @@ def answer(cookies):
         print("时间未到")
     for _ in range(ans_times["stamina"]):
         paperId, _, lastTopicId = ans_start(cookies)
+        if paperId==0:
+                return
         ans_receive(cookies, paperId, lastTopicId, 1)
         time.sleep(1)
         ans_receive(cookies, paperId, lastTopicId, 2)
@@ -656,9 +662,12 @@ def answer(cookies):
 
     if ans_times["remainingTimes"] > 0:
         print("[看视频回复体力]")
-        ans_restore(cookies)
+        if ans_restore(cookies)==0:
+            return
         for _ in range(5):
             paperId, _, lastTopicId = ans_start(cookies)
+            if paperId==0:
+                return
             ans_receive(cookies, paperId, lastTopicId, 1)
             time.sleep(1)
             ans_receive(cookies, paperId, lastTopicId, 2)
