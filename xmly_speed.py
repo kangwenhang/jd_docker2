@@ -14,10 +14,10 @@ import os
 
 ###################################################
 # 对应方案2: 下载到本地,需要此处填写
-cookies1 = ""  
-cookies2 = "" 
+cookies1 = ""
+cookies2 = ""
 
-cookiesList = [cookies1,]   # 多账号准备
+cookiesList = [cookies1, ]   # 多账号准备
 
 # 通知服务
 BARK = ''                   # bark服务,自行搜索; secrets可填;形如jfjqxDx3xxxxxxxxSaK的字符串
@@ -46,8 +46,9 @@ if "XMLY_SPEED_COOKIE" in os.environ:
 
 
 ###################################################
-#可选项
-devices = []                                # 自定义设备命名,非必须 ;devices=["iPhone7P","huawei"];与cookiesList对应
+# 可选项
+# 自定义设备命名,非必须 ;devices=["iPhone7P","huawei"];与cookiesList对应
+devices = []
 notify_time = 19                            # 通知时间,24小时制,默认19
 XMLY_ACCUMULATE_TIME = 1                    # 希望刷时长的,此处置1,默认打开;关闭置0
 UserAgent = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 iting/1.0.12 kdtunion_iting/1.0 iting(main)/1.0.12/ios_1"
@@ -162,7 +163,7 @@ def read(cookies):
             'https://51gzdhh.xyz/new/userCompleteNew', headers=headers, params=params)
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
-        return
+        return 0
     result = response.json()
     print(result)
 
@@ -189,8 +190,8 @@ def ans_receive(cookies, paperId, lastTopicId, receiveType):
                                  headers=headers, cookies=cookies, data=json.dumps(data))
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
-        return
-    print(response.text)
+        return 0
+    return 1
 
 
 def ans_restore(cookies):
@@ -213,7 +214,9 @@ def ans_restore(cookies):
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
         return 0
-    print(response.text)
+    result=response.json()
+    if "errorCode" in result:
+        return 0
     return 1
 
 
@@ -233,8 +236,9 @@ def ans_getTimes(cookies):
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
         return {"stamina": 0,
-            "remainingTimes": 0}
-    result = json.loads(response.text)
+                "remainingTimes": 0}
+    print(response.text)
+    result = response.json()
     stamina = result["data"]["stamina"]
     remainingTimes = result["data"]["remainingTimes"]
     return {"stamina": stamina,
@@ -256,13 +260,20 @@ def ans_start(cookies):
             'https://m.ximalaya.com/speed/web-earn/topic/start', headers=headers, cookies=cookies)
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
-        return 0,0,0
-    result = json.loads(response.text)
-    paperId = result["data"]["paperId"]
-    dateStr = result["data"]["dateStr"]
-    lastTopicId = result["data"]["topics"][2]["topicId"]
-    print(paperId, dateStr, lastTopicId)
-    return paperId, dateStr, lastTopicId
+        return 0, 0, 0
+    print(response.text)
+    result = response.json()
+
+    try:
+        paperId = result["data"]["paperId"]
+        dateStr = result["data"]["dateStr"]
+        lastTopicId = result["data"]["topics"][2]["topicId"]
+        print(paperId, dateStr, lastTopicId)
+        return paperId, dateStr, lastTopicId
+    except:
+        print("❌1 重新抓包 2 手动答题")
+        return 0, 0, 0
+
 
 
 def _str2key(s):
@@ -351,7 +362,7 @@ def index_baoxiang_award(cookies):
     currentTimeMillis = int(time.time()*1000)-2
     try:
         response = requests.post('https://mobile.ximalaya.com/pizza-category/activity/getAward?activtyId=baoxiangAward',
-                             headers=headers, cookies=cookies)
+                                 headers=headers, cookies=cookies)
     except:
         return
     result = response.json()
@@ -653,20 +664,24 @@ def answer(cookies):
         print("时间未到")
     for _ in range(ans_times["stamina"]):
         paperId, _, lastTopicId = ans_start(cookies)
-        if paperId==0:
-                return
-        ans_receive(cookies, paperId, lastTopicId, 1)
+        if paperId == 0:
+            return
+        tmp = ans_receive(cookies, paperId, lastTopicId, 1)
+        if tmp == 0:
+            return
         time.sleep(1)
-        ans_receive(cookies, paperId, lastTopicId, 2)
+        tmp = ans_receive(cookies, paperId, lastTopicId, 2)
+        if tmp == 0:
+            return
         time.sleep(1)
 
     if ans_times["remainingTimes"] > 0:
         print("[看视频回复体力]")
-        if ans_restore(cookies)==0:
+        if ans_restore(cookies) == 0:
             return
         for _ in range(5):
             paperId, _, lastTopicId = ans_start(cookies)
-            if paperId==0:
+            if paperId == 0:
                 return
             ans_receive(cookies, paperId, lastTopicId, 1)
             time.sleep(1)
@@ -857,7 +872,7 @@ def card(cookies, _datatime):
     }
     try:
         response = requests.get(
-        'https://m.ximalaya.com/speed/web-earn/card/userCardInfo', headers=headers, cookies=cookies)
+            'https://m.ximalaya.com/speed/web-earn/card/userCardInfo', headers=headers, cookies=cookies)
     except:
         return
     data = response.json()["data"]
@@ -902,6 +917,7 @@ def card(cookies, _datatime):
 def get_uid(cookies):
     return cookies["1&_token"].split("&")[0]
 
+
 def serverJ(title, content):
     print("\n")
     sckey = SCKEY
@@ -917,10 +933,11 @@ def serverJ(title, content):
     print("serverJ服务启动")
     data = {
         "text": title,
-        "desp": content.replace("\n","\n\n")+"\n\n [打赏作者](https://github.com/Zero-S1/xmly_speed/blob/master/thanks.md)"
+        "desp": content.replace("\n", "\n\n")+"\n\n [打赏作者](https://github.com/Zero-S1/xmly_speed/blob/master/thanks.md)"
     }
     response = requests.post(f"https://sc.ftqq.com/{sckey}.send", data=data)
     print(response.text)
+
 
 def bark(title, content):
     print("\n")
@@ -969,14 +986,14 @@ def run():
         print("###"*20)
         print("\n"*4)
     if _notify_time.split()[0] == str(notify_time) and int(_notify_time.split()[1]) > 30:
-    # if 1:
-        message=''
+        # if 1:
+        message = ''
         for i in table:
             message += f"[{i[0].replace(' ',''):<9}]: {i[1]:<6.2f} (＋{i[2]:<4.2f}) {i[3]:<7.2f} {i[4]}\\30\n"
         message += "⭕tips:第30天需要手动签到 by zero_s1, (*^_^*)欢迎打赏 "
-        if len(table)<=4:
-            message="【设备】| 当前剩余 | 今天| 历史| 连续签到\n"+message
-        
+        if len(table) <= 4:
+            message = "【设备】| 当前剩余 | 今天| 历史| 连续签到\n"+message
+
         bark("⏰ 喜马拉雅极速版", message)
         serverJ("⏰ 喜马拉雅极速版", message)
 
