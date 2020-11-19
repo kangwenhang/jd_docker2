@@ -10,7 +10,7 @@ inputs:
   src: ./  #代码路径
   handler: BiliExp.main #入口
   runtime: Python3.6 # 云函数运行时的环境
-  region: ap-shanghai # 云函数所在区域
+  region: ap-guangzhou # 云函数所在区域
   description: 'B站经验脚本'
   timeout: 900
   events: # 触发器
