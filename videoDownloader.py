@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 from BiliClient import (VideoParser, Downloader)
 import sys, json, re, time, curses, os
+from getopt import getopt
+
 is_win = os.name == 'nt'
 
 ReverseProxy = 'http://biliapi.8box.top/playerproxy' #解析接口代理
 
-with open('config/config.json','r',encoding='utf-8') as fp:
-    configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
+if os.path.exists('/etc/BiliExp/config.json'):
+    with open('/etc/BiliExp/config.json','r',encoding='utf-8') as fp:
+        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
+elif os.path.exists('./config/config.json'):
+    with open('./config/config.json','r',encoding='utf-8') as fp:
+        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
+else:
+    configData = None
 
 def get_input_tasks() -> list:
     '''通过控制台输入获得下载任务'''
@@ -41,10 +49,40 @@ def get_input_tasks() -> list:
         add_another = input('是否再添加一个任务(y:再添加一个/n:立即开始下载)：').upper() == 'Y'
     return ret
 
-def downloader_put_tasks(downloader, tasks):
-    '''将下载任务放进下载器'''
+def get_arg_tasks(tasks: list) -> list:
+    '''通过参数列表输入获得下载任务'''
+    ret = []
     for xx in tasks:
-        downloader.add(url=xx.url, dst=xx.fliename, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)","Referer":"https://www.bilibili.com/"})
+        video_list = VideoParser(xx[0]).all()
+        video_len = len(video_list)
+        videos_P = set()
+        for P in xx[1].split(','):
+            if '-' in P:
+                start, end = P.split('-')
+                for i in range(int(start), int(end)+1):
+                    if i <= video_len:
+                        videos_P.add(i-1)
+            else:
+                if int(P) <= video_len:
+                    videos_P.add(int(P)-1)
+        for x in videos_P:
+            video_stream_list = video_list[x].allStream(configData["users"][0]["cookieDatas"] if configData else None, ReverseProxy if xx[3] == 1 else '')
+            if not video_stream_list:
+                continue
+            if xx[2] < len(video_stream_list) - 1:
+                ret.append(video_stream_list[xx[2]])
+            else:
+                ret.append(video_stream_list[-1])
+    return ret
+
+def downloader_put_tasks(downloader, tasks, path: str):
+    '''将下载任务放进下载器'''
+    if not path.endswith('/'):
+        path += '/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    for xx in tasks:
+        downloader.add(url=xx.url, dst=path + xx.fliename, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)","Referer":"https://www.bilibili.com/"})
 
 def show(stdscr, tasklist: list, tasknum: tuple or list) -> None:
     stdscr.clear()
@@ -93,13 +131,59 @@ def display(downloader) -> None:
         show(stdscr, active_task, task_nums)
     curses.endwin()
 
-def main(*args):
-    tasks = get_input_tasks()
+def main(*args, **kwargs):
+    if kwargs["tasklist"]:
+        tasks = get_arg_tasks(kwargs["tasklist"])
+    else:
+        tasks = get_input_tasks()
     downloader = Downloader()
-    downloader_put_tasks(downloader, tasks)
+    downloader_put_tasks(downloader, tasks, kwargs["path"])
     downloader.startAll()
     display(downloader)
     print("下载结束")
 
 if __name__=="__main__":
-    main()
+    kwargs = {
+       "tasklist": [],
+       "path": './'
+        }
+    episode, quality, proxy, video = [], [], [], []
+    opts, args = getopt(sys.argv[1:], "hVv:e:q:p:x:", ["help", "version", "video=", "episode=", "quality=", "path=", "proxy="])
+    for opt, arg in opts:
+        if opt in ('-h','--help'):
+            print('videoDownloader -p <下载文件夹> -v <视频1> -e <分集数> -q <质量序号> -v <视频2> -e <分集数> -q <质量序号> ...')
+            print(' -p --path      下载保存的路径，提供一个文件夹路径，没有会自动创建文件夹，默认为当前文件夹')
+            print(' -v --video     下载的视频地址，支持链接，av号(avxxxxx)，BV号(BVxxxxxx)，ep，ss')
+            print(' -e --episode   分p数，只对多P视频和多集的番剧有效，不提供默认为1，多个用逗号分隔，连续用减号分隔  -e 2,3,5-7,10 表示2,3,5,6,7,10集')
+            print(' -q --quality   视频质量序号，0为能获取的最高质量(默认)，1为次高质量，数字越大质量越低')
+            print(' -x --proxy     是否使用接口代理(可下载仅港澳台)，0为不使用(默认)，1为使用代理')
+            print('注意，一个 -v 参数对应一个 -e(-q, -x) 参数，如果出现两个 -v 参数但只有一个 -e(-q, -x) 参数则只应用于第一个，可以有多个 -v 参数以一次性下载多个视频')
+            print(' -V --version   显示版本信息')
+            print(' -h --help      显示帮助信息')
+            exit()
+        elif opt in ('-V','--version'):
+            print('B站视频下载器 videoDownloader v1.1.5')
+            exit()
+        elif opt in ('-p','--path'):
+            kwargs["path"] = arg.replace(r'\\', '/')
+        elif opt in ('-v','--video'):
+            video.insert(0, arg)
+        elif opt in ('-e','--episode'):
+            episode.insert(0, arg)
+        elif opt in ('-q','--quality'):
+            quality.insert(0, int(arg))
+        elif opt in ('-x','--proxy'):
+            proxy.insert(0, int(arg))
+
+    q = 0
+    while video:
+        e, x = '1', 0
+        if episode:
+            e = episode.pop()
+        if proxy:
+            x = proxy.pop()
+        if quality:
+            q = quality.pop()
+        kwargs["tasklist"].append([video.pop(), e, q, x])
+
+    main(**kwargs)

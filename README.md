@@ -198,11 +198,61 @@ BiliExp
 
 * 1.转至[release](https://github.com/happy888888/BiliExp/releases) ，下载BiliDownloader，解压。
 * 2.从浏览器获取SESSDATA，bili_jct，DedeUserID这三个参数 ([获得B站账户cookies方法](#获得cookies方法))
-* 3.将上述获取的三个参数填入config文件夹中的config.json文件
-* 4.执行mangaDownloader.exe或videoDownloader.exe开始下载...
+* 3.将上述获取的三个参数填入config文件夹中的config.json文件(linux可将文件放入/etc/BiliExp/config.json)
+* 4.使用videoDownloader
+    ```
+	命令行参数
+	videoDownloader -p <下载文件夹> -v <视频1> -e <分集数> -q <质量序号> -v <视频2> -e <分集数> -q <质量序号> ...
+	-p --path      下载保存的路径，提供一个文件夹路径，没有会自动创建文件夹，默认为当前文件夹
+	-v --video     下载的视频地址，支持链接，av号(avxxxxx)，BV号(BVxxxxxx)，ep，ss
+	-e --episode   分p数，只对多P视频和多集的番剧有效，不提供默认为1，多个用逗号分隔，连续用减号分隔  -e 2,3,5-7,10 表示2,3,5,6,7,10集
+	-q --quality   视频质量序号，0为能获取的最高质量(默认)，1为次高质量，数字越大质量越低
+	-x --proxy     是否使用接口代理(可下载仅港澳台)，0为不使用(默认)，1为使用代理
+	注意，一个 -v 参数对应一个 -e(-q, -x) 参数，如果出现两个 -v 参数但只有一个 -e(-q, -x) 参数则只应用于第一个，可以有多个 -v 参数以一次性下载多个视频
+	-V --version   显示版本信息
+	-h --help      显示帮助信息
+	
+	使用例子
+	windows上(假如文件在D:\bilidownloader\videoDownloader.exe)，下载BV1qt411x7yQ的1,2,3,6集到D:\download目录
+	打开cmd执行如下命令
+	cd /d D:\bilidownloader
+	videoDownloader -v BV1qt411x7yQ -e 1-3,6 -p D:\download
+	
+	linux上(提前将videoDownloader移动到/usr/local/bin)，下载BV1qt411x7yQ的1,2,3,6集到用户的download目录
+	shell中执行
+	videoDownloader -v BV1qt411x7yQ -e 1-3,6 -p ~/download
+	```
+* 5.使用mangaDownloader
+    ```
+	命令行参数
+	mangaDownloader -p <下载文件夹> -m <漫画> -e <章节数> -f
+	-p --path      下载保存的路径，提供一个文件夹路径，没有会自动创建文件夹，默认为当前文件夹
+	-m --manga     下载的漫画mc号，整数
+	-e --episode   章节数，不提供默认下载所有章节，多个用逗号分隔，连续用减号分隔  -e 2,3,5-7,10 表示2,3,5,6,7,10章节，注意番外也算一个章节
+	-f --pdf       下载后合并为一个pdf
+	-V --version   显示版本信息
+	-h --help      显示帮助信息
+	
+	使用例子
+	windows上(假如文件在D:\bilidownloader\mangaDownloader.exe)，下载漫画mc28565的3,9,12,13,14章到D:\download目录
+	打开cmd执行如下命令
+	cd /d D:\bilidownloader
+	mangaDownloader -m 28565 -e 3,9,12-14 -p D:\download
+	
+	linux上(提前将mangaDownloader移动到/usr/local/bin)，下载漫画mc28565的3,9,12,13,14章到用户的download目录
+	shell中执行
+	mangaDownloader -m 28565 -e 3,9,12-14 -p ~/download
+	```
 
 </br></br></br>
 ## 更新日志
+
+### 2020/11/19更新
+
+* 1.漫画视频下载器支持命令行参数
+* 2.更新说明
+
+</br>
 
 ### 2020/11/18更新
 
