@@ -34,6 +34,8 @@ async def get_dynamic(biliapi: asyncbili) -> dict:
             if ret["code"] == 0:
                 if "has_more" in ret["data"]:
                     hasnext = (ret["data"]["has_more"] == 1)
+                if not "cards" in ret["data"]:
+                    break
                 cards = ret["data"]["cards"]
                 if not len(cards):
                     break
