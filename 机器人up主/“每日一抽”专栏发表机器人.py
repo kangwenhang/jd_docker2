@@ -87,7 +87,7 @@ def main(*args):
     list = listLott(configData["users"][0]["cookieDatas"], endtime, starttime) #返回自己动态里从starttime到endtime的所有抽奖信息
     article = Article(configData["users"][0]["cookieDatas"], "互动抽奖系列--每日一抽") #创建B站专栏,并设置标题
     content = buildContent(article, list) #创建文章内容
-    article.setContent(content.output()) #将文章内容保存至专栏
+    article.setContent(content) #将文章内容保存至专栏
 
     article.setImage("//i0.hdslb.com/bfs/article/d74e83cf96a9028eb3e280d5f877dce53760a7e2.jpg","//i0.hdslb.com/bfs/article/05dd9f784a5426b59a85ba33cf0c9a13cab521be.jpg")
                 #设置缩略图,本地图片请用article.articleUpcover()方法转换为链接

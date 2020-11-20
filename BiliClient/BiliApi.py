@@ -551,7 +551,7 @@ class BiliApi(object):
 
     def articleCardsCvid(self, cvid: 'str 加上cv前缀'):
         "根据cv号获取专栏，在专栏引用其他专栏时使用"
-        url = f'https://api.bilibili.com/x/article/cards?id={cvid}&cross_domain=true'
+        url = f'https://api.bilibili.com/x/article/card?id={cvid}&cross_domain=true'
         return self._session.get(url).json()
 
     def articleCardsId(self, epid: 'str 加上ep前缀'):
@@ -568,7 +568,7 @@ class BiliApi(object):
 
     def articleMangas(self, mcid: 'int 不加mc前缀'):
         "根据mc号获取漫画信息，在专栏引用站内漫画时使用"
-        url = f'https://api.bilibili.com/x/article/mangas?id={mcid}&cross_domain=true'
+        url = f'https://api.bilibili.com/x/article/mangas?ids={mcid}&cross_domain=true'
         return self._session.get(url).json()
 
     def articleCardsLv(self, lvid: 'str 加上lv前缀'):
@@ -599,9 +599,24 @@ class BiliApi(object):
                 ]
             }
         '''
+        def _parseData(name: str, sub_data: dict or list, data: dict):
+            '''内部函数，递归将多层dict转为单层dict'''
+            if isinstance(sub_data, dict):
+                for x in sub_data:
+                    _parseData(f'{name}[{x}]', sub_data[x], data)
+            elif isinstance(sub_data, list):
+                for ii in range(len(sub_data)):
+                    _parseData(f'{name}[{ii}]', sub_data[ii], data)
+            else:
+                data[name] = sub_data
+        url = 'https://api.vc.bilibili.com/vote_svr/v1/vote_svr/create_vote'
+        info = {}
+        _parseData("info", vote, info)
         post_data = {
-            "info": vote,
-            "csrf": self._bili_jct
+            #"info": vote, #不支持参数嵌套，用_parseData方法把嵌套参数转为单层
+            **info,
+            "csrf": self._bili_jct,
+            "csrf_token": self._bili_jct
             }
         return self._session.post(url, post_data).json()
 

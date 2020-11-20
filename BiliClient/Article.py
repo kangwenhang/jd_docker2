@@ -46,18 +46,18 @@ class Article(object):
             self._content = f'{self._content}</p>'
             return self
         def startD(self):
-            "开始一段带下划线的文字"
+            "开始一段带删除线的文字"
             self._content = f'{self._content}<span style="text-decoration: line-through;">'
             return self
         def endD(self):
-            "结束一段带下划线的文字"
+            "结束一段带删除线的文字"
             self._content = f'{self._content}</span>'
             return self
-        def startD(self, size=16):
+        def startS(self, size=16):
             "开始一段大小为size的文字"
             self._content = f'{self._content}<span class="font-size-{size}">'
             return self
-        def endD(self):
+        def endS(self):
             "结束一段特定大小的文字"
             self._content = f'{self._content}</span>'
             return self
@@ -240,9 +240,9 @@ class Article(object):
             self._image_urls = image_urls
         else:
             self._image_urls = origin_image_urls
-    def setContent(self, content):
+    def setContent(self, content: Content):
         "设置文章内容"
-        self._content = content
+        self._content = content.output()
 
     def getAid(self, url=False):
         "返回创建文章的aid或url,可通过url在网页上修改此文章"

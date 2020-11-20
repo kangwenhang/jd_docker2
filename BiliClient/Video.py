@@ -147,10 +147,6 @@ class VideoUploader(object):
         "设置视频分区"
         self._data["tid"] = tid
 
-    def setTitle(self, tid=174):
-        "设置标题"
-        self._data["tid"] = tid
-
     def setSource(self, source=""):
         "设置转载原地址"
         self._data["source"] = source

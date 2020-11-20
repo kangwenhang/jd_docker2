@@ -44,7 +44,7 @@ for x in datas:
     content.startP().startB().add(f'{i}.').endB().endP().picUrl(x["url"], x["title"])
                             #序号加粗                      插入图片和图片标题
 
-article.setContent(content.output()) #将文章内容保存至专栏
+article.setContent(content) #将文章内容保存至专栏
 article.setImage(datas[0]["url"])  #将第一张图片设置为专栏缩略图
 article.setCategory(4)  #将专栏分类到"动画 → 动漫杂谈"
 article.setOriginal(0)  #设置为非原创专栏,因为是转载的

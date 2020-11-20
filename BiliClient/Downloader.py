@@ -6,15 +6,12 @@ class _downloader_thread(threading.Thread):
     '''下载器线程'''
     def __init__(self, max_task_num: int = 3):
         threading.Thread.__init__(self)
+        self._max_task_num = max_task_num
         self._loop = asyncio.get_event_loop()
         self._loop.run_until_complete(self._init_session())
         self._run_queue = asyncio.Queue(maxsize=max_task_num)
         self._wait_queue = asyncio.Queue()
         self._task_dict = {}
-    
-    def __del__(self):
-        self._loop.call_soon_threadsafe(self._session.close())
-        threading.Thread._stop(self)
 
     @property
     def queue(self):
@@ -34,8 +31,13 @@ class _downloader_thread(threading.Thread):
     async def task_loop(self) -> None:
         while True:
             id = await self._wait_queue.get()
+            if id is None:
+                for _ in range(self._max_task_num):
+                    await self._run_queue.put(None)
+                break
             await self._run_queue.put(id)
             asyncio.run_coroutine_threadsafe(self.start_task(id), self._loop)
+        self._close.set_result(None)
 
     def add_task(self, id: int, url: str, dst: str, headers: Dict[str, str], max_connect_num: int) -> None:
         '''添加任务'''
@@ -57,11 +59,16 @@ class _downloader_thread(threading.Thread):
         await self._wait_queue.put(id)
 
     def run(self):
-        asyncio.run_coroutine_threadsafe(self.task_loop(), self._loop)
         try:
-            self._loop.run_forever()
+            self._loop.run_until_complete(self.task_loop())
         finally:
             self._loop.close()
+
+    async def stop_safe(self):
+        self._close = self._loop.create_future()
+        await self._wait_queue.put(None)
+        await self._close
+        await self._session.close()
 
     async def _init_session(self):
         self._session = aiohttp.ClientSession()
@@ -171,6 +178,7 @@ class Downloader(object):
         self._thread.start()
 
     def __del__(self):
+        asyncio.run_coroutine_threadsafe(self._thread.stop_safe(), self._thread.loop)
         del self._thread
 
     def add(self, url: str, dst: str, headers: Dict[str, str] = {}, max_connect_num: int = 4) -> int:

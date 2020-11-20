@@ -608,7 +608,7 @@ class asyncBiliApi(object):
         cvid int 专栏id
         '''
         url = f'https://api.bilibili.com/x/article/viewinfo?id={cvid}'
-        async with self._session.get(url, params=params, verify_ssl=False) as r:
+        async with self._session.get(url, verify_ssl=False) as r:
             ret = await r.json()
         return ret
 
