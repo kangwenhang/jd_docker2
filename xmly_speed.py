@@ -539,7 +539,7 @@ def bubble(cookies):
 
         tmp = receive(cookies, i["id"])
         if "errorCode" in tmp:
-            print("❌ 进入app相关页面手动领取 反复几次即可")
+            print("❌ 每天手动收听一段时间，暂无其他方法")
             return
         time.sleep(1)
         ad_score(cookies, 7, i["id"])
@@ -673,7 +673,7 @@ def answer(cookies):
             return
         tmp = ans_receive(cookies, paperId, lastTopicId, 1)
         if "errorCode" in tmp :
-            print("❌ 进入app相关页面手动领取 反复几次即可")
+            print("❌ 每天手动收听一段时间，暂无其他方法")
             return
         time.sleep(1)
         tmp = ans_receive(cookies, paperId, lastTopicId, 2)
@@ -689,11 +689,14 @@ def answer(cookies):
             paperId, _, lastTopicId = ans_start(cookies)
             if paperId == 0:
                 return
+            tmp = ans_receive(cookies, paperId, lastTopicId, 1)
             if "errorCode" in tmp :
-                print("❌ 进入app相关页面手动领取 反复几次即可")
+                print("❌ 每天手动收听一段时间，暂无其他方法")
                 return
             time.sleep(1)
-            ans_receive(cookies, paperId, lastTopicId, 2)
+            tmp = ans_receive(cookies, paperId, lastTopicId, 2)
+            if tmp == 0:
+                return
             time.sleep(1)
 
 
