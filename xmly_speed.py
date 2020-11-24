@@ -728,7 +728,7 @@ def saveListenTime(cookies, date_stamp):
         'uid': uid
     }
     try:
-        requests.post('http://mobile.ximalaya.com/pizza-category/ball/saveListenTime',
+        response=requests.post('http://mobile.ximalaya.com/pizza-category/ball/saveListenTime',
                       headers=headers, cookies=cookies, data=data)
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
@@ -756,7 +756,7 @@ def listenData(cookies, date_stamp):
         'uid': uid
     }
     try:
-        requests.post('http://m.ximalaya.com/speed/web-earn/listen/client/data',
+        response=requests.post('http://m.ximalaya.com/speed/web-earn/listen/client/data',
                       headers=headers, cookies=cookies, data=json.dumps(data))
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
