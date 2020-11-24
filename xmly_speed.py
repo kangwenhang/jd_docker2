@@ -23,7 +23,7 @@ cookiesList = [cookies1, ]   # 多账号准备
 BARK = ''                   # bark服务,自行搜索; secrets可填;形如jfjqxDx3xxxxxxxxSaK的字符串
 SCKEY = ''                  # Server酱的SCKEY; secrets可填
 TG_BOT_TOKEN = ''           # telegram bot token 自行申请
-TG_USER_ID = ''           # telegram 用户ID
+TG_USER_ID = ''             # telegram 用户ID
 
 ###################################################
 # 对应方案1:  GitHub action自动运行,此处无需填写;
@@ -733,7 +733,7 @@ def saveListenTime(cookies, date_stamp):
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
         return
-    # print(response.text)
+    print(response.text)
 
 
 def listenData(cookies, date_stamp):
@@ -761,7 +761,7 @@ def listenData(cookies, date_stamp):
     except:
         print("网络请求异常,为避免GitHub action报错,直接跳过")
         return
-    # print(response.text)
+    print(response.text)
 
 
 def card_exchangeCoin(cookies, themeId, cardIdList, _datatime):
