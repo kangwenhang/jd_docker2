@@ -1,4 +1,5 @@
 from BiliClient import asyncbili
+from .push_message_task import webhook
 from .import_once import taday
 import logging
 
@@ -13,5 +14,7 @@ async def manga_vip_reward_task(biliapi: asyncbili,
             logging.info(f'{biliapi.name}: 大会员成功领取{ret["data"]["amount"]}张漫读劵')
         else:
             logging.warning(f'{biliapi.name}: 大会员领取漫读劵失败,信息为：{ret["msg"]}')
+            webhook.addMsg('msg_simple', f'{biliapi.name}:领取漫读劵失败\n')
     except Exception as e: 
         logging.warning(f'{biliapi.name}: 大会员领取漫读劵异常,原因为：{str(e)}')
+        webhook.addMsg('msg_simple', f'{biliapi.name}:领取漫读劵失败\n')

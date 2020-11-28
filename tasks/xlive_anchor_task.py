@@ -1,4 +1,5 @@
 from BiliClient import asyncbili
+from .push_message_task import webhook
 import logging, asyncio, uuid, time, aiohttp
 
 async def xlive_anchor_task(biliapi: asyncbili,
@@ -36,6 +37,7 @@ async def anchor_task(biliapi: asyncbili,
                 else:
                     if biliapi.uid in [x["uid"] for x in ret["data"]["award_users"]]:
                         logging.info(f'{biliapi.name}: 直播间{roomid}天选时刻{ret["data"]["id"]}中奖')
+                        webhook.addMsg('msg_simple', f'{biliapi.name}:天选时刻中奖\n')
                     else:
                         logging.info(f'{biliapi.name}: 直播间{roomid}天选时刻{ret["data"]["id"]}没有中奖')
                     await asyncio.sleep(ret["data"]["goaway_time"]+2)

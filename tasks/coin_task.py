@@ -1,10 +1,15 @@
 from BiliClient import asyncbili
+from .push_message_task import webhook
 from .import_once import get_ids
 import logging
 
 async def coin_task(biliapi: asyncbili, 
                     task_config: dict
                     ) -> None:
+
+    target = task_config["num"]
+    if target < 1:
+        return
 
     if biliapi.myexp >= task_config["target_exp"]:
         logging.info(f'{biliapi.name}: 已达到经验目标，跳过投币')
@@ -13,6 +18,7 @@ async def coin_task(biliapi: asyncbili,
     coin_num = biliapi.mycoin
     if coin_num == 0:
         logging.info(f'{biliapi.name}: 硬币不足，跳过投币')
+        webhook.addMsg('msg_simple', f'{biliapi.name}:硬币不足\n')
         return
 
     try:
@@ -20,59 +26,65 @@ async def coin_task(biliapi: asyncbili,
         #print(f'{biliapi.name}: 经验脚本开始前经验信息 ：{str(reward)}')
     except Exception as e: 
         logging.warning(f'{biliapi.name}: 获取账户经验信息异常，原因为{str(e)}，跳过投币')
+        webhook.addMsg('msg_simple', f'{biliapi.name}:投币失败\n')
         return
 
-    coin_exp_num = (task_config["num"] * 10 - reward["coins_av"]) // 10
+    coin_exp_num = (target * 10 - reward["coins_av"]) // 10
     toubi_num = coin_exp_num if coin_num > coin_exp_num else coin_num
     toubi_num = int(toubi_num)
     
     if toubi_num < 1:
         logging.info(f'{biliapi.name}: 不需要投币')
         return
-    else:
-        if not 'do_task' in task_config:
-            task_config["do_task"] = [1] #兼容旧的配置文件
-        try:
-            async for aid, flag in get_coin_aids(biliapi, task_config):
-                #flag为0，aid为视频id，flag为up主uid，aid为专栏id
-                if flag:
-                    try:
-                        ret = await biliapi.coinCv(aid, 1, flag, 1)
-                    except Exception as e:
-                        logging.warning(f'{biliapi.name}: 投币专栏{aid}异常，原因为{str(e)}，跳过投币')
-                        break
-                    else:
-                        if ret["code"] == 0:
-                            toubi_num -= 1
-                            logging.info(f'{biliapi.name}: 成功给专栏{aid}视频投一个币')
-                        elif ret["code"] == 34005:
-                            logging.warning(f'{biliapi.name}: 投币专栏{aid}失败，原因为{ret["message"]}')
-                            continue
-                            #-104硬币不够了 -111 csrf失败 34005 投币达到上限
-                        else:
-                            logging.warning(f'{biliapi.name}: 投币专栏{aid}失败，原因为{ret["message"]}，跳过投币')
-                            break
-                else:
-                    try:
-                        ret = await biliapi.coin(aid, 1, 1)
-                    except Exception as e:
-                        logging.warning(f'{biliapi.name}: 投币视频av{aid}异常，原因为{str(e)}，跳过投币')
-                        break
-                    else:
-                        if ret["code"] == 0:
-                            toubi_num -= 1
-                            logging.info(f'{biliapi.name}: 成功给av{aid}视频投一个币')
-                        elif ret["code"] == 34005:
-                            logging.warning(f'{biliapi.name}: 投币视频av{aid}失败，原因为{ret["message"]}')
-                            continue
-                        else:
-                            logging.warning(f'{biliapi.name}: 投币视频av{aid}失败，原因为{ret["message"]}，跳过投币')
-                            break
-                if not toubi_num:
+
+    su = 0
+    if not 'do_task' in task_config:
+        task_config["do_task"] = [1] #兼容旧的配置文件
+    try:
+        async for aid, flag in get_coin_aids(biliapi, task_config):
+            #flag为0，aid为视频id，flag为up主uid，aid为专栏id
+            if flag:
+                try:
+                    ret = await biliapi.coinCv(aid, 1, flag, 1)
+                    await biliapi.likeCv(aid)
+                except Exception as e:
+                    logging.warning(f'{biliapi.name}: 投币专栏{aid}异常，原因为{str(e)}，跳过投币')
                     break
-        except Exception as e:
-            logging.warning(f'{biliapi.name}: 获取B站视频信息异常，原因为{str(e)}，跳过投币')
-            return
+                else:
+                    if ret["code"] == 0:
+                        toubi_num -= 1
+                        logging.info(f'{biliapi.name}: 成功给专栏{aid}投一个币')
+                        su += 1
+                    elif ret["code"] == 34005:
+                        logging.warning(f'{biliapi.name}: 投币专栏{aid}失败，原因为{ret["message"]}')
+                        continue
+                        #-104硬币不够了 -111 csrf失败 34005 投币达到上限
+                    else:
+                        logging.warning(f'{biliapi.name}: 投币专栏{aid}失败，原因为{ret["message"]}，跳过投币')
+                        break
+            else:
+                try:
+                    ret = await biliapi.coin(aid, 1, 1)
+                except Exception as e:
+                    logging.warning(f'{biliapi.name}: 投币视频av{aid}异常，原因为{str(e)}，跳过投币')
+                    break
+                else:
+                    if ret["code"] == 0:
+                        toubi_num -= 1
+                        logging.info(f'{biliapi.name}: 成功给av{aid}视频投一个币')
+                        su += 1
+                    elif ret["code"] == 34005:
+                        logging.warning(f'{biliapi.name}: 投币视频av{aid}失败，原因为{ret["message"]}')
+                        continue
+                    else:
+                        logging.warning(f'{biliapi.name}: 投币视频av{aid}失败，原因为{ret["message"]}，跳过投币')
+                        break
+            if not toubi_num:
+                break
+    except Exception as e:
+        logging.warning(f'{biliapi.name}: 获取B站视频信息异常，原因为{str(e)}，跳过投币')
+    if su < target:
+        webhook.addMsg('msg_simple', f'{biliapi.name}:成功投币{su}个\n')
 
 async def get_following_up(biliapi: asyncbili) -> int:
     '''获取关注的up主，异步迭代器'''
@@ -138,6 +150,8 @@ async def get_up_video_ids(biliapi: asyncbili,
     if ret["code"]:
         logging.info(f'{biliapi.name}: 投币获取up主{upid}的视频失败，信息为:{ret["message"]}')
         return
+    if not 'count' in ret["data"]["page"]:
+        return
     pnum = ret["data"]["page"]["count"] // 100
     if ret["data"]["page"]["count"] % 100 > 0:
         pnum += 1
@@ -165,7 +179,9 @@ async def get_up_article_ids(biliapi: asyncbili,
     pn = 1
     ret = await biliapi.spaceArticle(uid=upid, pn=pn)
     if ret["code"]:
-        logging.info(f'{biliapi.name}: 投币获取up主{upid}的视频失败，信息为:{ret["message"]}')
+        logging.info(f'{biliapi.name}: 投币获取up主{upid}的专栏失败，信息为:{ret["message"]}')
+        return
+    if not 'count' in ret["data"]:
         return
     pnum = ret["data"]["count"] // 30
     if ret["data"]["count"] % 30 > 0:

@@ -235,6 +235,27 @@ class asyncBiliApi(object):
             ret = await r.json()
         return ret
 
+    async def getMyGroups(self) -> dict:
+        '''取应援团列表'''
+        url = "https://api.vc.bilibili.com/link_group/v1/member/my_groups"
+        async with self._session.get(url, verify_ssl=False) as r:
+            ret = await r.json()
+        return ret
+
+    async def groupSign(self,
+                        group_id: int,
+                        owner_id: int
+                        ) -> dict:
+        '''
+        应援团签到
+        group_id int 应援团id
+        owner_id int 应援团所有者uid
+        '''
+        url = f'https://api.vc.bilibili.com/link_setting/v1/link_setting/sign_in?group_id={group_id}&owner_id={owner_id}'
+        async with self._session.get(url, verify_ssl=False) as r:
+            ret = await r.json()
+        return ret
+
     async def getRelationTags(self) -> dict:
         '''取关注用户分组列表'''
         url = "https://api.bilibili.com/x/relation/tags"
@@ -1037,7 +1058,7 @@ class asyncBiliApi(object):
         else:
             url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self._uid}&type_list={type_list}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
+            ret = await r.json(content_type=None)
         return ret
 
     async def getDynamicDetail(self, 
@@ -1071,6 +1092,27 @@ class asyncBiliApi(object):
             "plat": plat,
             "type": type,
             "message": message,
+            "csrf": self._bili_jct
+            }
+        async with self._session.post(url, data=post_data, verify_ssl=False) as r:
+            ret = await r.json()
+        return ret
+
+    async def dynamicLike(self, 
+                          dynamic_id: int, 
+                          like: int = 1
+                          ) -> dict:
+        '''
+        点赞动态
+        dynamic_id int 动态id
+        like int 1为点赞,2为取消点赞
+        '''
+        url = "https://api.vc.bilibili.com/dynamic_like/v1/dynamic_like/thumb"
+        post_data = {
+            "uid": self._uid,
+            "dynamic_id": dynamic_id,
+            "up": like,
+            "csrf_token": self._bili_jct,
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:

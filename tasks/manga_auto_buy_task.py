@@ -1,4 +1,5 @@
 from BiliClient import asyncbili
+from .push_message_task import webhook
 import logging
 
 async def manga_auto_buy_task(biliapi: asyncbili, 
@@ -66,6 +67,7 @@ async def manga_auto_buy_task(biliapi: asyncbili,
                 coupons_will_expire += x["remain_amount"]
     except Exception as e: 
         logging.warning(f'{biliapi.name}: 获取漫读劵数量失败，原因为:{str(e)}，跳过漫画兑换')
+        webhook.addMsg('msg_simple', f'{biliapi.name}:获取漫读劵异常\n')
         return
 
     if coupons_will_expire == 0:
@@ -79,17 +81,20 @@ async def manga_auto_buy_task(biliapi: asyncbili,
             buy_list = _filter2list((await _get_filter_by_favorite()))
         except Exception as e: 
             logging.warning(f'{biliapi.name}: 获取追漫列表失败，原因为:{str(e)}，跳过漫画兑换')
+            webhook.addMsg('msg_simple', f'{biliapi.name}:获取追漫列表失败\n')
             return
 
     if len(buy_list) == 0:
         logging.info('f{biliapi.name}: 没有需要购买的漫画，跳过消费即将过期漫读劵')
         return
 
+    su = er = 0
     for x in buy_list:
         try:
             manga_detail = (await biliapi.mangaDetail(x[0]))["data"]
         except Exception as e: 
             logging.warning(f'{biliapi.name}: 获取mc为{x[0]} 的漫画信息失败，原因为:{str(e)}')
+            er += 1
             continue
 
         list_need_buy = get_need_buy_eplist(x[1], manga_detail["ep_list"])
@@ -101,11 +106,15 @@ async def manga_auto_buy_task(biliapi: asyncbili,
                 await buy_manga_by_coupon(y[0])
                 coupons_will_expire -= 1
                 logging.info(f'{biliapi.name}: 购买漫画({manga_detail["title"]})的章节({y[2]})成功')
+                su += 1
             except Exception as e: 
                 logging.warning(f'{biliapi.name}: 购买漫画({manga_detail["title"]})的章节({y[2]})失败，原因为:{str(e)}')
+                er += 1
             if not coupons_will_expire > 0:
                 break
         if not coupons_will_expire > 0:
             break
 
     logging.info(f'{biliapi.name}: 即将过期漫读劵消费完成')
+    if er > 0:
+        webhook.addMsg('msg_simple', f'{biliapi.name}:花费漫读劵成功{su}张,发生错误{er}次\n')

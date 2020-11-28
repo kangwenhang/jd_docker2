@@ -1,10 +1,12 @@
 from BiliClient import asyncbili
+from .push_message_task import webhook
 import logging, json
 from .import_once import now_time
 
 async def clean_dynamic_task(biliapi: asyncbili,
                        task_config: dict
                        ) -> None:
+    su, er = 0, 0
     try:
         async for x in get_space_dynamic(biliapi):
             dyid = x["desc"]["dynamic_id"]
@@ -13,6 +15,7 @@ async def clean_dynamic_task(biliapi: asyncbili,
             if 'item' in card and 'miss' in card["item"] and card["item"]["miss"] == 1:
                 await biliapi.removeDynamic(dyid)
                 logging.info(f'{biliapi.name}: 已删除id为{dyid}的动态，原因为：动态已被原作者删除')
+                su += 1
                 continue
             
             if 'origin_extension' in card and 'lott' in card["origin_extension"]:
@@ -20,6 +23,7 @@ async def clean_dynamic_task(biliapi: asyncbili,
                 if 'lottery_time' in lott and lott["lottery_time"] <=  now_time:
                     await biliapi.removeDynamic(dyid)
                     logging.info(f'{biliapi.name}: 已删除id为{dyid}的动态，原因为：过期抽奖')
+                    su += 1
                     continue
 
             if 'item' in card and 'orig_dy_id' in card["item"]:
@@ -27,6 +31,7 @@ async def clean_dynamic_task(biliapi: asyncbili,
                 if 'lottery_time' in ret and ret["lottery_time"] <= now_time:
                     await biliapi.removeDynamic(dyid)
                     logging.info(f'{biliapi.name}: 已删除id为{dyid}的动态，原因为：过期抽奖')
+                    su += 1
                     continue
 
             if 'origin' in card:
@@ -43,6 +48,7 @@ async def clean_dynamic_task(biliapi: asyncbili,
                             if x in text:
                                 await biliapi.removeDynamic(dyid)
                                 logging.info(f'{biliapi.name}: 已删除id为{dyid}的动态，原因为：包含黑名单关键字{x}')
+                                su += 1
                                 continue
 
             if task_config.get("unfollowed", False):
@@ -56,12 +62,17 @@ async def clean_dynamic_task(biliapi: asyncbili,
                             if ret["data"]["attribute"] == 0:
                                 await biliapi.removeDynamic(dyid)
                                 logging.info(f'{biliapi.name}: 已删除id为{dyid}的动态，原因为：源动态作者没被关注')
+                                su += 1
                                 continue
                         else:
                             logging.info(f'{biliapi.name}: 判断与动态{dyid}的作者关系时异常，原因为{ret["message"]}，跳过此动态的清理')
+                            er += 1
 
     except Exception as e: 
         logging.warning(f'{biliapi.name}: 获取动态列表、异常，原因为{str(e)}，跳过动态清理')
+        er += 1
+    if er > 0:
+        webhook.addMsg('msg_simple', f'{biliapi.name}:动态清理成功{su}个,异常{er}个\n')
 
 async def get_space_dynamic(biliapi: asyncbili) -> dict:
     '''取B站用户动态数据，异步生成器'''

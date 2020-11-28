@@ -1,4 +1,5 @@
 from BiliClient import asyncbili
+from .push_message_task import webhook
 from .import_once import now_time
 import logging
 
@@ -18,3 +19,4 @@ async def xlive_bag_send_task(biliapi: asyncbili):
              logging.info(f'{biliapi.name}: 没有2天内过期的直播礼物，跳过赠送')
     except Exception as e:
         logging.warning(f'{biliapi.name}: 直播送出即将过期礼物异常，原因为{str(e)}')
+        webhook.addMsg('msg_simple', f'{biliapi.name}:直播送出礼物失败\n')
