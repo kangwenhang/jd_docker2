@@ -21,8 +21,9 @@
 	  - [xlive_heartbeat_task(直播心跳，可选)](#xlive_heartbeat_task直播心跳可选)
 	    - [enable(必选)](#enable必选)
 	    - [room_id(房间号，必选)](#room_id房间号必选)
-	    - [num(次数，必选)](#num次数必选)
-	    - [delay(发送消息，必选)](#delay发送消息必选)
+	    - [num(次数，可选)](#num次数可选)
+	    - [time(最大心跳时间，可选)](#time最大心跳时间可选)
+	    - [send_msg(发送消息，可选)](#send_msg发送消息可选)
 	  - [xlive_anchor_task(直播天选时刻，可选)](#xlive_anchor_task直播天选时刻可选)
 	    - [enable(必选)](#enable必选)
 	    - [rooms_id(房间号，必选)](#rooms_id房间号必选)
@@ -44,6 +45,7 @@
 	    - [reply(评论，必选)](#reply评论必选)
 	    - [repost(转发，必选)](#repost转发必选)
 	    - [keywords(匹配关键字，非跟踪转发模式必选)](#keywords匹配关键字非跟踪转发模式必选)
+		- [repost_with_tag(带标签转发，可选)](#repost_with_tag带标签转发可选)
 	    - [delay(延时，可选)](#delay延时可选)
 	    - [repost_by_others(跟踪转发，可选)](#repost_by_others跟踪转发可选)
 	    - [force_follow(强制关注，跟踪转发模式下可选)](#force_follow强制关注跟踪转发模式下可选)
@@ -71,11 +73,14 @@
 	    - [params(默认参数，必选)](#params默认参数必选)
 	  - [activity_task(B站转盘抽奖活动，可选)](#activity_taskB站转盘抽奖活动可选)
 	    - [enable(必选)](#enable必选)
+		- [path(活动列表文件路径，可选)](#path可选)
 	    - [activities(活动列表，必选)](#activities活动列表必选)
+    - [webhook(消息推送，可选)](#webhook消息推送可选)
+	    - [http_header(http头部，必选)](#http_headerhttp头部必选)
+	    - [variable(变量定义，必选)](#variable变量定义必选)
+	    - [hooks(推送接口列表，必选)](#hooks推送接口列表必选)
     - [log_file(日志文件,必选)](#log_file日志文件必选)
     - [log_console(日志输出到控制台,必选)](#log_console日志输出到控制台必选)
-    - [email(消息推送邮箱,必选)](#email消息推送邮箱必选)
-    - [SCKEY(消息推送微信,必选)](#SCKEY消息推送微信必选)
     - [users(账户配置,必选)](#users账户配置必选)
 
 </br>
@@ -113,8 +118,10 @@ B站直播心跳，可获得小心心，点亮粉丝牌
 ###### room_id(房间号，必选)
 请使用长房间号而不是短房间号，例如`https://live.bilibili.com/22528847`这个直播间,房间号是22528847
 取0，则为自动寻找拥有粉丝牌的房间，等级高，亲密度高的优先
-###### num(次数，必选)
-整数，发出心跳的总次数，每次(第1次除外)需要5分钟并获得1个小心心(每天最高24个小心心)
+###### num(次数，可选)
+整数，发出心跳的总次数，每次心跳的时间不定(由官方决定),每心跳5分钟可以获得1个小心心(每天最高24个小心心)
+###### time(最大心跳时间，可选)
+数字(单位分钟)，发出心跳的最大时长，超过这个时长会停止心跳
 ###### send_msg(发送消息，可选)
 字符串，给所有有粉丝牌的直播间发送一条消息，为空则不发送
 
@@ -189,6 +196,12 @@ B站直播心跳，可获得小心心，点亮粉丝牌
 ###### keywords(匹配关键字，非跟踪转发模式必选)
 字符串数组，正则表达式数组，匹配上表达式的动态则转发
 取值例子 `"keywords": ["#互动抽奖#", "#抽奖#", ".*(转|抽|评).*(转|抽|评).*(转|抽|评).*"]`
+###### repost_with_tag(带标签转发，可选)
+转发时带上原动态的标签，如果原动态带有`#哈哈#`这类标签,转发时也带上这种标签转发,本项不存在时不带标签转发
+* fix(必选) 整数，取0为将标签加在首部,取1为加在尾部
+* except 字符串数组(必选)，排除包含关键字的标签
+* reply_with_tag bool(必选)，false为回复原动态不带标签,true为带上标签回复
+
 ###### delay(延时，可选)
 整数数组，`[x, y]` 每次转发后随机延时x到y秒，x>y
 ###### repost_by_others(跟踪转发，可选)
@@ -314,6 +327,8 @@ B站直播心跳，可获得小心心，点亮粉丝牌
 参与B站转盘抽奖活动(需要手动搜集和设置活动列表)
 ###### enable(必选)
 功能开关，true为启动,false为关闭，关闭后以下参数不用提供
+###### path(可选)
+活动列表的json文件路径,也可以将活动列表放到下面activities参数中
 ###### activities(活动列表，必选)
 活动数组，每个活动包括
 * name(必选)
@@ -324,20 +339,29 @@ B站直播心跳，可获得小心心，点亮粉丝牌
 	     ![image](https://user-images.githubusercontent.com/67217225/99223090-d1dd4000-281e-11eb-84f7-84a80e51836c.png)
     * 2. 按F12打开开发者工具，点击`console`
 	     ![image](https://user-images.githubusercontent.com/67217225/99223254-208ada00-281f-11eb-8d24-66f344acc50a.png)
-    * 3. 输入`window.__initialState['pc-lottery-new'][0]['lotteryId']`后，回车，即可看到sid
+    * 3. 输入`window.__initialState['pc-lottery-new'][0]['lotteryId']`(手机版页面是`window.__initialState['h5-lottery-new'][0]['lotteryId']`)后，回车，即可看到sid
 	     ![image](https://user-images.githubusercontent.com/67217225/99223641-dc4c0980-281f-11eb-90c7-d3cfeae858ea.png)
-#### log_file(日志文件,必选)
-输出日志文件位置，不带路径为当前运行目录，为空则不输出日志
 
-#### log_console(日志输出到控制台,必选)
-true为输出到控制台,false为关闭输出
+#### webhook(消息推送，可选)
+用于自定义消息推送接口(只支持http/https,不支持websocket),不提供则不推送
+##### http_header(http头部，必选)
+这里提供推送消息时携带的http头部字段
+##### variable(变量定义，必选)
+这里提供推送消息时可用于url字段和params字段的变量,可以用大括号`{变量名}`引用在这里声明的变量<br>
+`msg_simple和msg_raw`两个变量为内部变量，分别代表简化的推送消息和完整的推送消息(和日志一致),在这里声明后才能使用(值为null)<br>
+其余变量可自定义(不可声明`msg_`开头的变量)
+##### hooks(推送接口列表，必选)
+数组，定义所有推送接口,每个接口包含以下字段
+* enable(可选) true为启用,false为禁用,不存在默认启用
+* name(必选) 字符串,接口名,在日志中使用
+* http_header(可选) 同上面的http_header,不过这里只应用于本接口,而上面应用于所有接口
+* variable(可选) variable,不过这里只应用于本接口,而上面应用于所有接口
+* msg_separ(可选) 每条日志消息的分割符,默认为换行`\n`
+* method(必选) 整数,请求方式,0为get,1为post,2为以json方式post
+* url(必选) 字符串,请求链接,可用`{变量名}`方式引用上面variable变量中定义的变量(不可引用`msg_simple和msg_raw`)
+* params(必选) 自定义请求参数,可用`{变量名}`方式引用上面variable变量中定义的变量
 
-#### email(消息推送邮箱,必选)
-将程序执行消息推送到指定邮箱，为空则不推送
-
-#### SCKEY(消息推送微信,必选)
-将微信保定server酱获得SCKEY，将程序执行消息推送到微信，为空则不推送
-获取方法如下:
+附: 微信推送server酱SCKEY获取方式如下:
 * 1.进入`http://sc.ftqq.com/3.version`，点击`登入`，绑定github账号
     ![image](https://user-images.githubusercontent.com/67217225/99224324-179b0800-2821-11eb-822d-d2fa99bfec23.png)
 	![image](https://user-images.githubusercontent.com/67217225/99224667-baec1d00-2821-11eb-8eab-a880965e6a3d.png)
@@ -345,6 +369,12 @@ true为输出到控制台,false为关闭输出
     ![image](https://user-images.githubusercontent.com/67217225/99225143-8a58b300-2822-11eb-8e53-5ad3a0f8eaa6.png)
 * 3.在`发送消息`选项卡就能看到自己的SCKEY
     ![image](https://user-images.githubusercontent.com/67217225/99225266-ba07bb00-2822-11eb-9e50-71648f11dadd.png)
+
+#### log_file(日志文件,必选)
+输出日志文件位置，不带路径为当前运行目录，为空则不输出日志
+
+#### log_console(日志输出到控制台,必选)
+true为输出到控制台,false为关闭输出
 
 #### users(账户配置,必选)
 账户数组，每个账户包括
