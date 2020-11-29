@@ -47,7 +47,7 @@ BiliExp
 * python实现专栏的编写，排版和发表
 * python实现视频稿件的上传和发布
 (例子和教程请参考[专栏和视频的发表(面向开发者)](/机器人up主#python实现B站发布专栏和视频方法))
-</br>
+</br>[命令行视频投稿工具](#使用说明视频投稿部分)
 
 **三、B站漫画下载mangaDownloader.py**支持合并为单个pdf文件,允许使用账号cookie下载已解锁部分
 * [x] 支持使用账号cookie下载已解锁部分
@@ -75,6 +75,7 @@ BiliExp
   - [五、linux本地部署(依靠crontab启动,shell自动下载安装)](#方式五linux本地部署)
   - [六、docker部署](#方式六docker安装)
 - [使用说明(下载器部分)](#使用方式下载器部分)
+- [使用说明(视频投稿部分)](#使用说明视频投稿部分)
 - [使用说明(专栏和视频的发表,面向开发者)](/机器人up主#python实现B站发布专栏和视频方法)
 - [更新日志](#更新日志)
 - [欢迎打赏](#打赏)
@@ -251,7 +252,49 @@ BiliExp
 	```
 
 </br></br></br>
+
+## 使用说明(视频投稿部分)
+* 1.转至[release](https://github.com/happy888888/BiliExp/releases) ，下载videoUploader，解压。
+* 2.从浏览器获取SESSDATA，bili_jct，DedeUserID这三个参数 ([获得B站账户cookies方法](#获得cookies方法))
+* 3.将上述获取的三个参数填入config文件夹中的config.json文件(linux可将文件放入/etc/BiliExp/config.json)
+* 4.使用videoUploader
+    ```
+	命令行参数
+	VideoUploader -v <视频文件路径> -t <视频标题> -d <视频简介> -c <视频封面图片路径> -t <视频标签> -n -s <非原创时视频来源 网址>
+	-v --videopath     视频文件路径
+	-t --title         视频标题，不指定默认为视频文件名
+	-d --desc          视频简介，不指定默认为空
+	-c --cover         视频封面图片路径，不提供默认用官方提供的第一张图片
+	-i --tid           分区id，默认为174，即生活,其他分区
+	-T --tags          视频标签，多个标签用半角逗号隔开，带空格必须打引号，不提供默认用官方推荐的前两个标签
+	-n --nonOriginal   勾选转载，不指定本项默认为原创
+	-s --source        -n参数存在时指定转载源视频网址
+	-D --DelayTime     发布时间戳,10位整数,官方的延迟发布,时间戳距离现在必须大于4小时
+	-S --singleThread  单线程上传,如果出现上传失败时使用,不指定本项为3线程上传
+	-V --version       显示版本信息
+	-h --help          显示帮助信息
+	以上参数中只有-v --videopath为必选参数，其他均为可选参数
+	
+	使用例子
+	windows上(假如程序在D:\VideoUploader\VideoUploader.exe,视频在D:\VideoUploader\测试视频.mp4)
+	打开cmd执行如下命令
+	cd /d D:\VideoUploader
+	VideoUploader -v "D:\VideoUploader\测试视频.mp4"
+	
+	linux上(提前将VideoUploader移动到/usr/local/bin,视频文件在/root/upload/测试视频.mp4)
+	shell中执行
+	VideoUploader -v "/root/upload/测试视频.mp4"
+	```
+
+</br></br></br>
+
 ## 更新日志
+
+### 2020/11/30更新
+
+* 1.支持命令行上传B站视频稿件
+
+</br>
 
 ### 2020/11/19更新
 
