@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from . import bili
-import os, math, time
+import os, math, time, base64
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 
 class VideoUploader(object):
-    "B站视频上传类"
+    '''B站视频上传类'''
     videoPreupload = bili.videoPreupload
     videoUploadId = bili.videoUploadId
     videoUpload = bili.videoUpload
@@ -12,13 +14,39 @@ class VideoUploader(object):
     videoTags = bili.videoTags
     videoAdd = bili.videoAdd
     videoPre = bili.videoPre
+    videoUpcover = bili.videoUpcover
     videoDelete = bili.videoDelete
     #本类只继承BiliApi中与Video上传有关的方法
-    def __init__(self, cookieData: dict = None, title="", desc="", dtime=0, tag=[], copyright=2, tid=174, source="", cover="",desc_format_id=0, subtitle={"open":0,"lan":""}):
-        "创建一个B站视频上传类"               #简介
-        bili.__init__(self, cookieData)
+    def __init__(self, 
+                 cookieData: dict = None, 
+                 title: str = "", 
+                 desc: str = "", 
+                 dtime: int = 0, 
+                 tag: list = [], 
+                 copyright: int = 2, 
+                 tid: int = 174, 
+                 source: str = "", 
+                 cover: str = "",
+                 desc_format_id: int = 0, 
+                 subtitle = {"open":0,"lan":""}
+                 ):
+        '''
+        创建一个B站视频上传类
+        cookieData     dict  账户cookie
+        title          str   稿件标题
+        desc           str   稿件简介
+        dtime          int   延迟发布时间,最短4小时后,10位时间戳
+        copyright      list  是否原创,原创取1,转载取2
+        tid            int   稿件分区id,默认为174,生活其他分区
+        source         str   非原创时需提供转载来源网址
+        cover          str   稿件封面,图片url
+        desc_format_id int
+        subtitle       dict
+        '''
+        bili.__init__(self)
         if cookieData:
-            bili.login_by_cookie(self, cookieData)
+            if not bili.login_by_cookie(self, cookieData):
+                raise ValueError('cookie无效')
 
         self._data = {
             "copyright":copyright,
@@ -36,19 +64,67 @@ class VideoUploader(object):
         if dtime and dtime - int(time.time()) > 14400:
             self._data["dtime"] = dtime
 
-        for i in range(len(tag)):
-            if (i == len(tag) - 1):
-                self._data["tag"] += tag[i]
-            else:
-                self._data["dynamic"] += f'{tag[i]},'
-            self._data["tag"] += f'#{tag[i]}#'
+        if tag:
+            self.setTag(tag)
 
-    def uploadFile(self, filepath: '视频路径', fsize=8388608):
-        "上传本地视频文件,返回视频信息dict"
+    def uploadFile(self, 
+                   filepath: str, 
+                   fsize: int = 8388608, 
+                   ThreadNum: int = 3
+                   ) -> dict:
+        '''
+        上传本地视频文件,返回视频信息
+        filepath  str  视频路径
+        fsize     int  视频分块大小,默认为8388608,没有必要请勿修改
+        ThreadNum int  视频上传线程数,默认为8388608,没有必要请勿修改
+        '''
+        lock = Lock()
+        def _upload_worker(fileobj, sn: int):
+            lock.acquire() #读文件分块前先加锁
+            fileobj.seek(sn*fsize)
+            data = fileobj.read(fsize)
+            lock.release()
+            self.videoUpload(url, auth, upload_id, data, sn, chunks, sn*fsize, size) #上传分块
+
+        path, name = os.path.split(filepath)#分离路径与文件名
+        preffix = os.path.splitext(name)[0]
+        with open(filepath, 'rb') as f: 
+            size = f.seek(0, 2) #获取文件大小
+            chunks = math.ceil(size / fsize) #获取分块数量
+
+            retobj = self.videoPreupload(name, size) #申请上传
+            auth = retobj["auth"]
+            endpoint = retobj["endpoint"]
+            biz_id = retobj["biz_id"]
+            upos_uri = retobj["upos_uri"][6:] 
+            rname = os.path.splitext(upos_uri[5:])[0]
+            url = f'https:{endpoint}{upos_uri}'  #视频上传路径
+            upload_id = self.videoUploadId(url, auth)["upload_id"]
+
+            threadPool = ThreadPoolExecutor(max_workers=ThreadNum, thread_name_prefix="upload_")
+            parts = [] #分块信息
+            for ii in range(chunks):
+                parts.append({"partNumber":ii+1,"eTag":"etag"})
+                threadPool.submit(_upload_worker, f, ii)
+            threadPool.shutdown(wait=True)
         
-        path,name = os.path.split(filepath)#分离路径与文件名
+        retobj = self.videoUploadInfo(url, auth, parts, name, upload_id, biz_id)
+        if (retobj["OK"] == 1):
+            return {"title": preffix, "filename": rname, "desc": ""}
+        return None
 
-        with open(filepath,'rb') as f: 
+    def uploadFileOneThread(self, 
+                            filepath: str, 
+                            fsize: int = 8388608
+                            ) -> dict:
+        '''
+        单线程上传本地视频文件,返回视频信息
+        filepath  str  视频路径
+        fsize     int  视频分块大小,默认为8388608,没有必要请勿修改
+        '''
+        path, name = os.path.split(filepath)#分离路径与文件名
+        preffix = os.path.splitext(name)[0]
+        with open(filepath, 'rb') as f: 
             size = f.seek(0, 2) #获取文件大小
             chunks = math.ceil(size / fsize) #获取分块数量
 
@@ -72,13 +148,25 @@ class VideoUploader(object):
                 parts.append({"partNumber":i+1,"eTag":"etag"}) #添加分块信息，partNumber从1开始
                 #print(f'{i} / {chunks}')#输出上传进度
 
-        preffix = os.path.splitext(name)[0]
         retobj = self.videoUploadInfo(url, auth, parts, name, upload_id, biz_id)
         if (retobj["OK"] == 1):
             return {"title": preffix, "filename": rname, "desc": ""}
         return {"title": preffix, "filename": "", "desc": ""}
 
-    def submit(self):
+    def uploadCover(self, 
+                    filepath: str
+                    ) -> str:
+        '''
+        上传本地图片文件,返回图片url
+        filepath str 本地图片路径
+        '''
+        suffix = os.path.splittext(filepath)[-1]
+        with open(filepath,'rb') as f:
+            code = base64.b64encode(f.read()).decode()
+        return self.videoUpcover(f'data:image/{suffix};base64,{code}')["data"]["url"].replace('http://', 'https://')
+
+    def submit(self) -> dict:
+        '''提交视频'''
         if self._data["title"] == "":
             self._data["title"] = self._data["videos"][0]["title"]
         retobj = self.videoAdd(self._data)
@@ -88,45 +176,81 @@ class VideoUploader(object):
             self._submit = retobj
         return self._submit
 
-    def delete(self):
-        "立即撤销本视频的发布(会丢失硬币)"
+    def delete(self) -> bool:
+        '''立即撤销本视频的发布(会丢失硬币)，失败(有验证码)返回false'''
         aid = self._submit["aid"]
         retobj = self.videoPre()
         challenge = retobj["data"]["challenge"]
         gt = retobj["data"]["gt"]
         return (self.videoDelete(aid, challenge, gt, f'{gt}%7Cjordan')["code"] == 0)
 
-    def recovers(self, upvideo: "由uploadFile方法返回的dict"):
-        "返回官方生成的封面,刚上传可能获取不到"
-        return self.videoRecovers(upvideo["filename"])
+    def recovers(self, 
+                 upvideo: str
+                 ) -> list:
+        '''
+        返回官方生成的封面,返回url列表,刚上传可能获取不到并返回空列表
+        upvideo dict 由uploadFile方法返回的dict
+        '''
+        return self.videoRecovers(upvideo["filename"])["data"]
 
-    def getTags(self, upvideo: "由uploadFile方法返回的dict"):
-        "返回官方推荐的tag"
-        return self.videoTags(upvideo["title"], upvideo["filename"])
+    def getTags(self, 
+                upvideo: dict
+                ) -> list:
+        '''
+        返回官方推荐的tag列表
+        upvideo dict 由uploadFile方法返回的dict
+        '''
+        ""
+        return [x["tag"] for x in self.videoTags(upvideo["title"], upvideo["filename"])["data"]]
 
-    def add(self, upvideo: "由uploadFile方法返回的dict"):
-        "添加已经上传的视频"
+    def add(self, 
+            upvideo: dict
+            ) -> None:
+        '''
+        添加已经上传的视频
+        upvideo dict 由uploadFile方法返回的dict
+        '''
         self._data["videos"].append(upvideo)
 
-    def clear(self):
-        "清除已经添加的视频"
+    def clear(self) -> None:
+        '''清除已经添加的视频'''
         self._data["videos"] = []
 
-    def setDtime(self, dtime: int):
-        "设置延时发布时间，距离提交大于4小时，格式为10位时间戳"
+    def setDtime(self, 
+                 dtime: int
+                 ) -> None:
+        '''
+        设置延时发布时间
+        dtime int 10位时间戳,距离提交必须大于4小时
+        '''
         if dtime - int(time.time()) > 14400:
             self._data["dtime"] = dtime
 
-    def setTitle(self, title: str):
-        "设置标题"
+    def setTitle(self, 
+                 title: str
+                 ) -> None:
+        '''
+        设置标题
+        title str 稿件标题
+        '''
         self._data["title"] = title
 
-    def setDesc(self, desc: str):
-        "设置简介"
+    def setDesc(self, 
+                desc: str
+                ) -> None:
+        '''
+        设置简介
+        title desc 稿件简介
+        '''
         self._data["desc"] = desc
 
-    def setTag(self, tag: []):
-        "设置标签，tag为数组"
+    def setTag(self, 
+               tag: list = []
+               ) -> None:
+        '''
+        设置标签
+        tag list 标签字符串列表
+        '''
         tagstr = ""
         dynamic = ""
         for i in range(len(tag)):
@@ -135,32 +259,63 @@ class VideoUploader(object):
             else:
                 tagstr += f'{tag[i]},'
             dynamic += f'#{tag[i]}#'
-
         self._data["tag"] = tagstr
         self._data["dynamic"] = dynamic
 
-    def setCopyright(self, copyright=2):
-        "设置copyright"
+    def setCopyright(self, 
+                     copyright: int = 2
+                     ) -> None:
+        '''
+        设置原创或转载
+        copyright int 1表示原创，2表示转载
+        '''
         self._data["copyright"] = copyright
 
-    def setTid(self, tid=174):
-        "设置视频分区"
+    def setTid(self, 
+               tid: int = 174
+               ) -> None:
+        '''
+        设置视频分区
+        tid int 分区id整数
+        '''
         self._data["tid"] = tid
 
-    def setSource(self, source=""):
-        "设置转载原地址"
+    def setSource(self, 
+                  source: str
+                  ) -> None:
+        '''
+        设置转载视频源地址
+        source str 视频源地址
+        '''
         self._data["source"] = source
 
-    def setCover(self, cover=""):
-        "设置视频封面url"
+    def setCover(self, 
+                 cover: str
+                 ) -> None:
+        '''
+        设置视频封面
+        cover str 本地图片路径或http开头的图片url
+        '''
+        if not cover.startswith('http'):
+            cover = self.uploadCover(cover)
         self._data["cover"] = cover
 
-    def setDescFormatId(self, desc_format_id=0):
-        "设置desc_format_id"
+    def setDescFormatId(self, 
+                        desc_format_id: int
+                        ) -> None:
+        '''
+        设置desc_format_id
+        desc_format_id int
+        '''
         self._data["desc_format_id"] = desc_format_id
 
-    def setSubtitle(self, subtitle={"open":0,"lan":""}):
-        "设置subtitle"
+    def setSubtitle(self, 
+                    subtitle: dict
+                    ) -> None:
+        '''
+        设置subtitle
+        subtitle dict
+        '''
         self._data["subtitle"] = subtitle
 
 class _videoStream(object):

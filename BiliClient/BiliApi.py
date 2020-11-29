@@ -636,7 +636,6 @@ class BiliApi(object):
         size = len(data)
         end = start + size
         content = self._session.put(f'{url}?partNumber={chunk+1}&uploadId={upload_id}&chunk={chunk}&chunks={chunks}&size={size}&start={start}&end={end}&total={total}', data=data, headers={"X-Upos-Auth": auth})
-        return True if content.text == "MULTIPART_PUT_SUCCESS" else False
 
     def videoUploadInfo(self, url, auth, parts, filename, upload_id, biz_id):
         "查询上传视频信息"
@@ -648,6 +647,15 @@ class BiliApi(object):
         "查询以前上传的视频信息"
         url = f'https://member.bilibili.com/x/web/archive/recovers?fns={fns}'
         return self._session.get(url=url).json()
+
+    def videoUpcover(self, cover: '封面图片base64字符串'):
+        "上传视频封面"
+        url = 'https://member.bilibili.com/x/vu/web/cover/up'
+        post_data = {
+            "cover": cover,
+            "csrf": self._bili_jct
+            }
+        return self._session.post(url=url, data=data).json()
 
     def videoTags(self, title: '视频标题', filename: "上传后的视频名称", typeid="", desc="", cover="", groupid=1, vfea=""):
         "上传视频后获得推荐标签"
