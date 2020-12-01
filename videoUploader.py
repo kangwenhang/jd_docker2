@@ -111,7 +111,7 @@ if __name__=="__main__":
             print('以上参数中只有-v --videopath为必选参数，其他均为可选参数')
             exit()
         elif opt in ('-V','--version'):
-            print('B站视频上传器 videoDownloader v1.1.6')
+            print('B站视频上传器 videoDownloader v1.1.8')
             exit()
         elif opt in ('-v','--videopath'):
             kwargs["path"] = arg.replace(r'\\', '/')

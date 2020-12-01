@@ -5,7 +5,7 @@ from getopt import getopt
 from BiliClient import asyncbili
 import tasks
 
-main_version = (1, 1, 6)
+main_version = (1, 1, 8)
 main_version_str = '.'.join(map(str, main_version))
 
 def version_compare(version: str):

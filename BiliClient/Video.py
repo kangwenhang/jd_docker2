@@ -319,11 +319,12 @@ class VideoUploader(object):
         self._data["subtitle"] = subtitle
 
 class _videoStream(object):
-    def __init__(self, name: str,url: str, resolution: str, size: int):
+    def __init__(self, name: str,url: str, resolution: str, size: int, cid: int):
         self._name = name
         self._url = url
         self._resolution = resolution
         self._size = size
+        self._cid = cid
 
     def __repr__(self):
         return f'<name={self._name};resolution={self._resolution};size={self._size};cid={self._size}>'
@@ -340,6 +341,11 @@ class _videoStream(object):
     def fliename(self) -> str:
         '''返回下载文件名'''
         return self._name
+
+    @property
+    def cid(self) -> int:
+        '''返回视频cid'''
+        return self._cid
 
 class _videos(object):
     def __init__(self, subtitle, bvid='', cid=0, epid=''):
@@ -394,9 +400,9 @@ class _videos(object):
             if data["quality"] != accept_quality[ii]:
                 continue
             if 'flv' in data["format"]:
-                ret.append(_videoStream(f'{self._title}.flv', data["durl"][0]["url"].replace('http:','https:'),accept_description[ii],data["durl"][0]["size"]))
+                ret.append(_videoStream(f'{self._title}.flv', data["durl"][0]["url"].replace('http:','https:'),accept_description[ii],data["durl"][0]["size"], self._cid))
             else:
-                ret.append(_videoStream(f'{self._title}.mp4', data["durl"][0]["url"].replace('http:','https:'),accept_description[ii],data["durl"][0]["size"]))
+                ret.append(_videoStream(f'{self._title}.mp4', data["durl"][0]["url"].replace('http:','https:'),accept_description[ii],data["durl"][0]["size"], self._cid))
         return ret
 
 class VideoParser(object):

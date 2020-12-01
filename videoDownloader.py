@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from BiliClient import (VideoParser, Downloader)
+from BiliClient import (VideoParser, Downloader, bili, Danmu2Ass)
 import sys, json, re, time, curses, os
 from getopt import getopt
 
@@ -82,20 +82,20 @@ def downloader_put_tasks(downloader, tasks, path: str):
     if not os.path.exists(path):
         os.makedirs(path)
     for xx in tasks:
-        downloader.add(url=xx.url, dst=path + xx.fliename, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)","Referer":"https://www.bilibili.com/"})
+        downloader.add(url=xx.url, name=xx.fliename, dst=path + xx.fliename, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)","Referer":"https://www.bilibili.com/"})
 
 def show(stdscr, tasklist: list, tasknum: tuple or list) -> None:
     stdscr.clear()
     if is_win:
         for ii in range(len(tasklist)):
-            stdscr.addstr(ii*3, 0, ' '.join(f'正在下载:{tasklist[ii]["dst"]}'))
+            stdscr.addstr(ii*3, 0, ' '.join(f'正在下载:{tasklist[ii]["name"]}'))
             per = tasklist[ii]["completedLength"] / tasklist[ii]["totalLength"]
             perlen = int(per * 40)
             stdscr.addstr(ii*3+1, 0, f"进 度 : [{'*' * perlen}{' ' * (40 - perlen)}] {per*100:.2f}%")
         stdscr.addstr(ii*3+3, 0, f'任 务 总 数 {tasknum[0]}个 ,正 在 下 载 {tasknum[1]}个 ,等 待 中 {tasknum[2]}个 ,下 载 完 成 {tasknum[3]}个 ,失 败 任 务 {tasknum[4]}个 ')
     else:
         for ii in range(len(tasklist)):
-            stdscr.addstr(ii*2, 5, f'正在下载: {tasklist[ii]["dst"]}')
+            stdscr.addstr(ii*2, 5, f'正在下载: {tasklist[ii]["name"]}')
             per = tasklist[ii]["completedLength"] / tasklist[ii]["totalLength"]
             perlen = int(per * 40)
             stdscr.addstr(ii*2+1, 0, f"进度: [{'*' * perlen}{' ' * (40 - perlen)}] {per*100:.2f}%")
@@ -119,7 +119,8 @@ def queryDownloaderInfo(downloader):
 
     return active_task, task_nums
 
-def display(downloader) -> None:
+def display(downloader: Downloader) -> None:
+    '''显示进度'''
     stdscr = curses.initscr()
     curses.noecho()
     stdscr.keypad(True)
@@ -131,11 +132,24 @@ def display(downloader) -> None:
         show(stdscr, active_task, task_nums)
     curses.endwin()
 
+def download_danmu(tasks: list, path: str):
+    '''下载弹幕'''
+    if not path.endswith('/'):
+        path += '/'
+    if not os.path.exists(path):
+        os.makedirs(path)
+    for xx in tasks:
+        xml = bili.dmList(xx.cid)
+        Danmu2Ass(xml).toAssFile(path + xx.fliename + '.ass')
+
 def main(*args, **kwargs):
     if kwargs["tasklist"]:
         tasks = get_arg_tasks(kwargs["tasklist"])
     else:
         tasks = get_input_tasks()
+    if kwargs["ass"]:
+        download_danmu(tasks, kwargs["path"])
+
     downloader = Downloader()
     downloader_put_tasks(downloader, tasks, kwargs["path"])
     downloader.startAll()
@@ -145,13 +159,15 @@ def main(*args, **kwargs):
 if __name__=="__main__":
     kwargs = {
        "tasklist": [],
-       "path": './'
+       "path": './',
+       "ass": False
         }
     episode, quality, proxy, video = [], [], [], []
-    opts, args = getopt(sys.argv[1:], "hVv:e:q:p:x:", ["help", "version", "video=", "episode=", "quality=", "path=", "proxy="])
+    opts, args = getopt(sys.argv[1:], "hVav:e:q:p:x:", ["help", "version", "ass", "video=", "episode=", "quality=", "path=", "proxy="])
     for opt, arg in opts:
         if opt in ('-h','--help'):
-            print('videoDownloader -p <下载文件夹> -v <视频1> -e <分集数> -q <质量序号> -v <视频2> -e <分集数> -q <质量序号> ...')
+            print('videoDownloader -p <下载文件夹> -a -v <视频1> -e <分集数> -q <质量序号> -v <视频2> -e <分集数> -q <质量序号> ...')
+            print(' -a --ass       下载视频时附带ass文件,配合支持ass字幕的播放器可以显示弹幕')
             print(' -p --path      下载保存的路径，提供一个文件夹路径，没有会自动创建文件夹，默认为当前文件夹')
             print(' -v --video     下载的视频地址，支持链接，av号(avxxxxx)，BV号(BVxxxxxx)，ep，ss')
             print(' -e --episode   分p数，只对多P视频和多集的番剧有效，不提供默认为1，多个用逗号分隔，连续用减号分隔  -e 2,3,5-7,10 表示2,3,5,6,7,10集')
@@ -162,7 +178,7 @@ if __name__=="__main__":
             print(' -h --help      显示帮助信息')
             exit()
         elif opt in ('-V','--version'):
-            print('B站视频下载器 videoDownloader v1.1.5')
+            print('B站视频下载器 videoDownloader v1.1.8')
             exit()
         elif opt in ('-p','--path'):
             kwargs["path"] = arg.replace(r'\\', '/')
@@ -174,6 +190,8 @@ if __name__=="__main__":
             quality.insert(0, int(arg))
         elif opt in ('-x','--proxy'):
             proxy.insert(0, int(arg))
+        elif opt in ('-a','--ass'):
+            kwargs["ass"] = True
 
     q = 0
     while video:

@@ -39,11 +39,12 @@ class _downloader_thread(threading.Thread):
             asyncio.run_coroutine_threadsafe(self.start_task(id), self._loop)
         self._close.set_result(None)
 
-    def add_task(self, id: int, url: str, dst: str, headers: Dict[str, str], max_connect_num: int) -> None:
+    def add_task(self, id: int, name: str, url: str, dst: str, headers: Dict[str, str], max_connect_num: int) -> None:
         '''添加任务'''
         self._task_dict[id] = {
             "id": id,
             "status": "not start",
+            "name": name,
             "url": url,
             "dst": dst,
             "headers": headers,
@@ -181,16 +182,17 @@ class Downloader(object):
         asyncio.run_coroutine_threadsafe(self._thread.stop_safe(), self._thread.loop)
         del self._thread
 
-    def add(self, url: str, dst: str, headers: Dict[str, str] = {}, max_connect_num: int = 4) -> int:
+    def add(self, name: str, url: str, dst: str, headers: Dict[str, str] = {}, max_connect_num: int = 4) -> int:
         '''
         添加一个下载任务到下载器
+        name str 任务名称
         url str 链接地址
         dst str 保存路径
         headers dict http协议头
         max_connect int 最大连接数
         '''
         id = int(time.time() * 100000)
-        self._thread.add_task(id, url, dst, headers, max_connect_num)
+        self._thread.add_task(id, name, url, dst, headers, max_connect_num)
         time.sleep(0.01)
         return id
     

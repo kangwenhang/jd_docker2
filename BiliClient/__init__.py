@@ -1,5 +1,5 @@
 
-__version__ = '1.1.6'
+__version__ = '1.1.8'
 
 from .asyncBiliApi import asyncBiliApi as asyncbili
 from .BiliApi import BiliApi as bili
@@ -8,6 +8,7 @@ from .Video import VideoUploader as VideoUploader
 from .Video import VideoParser as VideoParser
 from .Downloader import Downloader as Downloader
 from .Article import Article as Article
+from .Danmu2Ass import Danmu2Ass as Danmu2Ass
 
 __all__ = (
     'asyncbili',
@@ -16,5 +17,6 @@ __all__ = (
     "VideoUploader",
     "VideoParser",
     "Downloader",
-    "Article"
+    "Article",
+    "Danmu2Ass"
 )
