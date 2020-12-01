@@ -10,7 +10,12 @@ async def xlive_heartbeat_task(biliapi: asyncbili,
     send_msg = task_config.get("send_msg", "")
     num: int = task_config.get("num", 0)
     max_time: float = task_config.get("time", 25)
-    room_id: int = task_config.get("room_id", 0)
+    room_id = task_config.get("room_id", 0)
+    if isinstance(room_id, int):
+        if room_id:
+            room_id = [room_id]
+        else:
+            room_id = []
     tasks = []
 
     if send_msg:
@@ -19,21 +24,22 @@ async def xlive_heartbeat_task(biliapi: asyncbili,
             tasks.append(send_msg_task(biliapi, rooms, send_msg))
     
     if num:
-        if not room_id > 0:
+        if not room_id:
             if not rooms:
                 rooms = await get_rooms(biliapi)
-            level = intimacy = 0
+            rid = level = intimacy = 0
             for roominfo in rooms:
                 if roominfo[2] > level or (level == roominfo[2] and roominfo[3] > intimacy) and roominfo[1] == 1:
-                    room_id = roominfo[0]
+                    rid = roominfo[0]
                     level = roominfo[2]
                     intimacy = roominfo[3]
-
-        if room_id > 0:
-            tasks.append(heartbeat_task(biliapi, room_id, num, max_time * 60))
+            if rid:
+                tasks.append(heartbeat_task(biliapi, rid, num, max_time * 60))
+            else:
+                logging.info(f'{biliapi.name}: 没有获取到需要心跳的房间，跳过直播心跳')
+                webhook.addMsg('msg_simple', f'{biliapi.name}:直播心跳失败\n')
         else:
-            logging.info(f'{biliapi.name}: 没有获取到需要心跳的房间，跳过直播心跳')
-            webhook.addMsg('msg_simple', f'{biliapi.name}:直播心跳失败\n')
+            tasks.extend([heartbeat_task(biliapi, x, num, max_time * 60) for x in room_id])
 
     if tasks:
         await asyncio.wait(tasks)
@@ -107,7 +113,8 @@ async def get_rooms(biliapi: asyncbili):
                 if not ret["data"]["fansMedalList"]:
                     break
                 for medal in ret["data"]["fansMedalList"]:
-                    result.append((medal["roomid"], medal["status"], medal["level"], medal["intimacy"], medal["is_lighted"]))
+                    if 'roomid' in medal:
+                        result.append((medal["roomid"], medal["status"], medal["level"], medal["intimacy"], medal["is_lighted"]))
             else:
                 logging.warning(f'{biliapi.name}: 获取有勋章的直播间失败，信息为{ret["message"]}')
                 break

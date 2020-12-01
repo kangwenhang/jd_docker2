@@ -170,12 +170,12 @@ async def repost_task_E(biliapi: asyncbili,
             try:
                 ret = await biliapi.dynamicLike(dyid)
             except Exception as e: 
-                logging.warning(f'{biliapi.name}: 点赞动态(用户:{uname},动态id:{dyid})异常，原因为({str(e)})')
+                logging.warning(f'{biliapi.name}: 点赞动态(用户:{name},动态id:{dyid})异常，原因为({str(e)})')
             else:
                 if ret["code"] == 0:
-                    logging.info(f'{biliapi.name}: 点赞动态(用户:{uname},动态id:{dyid})成功')
+                    logging.info(f'{biliapi.name}: 点赞动态(用户:{name},动态id:{dyid})成功')
                 else:
-                    logging.warning(f'{biliapi.name}: 点赞动态(用户:{uname},动态id:{dyid})失败，信息为{ret["message"]}')
+                    logging.warning(f'{biliapi.name}: 点赞动态(用户:{name},动态id:{dyid})失败，信息为{ret["message"]}')
 
             if force_follow and not uid in users:
                 try:
