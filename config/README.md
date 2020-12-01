@@ -18,9 +18,12 @@
 	    - [BpCharge(花费B币劵方式，可选)](#BpCharge花费B币劵方式可选)
 	  - [xliveSign_task(直播签到，可选)](#xliveSign_task直播签到可选)
 	  - [xlive_bag_send_task(送出直播礼物，可选)](#xlive_bag_send_task送出直播礼物可选)
-	  - [xlive_heartbeat_task(直播心跳，可选)](#xlive_heartbeat_task直播心跳可选)
 	    - [enable(必选)](#enable必选)
 	    - [room_id(房间号，必选)](#room_id房间号必选)
+	    - [expire(过期时间，可选)](#expire过期时间可选)
+	  - [xlive_heartbeat_task(直播心跳，可选)](#xlive_heartbeat_task直播心跳可选)
+	    - [enable(必选)](#enable必选)
+	    - [room_id(房间号，可选)](#room_id房间号可选)
 	    - [num(次数，可选)](#num次数可选)
 	    - [time(最大心跳时间，可选)](#time最大心跳时间可选)
 	    - [send_msg(发送消息，可选)](#send_msg发送消息可选)
@@ -109,15 +112,23 @@
 功能开关，true为启动,false为关闭
 
 ##### xlive_bag_send_task(送出直播礼物，可选)
-送出直播2天内要过期的礼物，true为启动,false为关闭
+送出直播即将过期的礼物
+###### enable(必选)
+功能开关，true为启动,false为关闭，关闭后以下参数不用提供
+###### room_id(房间号，必选)
+整数，取0为随机选择房间送出<br>
+请使用长房间号而不是短房间号，例如`https://live.bilibili.com/22528847`这个直播间,房间号是22528847
+###### expire(过期时间，可选)
+整数，如果礼物将在这个时间内过期则会被送出,默认为172800即两天
 
 ##### xlive_heartbeat_task(直播心跳，可选)
 B站直播心跳，可获得小心心，点亮粉丝牌
 ###### enable(必选)
 功能开关，true为启动,false为关闭，关闭后以下参数不用提供
-###### room_id(房间号，必选)
+###### room_id(房间号，可选)
+整数数组，心跳的房间号<br>
 请使用长房间号而不是短房间号，例如`https://live.bilibili.com/22528847`这个直播间,房间号是22528847
-取0，则为自动寻找拥有粉丝牌的房间，等级高，亲密度高的优先
+取空[]，则为自动寻找拥有粉丝牌的房间，等级高，亲密度高的优先
 ###### num(次数，可选)
 整数，发出心跳的总次数，每次心跳的时间不定(由官方决定),每心跳5分钟可以获得1个小心心(每天最高24个小心心)
 ###### time(最大心跳时间，可选)
