@@ -1,4 +1,4 @@
-requests==2.18.4
+requests==2.20.0
 async-timeout==3.0.1
 attrs==20.2.0
 chardet==3.0.4
