@@ -97,7 +97,7 @@ class VideoUploader(object):
             endpoint = retobj["endpoint"]
             biz_id = retobj["biz_id"]
             upos_uri = retobj["upos_uri"][6:] 
-            rname = os.path.splitext(upos_uri[5:])[0]
+            rname = os.path.splitext(os.path.split(upos_uri)[-1])[0]
             url = f'https:{endpoint}{upos_uri}'  #视频上传路径
             upload_id = self.videoUploadId(url, auth)["upload_id"]
 
@@ -127,15 +127,14 @@ class VideoUploader(object):
         with open(filepath, 'rb') as f: 
             size = f.seek(0, 2) #获取文件大小
             chunks = math.ceil(size / fsize) #获取分块数量
-
+            
             retobj = self.videoPreupload(name, size) #申请上传
             auth = retobj["auth"]
             endpoint = retobj["endpoint"]
             biz_id = retobj["biz_id"]
-            upos_uri = retobj["upos_uri"][6:] 
-            rname = os.path.splitext(upos_uri[5:])[0]
+            upos_uri = retobj["upos_uri"][6:]
+            rname = os.path.splitext(os.path.split(upos_uri)[-1])[0]
             url = f'https:{endpoint}{upos_uri}'  #视频上传路径
-
             retobj = self.videoUploadId(url, auth)
             upload_id = retobj["upload_id"] #得到上传id
 
@@ -146,12 +145,11 @@ class VideoUploader(object):
                 data = f.read(fsize) #一次读取一个分块大小
                 self.videoUpload(url, auth, upload_id, data, i, chunks, i*fsize, size)#上传分块
                 parts.append({"partNumber":i+1,"eTag":"etag"}) #添加分块信息，partNumber从1开始
-                #print(f'{i} / {chunks}')#输出上传进度
-
+        
         retobj = self.videoUploadInfo(url, auth, parts, name, upload_id, biz_id)
         if (retobj["OK"] == 1):
             return {"title": preffix, "filename": rname, "desc": ""}
-        return {"title": preffix, "filename": "", "desc": ""}
+        return None
 
     def uploadCover(self, 
                     filepath: str
