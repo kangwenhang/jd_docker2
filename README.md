@@ -98,14 +98,12 @@ BiliExp
 如果需要设置配置文件config.json，建议先观看[配置文件详解](/config#目录) 
 
 ### 方式一(推荐)、只使用github Actions
-* 请转至本项目的"<a href="https://github.com/happy888888/BiliExp/tree/BiliExp-Actions" title="B站经验脚本纯Actions版">BiliExp-Actions</a>"分支，请区分此分支的Actions与本主分支的不同，不要使用本主分支的Actions。
+* 请转至本项目的"<a href="https://github.com/happy888888/BiliExp/tree/BiliExp-Actions" title="B站经验脚本纯Actions版">BiliExp-Actions</a>"分支，请区分此分支的Actions与本主分支的不同，不要使用本主分支的Actions。(***deploy for xxxyun***为本主分支的Actions，***run BiliExp***是BiliExp-Actions分支的Actions，***注意切换分支！！***)
 * 为避免我收到大量无用的Actions消息，故不将此Actions添加到master主分支内。
 * fork后切换分支的方法如下
 ![image](https://user-images.githubusercontent.com/67217225/94278277-34336600-ff7d-11ea-8cb5-d49e5e6884fc.png)
 
 ### 方式二、使用腾讯云函数
-
-详细图文教程可以参考[博客文章](https://my-hexo-bucket-1251971143.cos-website.ap-guangzhou.myqcloud.com/2020/09/30/bilibili/) 。
 
 ##### 1. 准备
 * 1.1开通云函数 SCF 的腾讯云账号，在[访问秘钥页面](https://console.cloud.tencent.com/cam/capi)获取账号的 TENCENT_SECRET_ID，TENCENT_SECRET_KEY

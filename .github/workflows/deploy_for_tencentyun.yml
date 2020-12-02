@@ -44,6 +44,10 @@ jobs:
 
     - name: 重构文件目录结构并部署至腾讯云 #将云函数相关文件全移动到./serverless,并以此为根目录上传部署到SCF
       run: |
+        if [ -z "$TENCENT_SECRET_ID" ]; then
+        echo "部署至腾讯云需要填写TENCENT_SECRET_ID和TENCENT_SECRET_KEY两个secrets"
+        exit -1
+        fi
         sudo mv BiliExp.py ./serverless
         sudo mv ./tasks ./serverless
         sudo mv ./BiliClient ./serverless
