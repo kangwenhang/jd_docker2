@@ -76,7 +76,7 @@ class VideoUploader(object):
         上传本地视频文件,返回视频信息
         filepath  str  视频路径
         fsize     int  视频分块大小,默认为8388608,没有必要请勿修改
-        ThreadNum int  视频上传线程数,默认为8388608,没有必要请勿修改
+        ThreadNum int  视频上传线程数,默认为3,没有必要请勿修改
         '''
         lock = Lock()
         def _upload_worker(fileobj, sn: int):
@@ -91,17 +91,16 @@ class VideoUploader(object):
         with open(filepath, 'rb') as f: 
             size = f.seek(0, 2) #获取文件大小
             chunks = math.ceil(size / fsize) #获取分块数量
-
             retobj = self.videoPreupload(name, size) #申请上传
-            auth = retobj["auth"]
-            endpoint = retobj["endpoint"]
+            auth = retobj["auth"] #验证信息
+            endpoint = retobj["endpoint"]  #目标服务器，用于构建上传http url
             biz_id = retobj["biz_id"]
-            upos_uri = retobj["upos_uri"][6:] 
-            rname = os.path.splitext(os.path.split(upos_uri)[-1])[0]
+            upos_uri = retobj["upos_uri"][6:] #目标路径，用于构建上传http url
+            rname = os.path.splitext(os.path.split(upos_uri)[-1])[0] #云端文件名,不带路径和后缀
             url = f'https:{endpoint}{upos_uri}'  #视频上传路径
-            upload_id = self.videoUploadId(url, auth)["upload_id"]
+            upload_id = self.videoUploadId(url, auth)["upload_id"] #得到上传id
 
-            threadPool = ThreadPoolExecutor(max_workers=ThreadNum, thread_name_prefix="upload_")
+            threadPool = ThreadPoolExecutor(max_workers=ThreadNum, thread_name_prefix="upload_") #创建线程池
             parts = [] #分块信息
             for ii in range(chunks):
                 parts.append({"partNumber":ii+1,"eTag":"etag"})
@@ -127,16 +126,14 @@ class VideoUploader(object):
         with open(filepath, 'rb') as f: 
             size = f.seek(0, 2) #获取文件大小
             chunks = math.ceil(size / fsize) #获取分块数量
-            
             retobj = self.videoPreupload(name, size) #申请上传
             auth = retobj["auth"]
             endpoint = retobj["endpoint"]
             biz_id = retobj["biz_id"]
             upos_uri = retobj["upos_uri"][6:]
-            rname = os.path.splitext(os.path.split(upos_uri)[-1])[0]
+            rname = os.path.splitext(os.path.split(upos_uri)[-1])[0] #云端文件名,不带路径和后缀
             url = f'https:{endpoint}{upos_uri}'  #视频上传路径
-            retobj = self.videoUploadId(url, auth)
-            upload_id = retobj["upload_id"] #得到上传id
+            upload_id = self.videoUploadId(url, auth)["upload_id"] #得到上传id
 
             #开始上传
             parts = [] #分块信息
@@ -158,7 +155,7 @@ class VideoUploader(object):
         上传本地图片文件,返回图片url
         filepath str 本地图片路径
         '''
-        suffix = os.path.splittext(filepath)[-1]
+        suffix = os.path.splitext(filepath)[-1]
         with open(filepath,'rb') as f:
             code = base64.b64encode(f.read()).decode()
         return self.videoUpcover(f'data:image/{suffix};base64,{code}')["data"]["url"].replace('http://', 'https://')
@@ -167,23 +164,19 @@ class VideoUploader(object):
         '''提交视频'''
         if self._data["title"] == "":
             self._data["title"] = self._data["videos"][0]["title"]
-        retobj = self.videoAdd(self._data)
-        if retobj["code"] == 0:
-            self._submit = retobj["data"]
-        else:
-            self._submit = retobj
+        self._submit = self.videoAdd(self._data)
         return self._submit
 
     def delete(self) -> bool:
         '''立即撤销本视频的发布(会丢失硬币)，失败(有验证码)返回false'''
-        aid = self._submit["aid"]
+        aid = self._submit["data"]["aid"]
         retobj = self.videoPre()
         challenge = retobj["data"]["challenge"]
         gt = retobj["data"]["gt"]
         return (self.videoDelete(aid, challenge, gt, f'{gt}%7Cjordan')["code"] == 0)
 
     def recovers(self, 
-                 upvideo: str
+                 upvideo: dict
                  ) -> list:
         '''
         返回官方生成的封面,返回url列表,刚上传可能获取不到并返回空列表
@@ -238,7 +231,7 @@ class VideoUploader(object):
                 ) -> None:
         '''
         设置简介
-        title desc 稿件简介
+        desc str 稿件简介
         '''
         self._data["desc"] = desc
 
