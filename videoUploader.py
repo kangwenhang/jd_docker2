@@ -74,8 +74,8 @@ def main(*args, **kwargs):
         video_uploader.setTag(video_uploader.getTags(video_info)[0:1])
 
     result = video_uploader.submit()
-    if 'bvid' in result:
-        print(f'提交成功，av{result["aid"]}，{result["bvid"]}')
+    if result["code"] == 0:
+        print(f'提交成功，av{result["data"]["aid"]}，{result["data"]["bvid"]}')
     else:
         print(f'提交失败,原因为{result["message"]}')
 
