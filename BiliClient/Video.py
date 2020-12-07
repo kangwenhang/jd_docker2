@@ -6,19 +6,8 @@ from threading import Lock
 
 class VideoUploader(object):
     '''B站视频上传类'''
-    videoPreupload = bili.videoPreupload
-    videoUploadId = bili.videoUploadId
-    videoUpload = bili.videoUpload
-    videoUploadInfo = bili.videoUploadInfo
-    videoRecovers = bili.videoRecovers
-    videoTags = bili.videoTags
-    videoAdd = bili.videoAdd
-    videoPre = bili.videoPre
-    videoUpcover = bili.videoUpcover
-    videoDelete = bili.videoDelete
-    #本类只继承BiliApi中与Video上传有关的方法
     def __init__(self, 
-                 cookieData: dict = None, 
+                 cookieData: dict, 
                  title: str = "", 
                  desc: str = "", 
                  dtime: int = 0, 
@@ -44,9 +33,8 @@ class VideoUploader(object):
         subtitle       dict
         '''
         bili.__init__(self)
-        if cookieData:
-            if not bili.login_by_cookie(self, cookieData):
-                raise ValueError('cookie无效')
+        if not bili.login_by_cookie(self, cookieData):
+            raise ValueError('cookie无效')
 
         self._data = {
             "copyright":copyright,
@@ -84,21 +72,21 @@ class VideoUploader(object):
             fileobj.seek(sn*fsize)
             data = fileobj.read(fsize)
             lock.release()
-            self.videoUpload(url, auth, upload_id, data, sn, chunks, sn*fsize, size) #上传分块
+            bili.videoUpload(self, url, auth, upload_id, data, sn, chunks, sn*fsize, size) #上传分块
 
         path, name = os.path.split(filepath)#分离路径与文件名
         preffix = os.path.splitext(name)[0]
         with open(filepath, 'rb') as f: 
             size = f.seek(0, 2) #获取文件大小
             chunks = math.ceil(size / fsize) #获取分块数量
-            retobj = self.videoPreupload(name, size) #申请上传
+            retobj = bili.videoPreupload(self, name, size) #申请上传
             auth = retobj["auth"] #验证信息
             endpoint = retobj["endpoint"]  #目标服务器，用于构建上传http url
             biz_id = retobj["biz_id"]
             upos_uri = retobj["upos_uri"][6:] #目标路径，用于构建上传http url
             rname = os.path.splitext(os.path.split(upos_uri)[-1])[0] #云端文件名,不带路径和后缀
             url = f'https:{endpoint}{upos_uri}'  #视频上传路径
-            upload_id = self.videoUploadId(url, auth)["upload_id"] #得到上传id
+            upload_id = bili.videoUploadId(self, url, auth)["upload_id"] #得到上传id
 
             threadPool = ThreadPoolExecutor(max_workers=ThreadNum, thread_name_prefix="upload_") #创建线程池
             parts = [] #分块信息
@@ -107,7 +95,7 @@ class VideoUploader(object):
                 threadPool.submit(_upload_worker, f, ii)
             threadPool.shutdown(wait=True)
         
-        retobj = self.videoUploadInfo(url, auth, parts, name, upload_id, biz_id)
+        retobj = bili.videoUploadInfo(self, url, auth, parts, name, upload_id, biz_id)
         if (retobj["OK"] == 1):
             return {"title": preffix, "filename": rname, "desc": ""}
         return None
@@ -126,24 +114,24 @@ class VideoUploader(object):
         with open(filepath, 'rb') as f: 
             size = f.seek(0, 2) #获取文件大小
             chunks = math.ceil(size / fsize) #获取分块数量
-            retobj = self.videoPreupload(name, size) #申请上传
+            retobj = bili.videoPreupload(self, name, size) #申请上传
             auth = retobj["auth"]
             endpoint = retobj["endpoint"]
             biz_id = retobj["biz_id"]
             upos_uri = retobj["upos_uri"][6:]
             rname = os.path.splitext(os.path.split(upos_uri)[-1])[0] #云端文件名,不带路径和后缀
             url = f'https:{endpoint}{upos_uri}'  #视频上传路径
-            upload_id = self.videoUploadId(url, auth)["upload_id"] #得到上传id
+            upload_id = bili.videoUploadId(self, url, auth)["upload_id"] #得到上传id
 
             #开始上传
             parts = [] #分块信息
             f.seek(0, 0)
             for i in range(chunks): #单线程分块上传，官方支持三线程
                 data = f.read(fsize) #一次读取一个分块大小
-                self.videoUpload(url, auth, upload_id, data, i, chunks, i*fsize, size)#上传分块
+                bili.videoUpload(self, url, auth, upload_id, data, i, chunks, i*fsize, size)#上传分块
                 parts.append({"partNumber":i+1,"eTag":"etag"}) #添加分块信息，partNumber从1开始
         
-        retobj = self.videoUploadInfo(url, auth, parts, name, upload_id, biz_id)
+        retobj = bili.videoUploadInfo(self, url, auth, parts, name, upload_id, biz_id)
         if (retobj["OK"] == 1):
             return {"title": preffix, "filename": rname, "desc": ""}
         return None
@@ -158,22 +146,22 @@ class VideoUploader(object):
         suffix = os.path.splitext(filepath)[-1]
         with open(filepath,'rb') as f:
             code = base64.b64encode(f.read()).decode()
-        return self.videoUpcover(f'data:image/{suffix};base64,{code}')["data"]["url"].replace('http://', 'https://')
+        return bili.videoUpcover(self, f'data:image/{suffix};base64,{code}')["data"]["url"].replace('http://', 'https://')
 
     def submit(self) -> dict:
         '''提交视频'''
         if self._data["title"] == "":
             self._data["title"] = self._data["videos"][0]["title"]
-        self._submit = self.videoAdd(self._data)
+        self._submit = bili.videoAdd(self, self._data)
         return self._submit
 
     def delete(self) -> bool:
         '''立即撤销本视频的发布(会丢失硬币)，失败(有验证码)返回false'''
         aid = self._submit["data"]["aid"]
-        retobj = self.videoPre()
+        retobj = bili.videoPre(self)
         challenge = retobj["data"]["challenge"]
         gt = retobj["data"]["gt"]
-        return (self.videoDelete(aid, challenge, gt, f'{gt}%7Cjordan')["code"] == 0)
+        return (self.videoDelete(self, aid, challenge, gt, f'{gt}%7Cjordan')["code"] == 0)
 
     def recovers(self, 
                  upvideo: dict
@@ -182,7 +170,7 @@ class VideoUploader(object):
         返回官方生成的封面,返回url列表,刚上传可能获取不到并返回空列表
         upvideo dict 由uploadFile方法返回的dict
         '''
-        return self.videoRecovers(upvideo["filename"])["data"]
+        return bili.videoRecovers(self, upvideo["filename"])["data"]
 
     def getTags(self, 
                 upvideo: dict
@@ -191,8 +179,7 @@ class VideoUploader(object):
         返回官方推荐的tag列表
         upvideo dict 由uploadFile方法返回的dict
         '''
-        ""
-        return [x["tag"] for x in self.videoTags(upvideo["title"], upvideo["filename"])["data"]]
+        return [x["tag"] for x in bili.videoTags(self, upvideo["title"], upvideo["filename"])["data"]]
 
     def add(self, 
             upvideo: dict

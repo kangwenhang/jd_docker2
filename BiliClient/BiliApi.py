@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-import requests, json
+import requests, json, re
 
 class BiliApi(object):
     "B站api接口"
 
     def __init__(self):
         #创建session
-        self._session = requests.session()
+        self._session = requests.sessions.Session()
         #设置header
         self._session.headers.update({"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/63.0.3239.108","Referer": "https://www.bilibili.com/",'Connection': 'keep-alive'})
         self._islogin = False
@@ -17,7 +17,6 @@ class BiliApi(object):
         cookieData dict 账户cookie
         '''
         requests.utils.add_dict_to_cookiejar(self._session.cookies, cookieData)
-
         ret = self._session.get("https://api.bilibili.com/x/web-interface/nav").json()
         if ret["code"] != 0:
             return False
@@ -100,7 +99,6 @@ class BiliApi(object):
     @staticmethod
     def getId(url):
         "取B站指定视频链接的aid和cid号"
-        import re
         content = requests.get(url, headers=Biliapi.__headers)
         match = re.search( 'https:\/\/www.bilibili.com\/video\/av(.*?)\/\">', content.text, 0)
         aid = match.group(1)
@@ -199,7 +197,6 @@ class BiliApi(object):
 
     def getHomePageUrls(self):
         "取B站首页推荐视频地址列表"
-        import re
         url = "https://www.bilibili.com"
         content = self._session.get(url)
         match = re.findall( '<div class=\"info-box\"><a href=\"(.*?)\" target=\"_blank\">', content.text, 0)
@@ -542,7 +539,7 @@ class BiliApi(object):
         post_data = {
             "csrf": self._bili_jct
             }
-        return self._session.post(url, post_data, files=files, timeout=(5, 60)).json()
+        return self._session.post(url, post_data, files=files, timeout=(15, 60)).json()
 
     def articleCardsBvid(self, bvid: 'str 加上BV前缀'):
         "根据bv号获取视频信息，在专栏引用视频时使用"
@@ -689,7 +686,7 @@ class BiliApi(object):
     @staticmethod
     def activityList(plat='2', mold=0, http=3, start_page=1, end_page=10):
         "获取B站活动列表，生成器"
-        session = requests.session()
+        session = requests.sessions.Session()
         url = f'https://www.bilibili.com/activity/page/list?plat={plat}&mold={mold}&http={http}&page={start_page}'
         list = session.get(url).json()["data"]["list"]
         while len(list):
@@ -988,7 +985,6 @@ class BiliApi(object):
     @staticmethod
     def epPlayList(ep_or_ss: str):
         "获取番剧播放列表"
-        import re
         url = f'https://www.bilibili.com/bangumi/play/{ep_or_ss}'
         text = requests.get(url, headers={'User-Agent':'Mozilla/5.0'}).text
         find = re.findall(r'window.__INITIAL_STATE__=({.*});\(function\(\)', text, re.S)
@@ -1023,6 +1019,144 @@ class BiliApi(object):
         if bvid:
             data["bvid"] = bvid
         return self._session.get(url, params=data).json()
+
+    def audioMenuInfo(self, 
+                      am_id: int
+                      ) -> dict:
+        '''
+        查询音频菜单信息
+        am_id int 音频菜单id
+        return dict 音频菜单信息
+        '''
+        url = f'https://www.bilibili.com/audio/music-service-c/web/menu/info?sid={am_id}'
+        return self._session.get(url).json()
+
+    def audioMenuList(self, 
+                      am_id: int,
+                      pn: int = 1,
+                      ps: int = 100
+                      ) -> dict:
+        '''
+        查询音频菜单音乐列表
+        am_id int 音频菜单id
+        pn    int 页数
+        ps    int 每页音频数
+        return dict 音频列表信息
+        '''
+        url = f'https://www.bilibili.com/audio/music-service-c/web/song/of-menu?sid={am_id}&pn={pn}&ps={ps}'
+        return self._session.get(url).json()
+
+    def audioInfo(self, 
+                  au_id: int
+                  ) -> dict:
+        '''
+        查询音频信息
+        au_id  int 音频id
+        return dict 音频信息
+        '''
+        url = f'https://www.bilibili.com/audio/music-service-c/web/song/info?sid={au_id}'
+        return self._session.get(url).json()
+
+    def audioUrl(self, 
+                 au_id: int,
+                 privilege: int = 2,
+                 quality: int = 2
+                 ) -> dict:
+        '''
+        查询音频下载地址
+        au_id     int  音频id
+        privilege int
+        quality   int
+        return dict 音频下载地址
+        '''
+        url = f'https://www.bilibili.com/audio/music-service-c/web/url?sid={au_id}&privilege={privilege}&quality={quality}'
+        return self._session.get(url).json()
+
+    def audioCategories(self) -> dict:
+        '''
+        查询音频种类(中文)与type(整数)的对应关系
+        返回  音频种类列表
+        '''
+        url = 'https://www.bilibili.com/audio/music-service/songs/categories'
+        return self._session.get(url).json()
+
+    def audioImageUpload(self,
+                         image: str
+                         ) -> dict:
+        '''
+        上传音频封面
+        image str base64编码的图片数据
+        返回  音频封面url
+        '''
+        url = 'https://www.bilibili.com/audio/music-service/songs/image'
+        files = {
+            'file': (None, image)
+            }
+        #注意是用multipart/form-data方式post，不能用data和json两个参赛而是用files
+        return self._session.post(url, files=files).json()
+
+    def audioActivityInfo(self) -> dict:
+        '''
+        查询音频投稿活动
+        返回  音频活动列表
+        '''
+        url = 'https://www.bilibili.com/audio/music-service/songs/activityInfo'
+        #{"code":72000000,"msg":"未获取到活动信息null","data":null}
+        return self._session.get(url).json()
+
+    def audioLyricUpload(self,
+                         song_id: int,
+                         lyric: str
+                         ) -> dict:
+        '''
+        上传音频歌词
+        song_id int  音频id
+        lyric   str  音频信息
+        返回    dict 歌词链接
+        '''
+        url = 'https://www.bilibili.com/audio/music-service/songs/lrc'
+        data = {
+            "song_id": song_id,
+            "lrc": lyric
+            }
+        return self._session.post(url, data).json()
+
+    def audioSubmit(self,
+                    data: dict
+                    ) -> dict:
+        '''
+        提交音频稿件
+        data dict 音频信息
+        返回  提交信息
+        '''
+        url = 'https://www.bilibili.com/audio/music-service/songs'
+        #{"code":0,"msg":"success","data":1986498}
+        return self._session.post(url, json=data).json()
+
+    def getUrlStream(self, 
+                     url: str, 
+                     chunk_size: int = 1048576
+                     ) -> bytes:
+        '''
+        使用get方式读取url文件，生成器，每次返回最多chunk_size个字节
+        url        str   网络文件的url
+        chunk_size int   每次最多返回多少字节
+        return     bytes 包含网络文件的字节
+        '''
+        res = self._session.get(url, stream=True)
+        for chunk in res.iter_content(chunk_size=chunk_size):
+            if chunk:
+                yield chunk
+
+    def getUrl(self, 
+               url: str
+               ) -> bytes:
+        '''
+        使用get方式读取url文件，生成器，每次返回最多chunk_size个字节
+        url    str   网络文件的url
+        return bytes 包含网络文件的字节
+        '''
+        return self._session.get(url).content
 
     @staticmethod
     def videoGetPart(url: str, start, end):
@@ -1078,4 +1212,4 @@ class BiliApi(object):
         self._session.close()
 
     def __del__(self):
-        self.close()
+        self._session.close()

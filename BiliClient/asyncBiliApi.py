@@ -13,12 +13,19 @@ class asyncBiliApi(object):
                 headers = headers
                 )
     
-    async def login_by_cookie(self, cookieData, checkBanned=True) -> bool:
+    async def login_by_cookie(self, cookieData, checkBanned=True, strict=False) -> bool:
         '''
         登录并获取账户信息
         cookieData dict 账户cookie
+        checkBanned bool 检查是否被封禁
+        strict bool 是否严格限制cookie在.bilibili.com域名之下
         '''
-        self._session.cookie_jar.update_cookies(cookieData)
+        if strict:
+            from yarl import URL
+            self._session.cookie_jar.update_cookies(cookieData, URL('https://.bilibili.com'))
+        else:
+            self._session.cookie_jar.update_cookies(cookieData)
+
         await self.refreshInfo()
         if not self._islogin:
             return False
@@ -996,6 +1003,41 @@ class asyncBiliApi(object):
 
         async with self._session.post(url, json=post_data, verify_ssl=False) as r:
             ret = await r.json()
+        return ret
+
+    async def mangaAddFavorite(self, 
+                               comic_id: int
+                               ) -> dict:
+        '''
+        将漫画添加进追漫列表
+        comic_id int 漫画id
+        '''
+        url = 'https://manga.bilibili.com/twirp/bookshelf.v1.Bookshelf/AddFavorite'
+        post_data = {
+            "comic_id": comic_id
+            }
+        async with self._session.post(url, data=post_data, verify_ssl=False) as r:
+            ret = await r.json()
+        #{'code': 0, 'msg': '', 'data': {'first_fav_status': {'25902': True}}}
+        return ret
+
+    async def mangaAddHistory(self, 
+                              comic_id: int,
+                              ep_id: int
+                              ) -> dict:
+        '''
+        添加漫画观看历史
+        comic_id int 漫画id
+        ep_id    int 章节id
+        '''
+        url = 'https://manga.bilibili.com/twirp/bookshelf.v1.Bookshelf/AddHistory'
+        post_data = {
+            "comic_id": comic_id,
+            "ep_id": ep_id
+            }
+        async with self._session.post(url, data=post_data, verify_ssl=False) as r:
+            ret = await r.json()
+        #{"code":0,"msg":"","data":{}}
         return ret
 
     async def activityAddTimes(self, 
