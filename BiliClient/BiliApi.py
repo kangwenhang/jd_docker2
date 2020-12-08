@@ -617,11 +617,11 @@ class BiliApi(object):
             }
         return self._session.post(url, post_data).json()
 
-    def videoPreupload(self, filename, filesize):
+    def videoPreupload(self, filename, filesize, profile='ugcupos%2Fbup'):
         "申请上传，返回上传信息"
         from urllib.parse import quote
         name = quote(filename)
-        url = f'https://member.bilibili.com/preupload?name={name}&size={filesize}&r=upos&profile=ugcupos%2Fbup&ssl=0&version=2.8.9&build=2080900&upcdn=bda2&probe_version=20200628'
+        url = f'https://member.bilibili.com/preupload?name={name}&size={filesize}&r=upos&profile={profile}&ssl=0&version=2.8.9&build=2080900&upcdn=bda2&probe_version=20200628'
         return self._session.get(url).json()
 
     def videoUploadId(self, url, auth):
@@ -634,11 +634,11 @@ class BiliApi(object):
         end = start + size
         content = self._session.put(f'{url}?partNumber={chunk+1}&uploadId={upload_id}&chunk={chunk}&chunks={chunks}&size={size}&start={start}&end={end}&total={total}', data=data, headers={"X-Upos-Auth": auth})
 
-    def videoUploadInfo(self, url, auth, parts, filename, upload_id, biz_id):
+    def videoUploadInfo(self, url, auth, parts, filename, upload_id, biz_id, profile='ugcupos%2Fbup'):
         "查询上传视频信息"
         from urllib.parse import quote
         name = quote(filename)
-        return self._session.post(f'{url}?output=json&name={name}&profile=ugcupos%2Fbup&uploadId={upload_id}&biz_id={biz_id}', json={"parts":parts}, headers={"X-Upos-Auth": auth}).json()
+        return self._session.post(f'{url}?output=json&name={name}&profile={profile}&uploadId={upload_id}&biz_id={biz_id}', json={"parts":parts}, headers={"X-Upos-Auth": auth}).json()
 
     def videoRecovers(self, fns: '视频编号'):
         "查询以前上传的视频信息"
@@ -1131,6 +1131,38 @@ class BiliApi(object):
         '''
         url = 'https://www.bilibili.com/audio/music-service/songs'
         #{"code":0,"msg":"success","data":1986498}
+        return self._session.post(url, json=data).json()
+
+    def audioCompilationSongSubmit(self,
+                                   data: dict
+                                   ) -> dict:
+        '''
+        提交合辑里单个音频
+        data dict 音频信息
+        返回  提交信息
+        '''
+        url = 'https://www.bilibili.com/audio/music-service/compilation/commit_songs'
+        #{"code":0,"msg":"success","data":""}
+        return self._session.post(url, json=data).json()
+
+    def audioCompilationCategories(self) -> dict:
+        '''
+        查询音频种类(中文)与type(整数)的对应关系
+        返回  音频种类列表
+        '''
+        url = 'https://www.bilibili.com/audio/music-service/compilation/compilation_categories'
+        return self._session.get(url).json()
+
+    def audioCompilationSubmit(self,
+                               data: dict
+                               ) -> dict:
+        '''
+        提交音频合辑
+        data dict 音频合辑信息
+        返回  提交信息
+        '''
+        url = 'https://www.bilibili.com/audio/music-service/compilation/commit_compilation'
+        #{"code":0,"msg":"success","data":31655539}
         return self._session.post(url, json=data).json()
 
     def getUrlStream(self, 

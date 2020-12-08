@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from . import bili, VideoUploader
-import re, os, base64, time
+from . import bili
+import re, os, base64, time, math
 
 class Audio(object):
     '''B站音频下载类'''
@@ -218,7 +218,7 @@ class AudioUploader(object):
             raise ValueError('cookie无效')
 
         self._data = {
-            #"lyric_url": "",
+            "lyric_url": "",
             "cover_url": "",
             "song_id": 0,
             "album_id": 0,
@@ -234,6 +234,7 @@ class AudioUploader(object):
             "avid": "",
             "tid": "",
             "cid": "", 
+            "compilation_id": "",
             "title": "",
             "intro": "",
             "member_with_type":[
@@ -248,7 +249,8 @@ class AudioUploader(object):
                     {"m_type":9,"members":[]},
                     {"m_type":10,"members":[]},
                     {"m_type":11,"members":[]},
-                    {"m_type":127,"members":[{"name":self._name,"mid":self._uid}]}],
+                    {"m_type":127,"members":[{"name":self._name,"mid":self._uid}]}
+                    ],
             "song_tags": [],
             "create_time": 0,
             "activity_id": 0,
@@ -313,7 +315,7 @@ class AudioUploader(object):
         singer str 歌唱者
         mid    int 歌唱者id，非B站用户或不提供默认为0
         '''
-        self._data["member_with_type"][0].append({"name": author, "mid": mid})
+        self._data["member_with_type"][0]["members"].append({"name": author, "mid": mid})
 
     def setSingers(self,
                   singers: tuple
@@ -582,7 +584,7 @@ class AudioUploader(object):
         with open(filepath, 'rb') as f: 
             size = f.seek(0, 2) #获取文件大小
             chunks = math.ceil(size / fsize) #获取分块数量
-            retobj = bili.videoPreupload(self, name, size) #申请上传
+            retobj = bili.videoPreupload(self, name, size, "uga%2Fbup") #申请上传
             auth = retobj["auth"]
             endpoint = retobj["endpoint"]
             biz_id = retobj["biz_id"]
@@ -598,7 +600,7 @@ class AudioUploader(object):
                 bili.videoUpload(self, url, auth, upload_id, data, i, chunks, i*fsize, size)#上传分块
                 parts.append({"partNumber":i+1,"eTag":"etag"}) #添加分块信息，partNumber从1开始
         
-        retobj = bili.videoUploadInfo(self, url, auth, parts, name, upload_id, biz_id)
+        retobj = bili.videoUploadInfo(self, url, auth, parts, name, upload_id, biz_id, "uga%2Fbup")
         assert retobj["OK"] == 1
         return biz_id, preffix
 
@@ -629,19 +631,23 @@ class AudioUploader(object):
     def submit(self) -> dict:
         '''提交音频稿件'''
         self._data["create_time"] = int(time.time())
+        print(self._data)
         return bili.audioSubmit(self, self._data)
 
     def _setMembers(self,
-                    members: tuple,
+                    members: tuple or list,
                     id: int
                     ) -> None:
-        _list = []
-        for x in members:
-            if isinstance(x, str):
-                _list.append({"name": x, "mid": 0})
-            else:
-                _list.append({"name": x[0], "mid": x[1]})
-        self._data["member_with_type"][id] = _list
+        if isinstance(members, tuple) or isinstance(members, list):
+            _list = []
+            for x in members:
+                if isinstance(x, str):
+                    _list.append({"name": x, "mid": 0})
+                else:
+                    _list.append({"name": x[0], "mid": x[1]})
+            self._data["member_with_type"][id]["members"] = _list
+        else:
+            raise ValueError(name+'类型错误，必须使用元组或列表类型的字符串数组')
 
     def _setType(self,
                  type: int or str,
@@ -654,7 +660,230 @@ class AudioUploader(object):
             for type in self._categories:
                 if type in type[1]:
                     id = type[0]
+                    break
         if not id:
             raise ValueError(name+'类型错误，请使用正确的类型')
         self._data[name+"_id"] = id
         return id
+
+class CompilationUploader(object):
+    '''B站音频合辑上传类'''
+    _categories = ((102, '人声演唱'), (103, 'VOCALOID歌手'), (104, '人力鬼畜'), (105, '纯音乐/演奏'), 
+                   (106, '原创'), (107, '翻唱/翻奏'), (108, '改编/remix'), (109, '华语'), (110, '日语'), 
+                   (111, '英语'), (112, '韩语'), (113, '粤语'), (114, '其他语种'), (115, '动画'), 
+                   (116, '游戏'), (117, '影视'), (118, '网络歌曲'), (119, '同人'), (120, '偶像'), 
+                   (121, '流行'), (122, '古风'), (123, '摇滚'), (124, '民谣'), (125, '电子'), (126, '舞曲'), 
+                   (127, '说唱'), (128, '轻音乐'), (129, '阿卡贝拉'), (130, '爵士'), (131, '乡村'), 
+                   (132, 'R&B/Soul'), (133, '古典'), (134, '民族'), (135, '英伦'), (136, '金属'), 
+                   (137, '朋克'), (138, '蓝调'), (139, '雷鬼'), (140, '世界音乐'), (141, '拉丁'), 
+                   (142, '另类/独立'), (143, 'New Age'), (144, '后摇'), (145, 'Bossa Nova'), (146, '音乐'), 
+                   (147, '有声节目'), (148, '广播剧'), (149, '有声故事'), (150, 'ASMR'), (151, '其他')
+                   )
+
+    class _audio(object):
+        '''B站音频上传信息类'''
+
+        def __init__(self,
+                     username: str,
+                     uid: int,
+                     song_id: int,
+                     title: str
+                 ):
+            self._data = {
+                "lyric_url":None,
+                "song_id":song_id,
+                "title":title,
+                "member_with_type":[
+                    {"m_type":1,"members":[]},
+                    {"m_type":2,"members":[]},
+                    {"m_type":3,"members":[]},
+                    {"m_type":4,"members":[]},
+                    {"m_type":5,"members":[]},
+                    {"m_type":6,"members":[]},
+                    {"m_type":7,"members":[]},
+                    {"m_type":8,"members":[]},
+                    {"m_type":9,"members":[]},
+                    {"m_type":10,"members":[]},
+                    {"m_type":11,"members":[]},
+                    {"m_type":127,"members":[{"name":username,"mid":uid}]}],
+                "song_tags":[],"mid":uid}
+
+        def setLyricUrl(self,
+                        lyric_url: str
+                        ) -> None:
+            '''
+            设置歌词链接
+            lyric_url str 歌词链接
+            '''
+            self._data["lyric_url"] = lyric_url
+
+        @property
+        def songId(self) -> int:
+            return self._data["song_id"]
+
+        #这里将AudioUploader类的方法导入到本类
+        setSongId = AudioUploader.setSongId
+        setTitle = AudioUploader.setTitle
+        addTag = AudioUploader.addTag
+        setTags = AudioUploader.setTags
+        setSingers = AudioUploader.setSingers
+        setLyricist = AudioUploader.setLyricist
+        setComposers = AudioUploader.setComposers
+        setArrangers = AudioUploader.setArrangers
+        setPostProduction = AudioUploader.setPostProduction
+        setCoverMaker = AudioUploader.setCoverMaker
+        setSoundSource = AudioUploader.setSoundSource
+        setTuners = AudioUploader.setTuners
+        setInstrumentalists = AudioUploader.setInstrumentalists
+        setInstruments = AudioUploader.setInstruments
+        setOriginAuthors = AudioUploader.setOriginAuthors
+        _setMembers = AudioUploader._setMembers
+
+    def __init__(self,
+                 cookieData: dict
+                 ):
+        '''
+        创建一个B站音频合辑上传类
+        cookieData     dict  账户cookie
+        '''
+        bili.__init__(self)
+        if not bili.login_by_cookie(self, cookieData):
+            raise ValueError('cookie无效')
+
+        self._data = {
+            "cover_url":"",
+            "intro":"",
+            "is_synch":1,
+            "song_counts":0,
+            "song_ids":[],
+            "dict_items":[],
+            "title":""
+            }
+
+    def createAudio(self,
+                    audio_path: str,
+                    lyric: str = None
+                    ) -> _audio:
+        '''
+        上传音频文件，创建一个音频
+        audio_path str 音频文件路径
+        lyric str 歌词文件路径或者歌词内容字符串
+        返回 音频对象
+        '''
+        song_id, title = AudioUploader.uploadAudio(self, filepath)
+        audio = self._audio(self._name, self._uid, song_id, title)
+        if lyric:
+            self.addLyricToAudio(audio, lyric)
+        return audio
+
+    def addLyricToAudio(self,
+                        audio: _audio,
+                        lyric: str
+                        ) -> None:
+        '''
+        在音频上添加歌词
+        audio 由createAudio方法返回的音频 
+        lyric str 歌词文件路径或者歌词内容字符串
+        '''
+        if os.path.isfile(lyric):
+            with open(lyric, 'r') as fp:
+                lyric = bili.audioLyricUpload(self, song_id, fp.read())["data"]
+        else:
+            lyric = bili.audioLyricUpload(self, song_id, lyric)["data"]
+        audio.setLyricUrl(lyric)
+
+    def addAudioWithCommit(self,
+                           audio: _audio
+                           ) -> str:
+        '''
+        将单个音频添加到本合辑，音频会立即提交审核
+        audio 由createAudio方法返回的音频
+        返回 str 提交信息，为None则提交成功，否则为错误信息字符串
+        '''
+        res = bili.audioCompilationSongSubmit(self, audio._data)
+        if res["code"] == 0:
+            self._data["song_ids"].append(audio.songId)
+            return None
+        else:
+            return res["msg"]
+
+    def setAudiosWithCommit(self,
+                            audios: list
+                            ) -> list:
+        '''
+        将多个音频添加到本合辑(会删除已经添加到本合辑的音频)，音频会立即提交审核
+        audio 由createAudio方法返回的音频
+        返回 list 提交信息列表，为None则对应音频提交成功，否则为错误信息字符串
+        '''
+        ids_list = []
+        ret_list = []
+        for audio in audios:
+            res = bili.audioCompilationSongSubmit(self, audio._data)
+            if res["code"] == 0:
+                ids_list.append(audio.songId)
+                ret_list.append(None)
+            else:
+                ret_list.append(res["msg"])
+        self._data["song_ids"] = ids_list
+        return ret_list
+
+    def addType(self,
+                type: int or str
+                ) -> None:
+        '''
+        添加合辑音频类型
+        type int or str 音频类型id(整数)或音频字符串 如105与"纯音乐"等价,123与"摇滚"等价
+        '''
+        if isinstance(type, str):
+            for _type in self._categories:
+                if type in _type[1]:
+                    self._data["dict_items"].append({"type_id":_type[0],"type_name":_type[1]})
+                    break
+        elif isinstance(type, int):
+            for _type in self._categories:
+                if type == _type[0]:
+                    self._data["dict_items"].append({"type_id":_type[0],"type_name":_type[1]})
+                    break
+        else:
+            raise ValueError('type类型必须为整数或字符串')
+
+    def setTypes(self,
+                types: list or tuple
+                ) -> None:
+        '''
+        设置合辑音频类型(删除已设置类型)
+        types list or tuple 音频类型列表，每个音频类型为整数或字符串
+        '''
+        items = []
+        for type in types:
+            if isinstance(type, str):
+                for _type in self._categories:
+                    if type in _type[1]:
+                        items.append({"type_id":_type[0],"type_name":_type[1]})
+                        break
+            elif isinstance(type, int):
+                for _type in self._categories:
+                    if type == _type[0]:
+                        items.append({"type_id":_type[0],"type_name":_type[1]})
+                        break
+            else:
+                raise ValueError('type类型必须为整数或字符串')
+        self._data["dict_items"] = items
+
+    def submit(self) -> (int, str):
+        '''
+        提交音频合辑
+        返回 (int, str) 返回合辑id和提交信息，若合辑id为0则提交失败
+        '''
+        self._data["song_counts"] = len(self._data["song_ids"])
+        res = bili.audioCompilationSubmit(self, self._data)
+        if res["code"] == 0:
+            return res["data"], res["msg"]
+        else:
+            return 0, res["msg"]
+
+    #这里将AudioUploader类的方法导入到本类
+    setIntro = AudioUploader.setIntro
+    setTitle = AudioUploader.setTitle
+    uploadImage = AudioUploader.uploadImage
+    setImage = AudioUploader.setImage

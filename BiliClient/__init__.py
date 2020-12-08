@@ -12,6 +12,7 @@ from .Danmu2Ass import Danmu2Ass as Danmu2Ass
 from .Audio import Audio as Audio
 from .Audio import AudioMenu as AudioMenu
 from .Audio import AudioUploader as AudioUploader
+from .Audio import CompilationUploader as CompilationUploader
 
 __all__ = (
     'asyncbili',
