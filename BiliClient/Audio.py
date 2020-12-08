@@ -503,7 +503,7 @@ class AudioUploader(object):
                         language_type: int or str
                         ) -> None:
         '''
-        设置音频主题来源，仅音频分类为"音乐"时需要(必选)，音频分类为"有声节目"时不需要
+        设置音频语言，仅音频分类为"音乐"时需要(必选)，音频分类为"有声节目"时不需要
         language_type int or str 设置语言类型，可提供类型id(整数)或者类型字符串，如"华语"，"日语"
         '''
         self._setType(language_type, "language_type")
@@ -628,11 +628,17 @@ class AudioUploader(object):
         '''
         return bili.audioLyricUpload(self, self._data["song_id"], lyric)["data"]#.replace('http://', 'https://')
 
-    def submit(self) -> dict:
-        '''提交音频稿件'''
+    def submit(self) -> (int, str):
+        '''
+        提交音频稿件
+        返回 (int, str) 返回音频id和提交信息，若音频id为0则提交失败
+        '''
         self._data["create_time"] = int(time.time())
-        print(self._data)
-        return bili.audioSubmit(self, self._data)
+        res = bili.audioSubmit(self, self._data)
+        if res["code"] == 0:
+            return res["data"], res["msg"]
+        else:
+            return 0, res["msg"]
 
     def _setMembers(self,
                     members: tuple or list,
@@ -797,7 +803,7 @@ class CompilationUploader(object):
                            ) -> str:
         '''
         将单个音频添加到本合辑，音频会立即提交审核
-        audio 由createAudio方法返回的音频
+        audios 由createAudio方法返回的音频构成的数组
         返回 str 提交信息，为None则提交成功，否则为错误信息字符串
         '''
         res = bili.audioCompilationSongSubmit(self, audio._data)

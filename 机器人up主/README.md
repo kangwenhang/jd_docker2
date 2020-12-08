@@ -375,8 +375,80 @@ video_uploader.submit() #这里发布视频，发布后会审核
 ## 发布音频稿件
 
 ### 发布一个单曲音频稿件
+这个例子将本地文件`E:\测试音频.mp3`上传，将标题设置为"测试音频"
+```
+from BiliClient import AudioUploader
+
+cookies = { #这里是账号登录后获得的cookie
+    "SESSDATA": "4a5f1c63%2C1617173721%2Cdf9fc*a1",
+    "bili_jct": "cf28bac01cd7d443646907a5c4da8cf1",
+    }
+
+au = AudioUploader(cookies)
+au.setSongFile(r'E:\测试音频.mp3')
+#au.setTitle('测试音频') #不设置默认与文件名相同
+au.setImage(r'E:\测试音频封面.jpg') #设置音频封面
+au.setLyric(r'E:\测试音频歌词.lrc') #设置音频歌词，lrc歌词文件
+
+au.setMusicType("人声演唱") #设置声音类型
+au.setCreationType("原创") #设置创作类型
+au.setLanguageType("华语") #设置音频语言
+au.setThemeType("网络歌曲") #设置主题来源
+au.setStyleType("流行") #设置风格类型
+
+au.setSingers(["歌手1", "歌手2"]) #设置音频歌手(数组)
+au.setLyricist(["作词者1", "作词者2"]) #设置音频作词者(数组)
+au.setComposers(["作曲者1", "作曲者2"]) #设置音频歌手(数组)
+
+au.setIntro("好听的歌") #设置音频简介
+
+song_id, msg = au.submit()
+
+if song_id:
+    print(f'发布音频稿件成功，音频id为{song_id}')
+else:
+    print(f'发布音频稿件失败，信息为{msg}')
+```
 
 ### 发布一个合辑音频稿件
+这个例子将本地文件`E:\测试音频1.mp3`和`E:\测试音频2.mp3`上传，将音频合辑标题设置为"测试音频合辑"
+```
+from BiliClient import CompilationUploader
+
+cookies = { #这里是账号登录后获得的cookie
+    "SESSDATA": "4a5f1c63%2C1617173721%2Cdf9fc*a1",
+    "bili_jct": "cf28bac01cd7d443646907a5c4da8cf1",
+    }
+
+cu = CompilationUploader(cookies) #创建合辑
+aus = [] #数组存放音频
+
+au = cu.createAudio(r'E:\测试音频1.mp3', r'E:\测试音频歌词1.lrc') #创建音频1
+au.setSingers(["歌手1", "歌手2"]) #设置音频歌手(数组)
+au.setLyricist(["作词者1", "作词者2"]) #设置音频作词者(数组)
+au.setComposers(["作曲者1", "作曲者2"]) #设置音频歌手(数组)
+aus.append(au) #添加到音频数组
+
+au = cu.createAudio(r'E:\测试音频2.mp3', r'E:\测试音频歌词2.lrc') #创建音频2
+au.setSingers(["歌手1", "歌手2"]) #设置音频歌手(数组)
+au.setLyricist(["作词者1", "作词者2"]) #设置音频作词者(数组)
+au.setComposers(["作曲者1", "作曲者2"]) #设置音频歌手(数组)
+aus.append(au) #添加到音频数组
+
+cu.setAudiosWithCommit(aus) #将音频1和音频2放进合辑，这一步提交音频进入B站审核状态
+
+cu.setTitle('测试音频合辑') #设置合辑标题
+cu.setImage(r'E:\测试音频封面.jpg') #设置合辑封面
+cu.setIntro('合辑简介') #设置合辑简介
+cu.setTypes(["人声演唱", "原创", "华语", "网络歌曲", "流行"]) #设置类型，数组
+
+id, msg = cu.submit() #提交合辑，合辑进入审核状态，与音频审核是分开的
+
+if song_id:
+    print(f'发布音频合辑稿件成功，音频合辑id为{id}')
+else:
+    print(f'发布音频合辑稿件失败，信息为{msg}')
+```
 
 ## 这里是一些机器人up主脚本
 
