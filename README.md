@@ -14,6 +14,9 @@ BiliExp
 ![](https://img.shields.io/badge/python->=3.6-GREEN.svg?style=social "python版本")
 ![](https://img.shields.io/github/contributors/happy888888/BiliExp "贡献者")
 ![](https://img.shields.io/github/downloads/happy888888/BiliExp/total?style=flat-square "下载量")
+<br>
+![](https://img.shields.io/docker/pulls/happy888888/biliexp?color=purple "docker拉取数")
+![](https://img.shields.io/docker/image-size/happy888888/biliexp "docker镜像大小")
 
 </div>
 
@@ -188,17 +191,52 @@ BiliExp
 
 ### 方式六、docker安装
 
+[docker hub地址](https://registry.hub.docker.com/repository/docker/happy888888/biliexp) 
+
 * 1.准备
     *  1.1一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图),可选：SCKEY，email用于微信或邮箱的消息推送
     *  1.2安装docker(以安装可忽略) `curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun`
 
 * 2.部署
-    *  2.1填写config/config.json文件，放到本地任意文件夹下(以路径 '/etc/BiliExp' 为例)
+    *  2.1填写本项目下config/config.json文件，放到本地任意文件夹下(以路径 '/home/user/Biliexp' 为例)
     *  2.2执行如下命令，运行BiliExp
 	      ```
-		  docker run -v /etc/BiliExp:/etc/BiliExp registry.cn-shanghai.aliyuncs.com/happy888888/biliexp:1.1.5
+		  docker run \
+		  -v /home/user/Biliexp:/BiliExp \
+		  happy888888/biliexp:runner-latest 
 		  ```
-    *  2.3配置crontab
+    *  2.3其他参数
+	      ```
+		  docker run \
+		  -v /home/user/Biliexp:/BiliExp \
+		  happy888888/biliexp:runner-latest \
+		  -t <tag> \
+		  -d \
+		  -c <cron>
+		  ```
+		  `<tag>`表示版本号,可以使用`latest`(不指定时默认,表示最新版),`newest`(表示拉取最新主分支代码执行),指定版本号例如`1.1.0`,当指定版本号时代码会缓存到挂载的路径(上面的例子是主机的`/home/user/Biliexp/code-cache`目录),不指定版本号为每次拉取github代码<br>
+		  `-d`指定本参数时容器不会退出，而是在每天中午12:00执行代码<br>
+		  `<cron>`表示cron表达式,指定后会按照指定表达式的时间执行，默认为`0 12 * * *`即每天中午12点执行,此项参数在不指定`-d`时无效<br>
+		  
+		  例子,每天8点执行BiliExp 1.1.0版本<br>
+	      ```
+		  docker run -d -v /home/user/Biliexp:/BiliExp happy888888/biliexp:runner-latest -t 1.1.0 -d -c "0 8 * * *"
+		  ```
+* 3.支持平台
+    |  平台   | tag标签  |
+    |  ----  | ----  |
+    | windows/linux(x64)  | runner-latest |
+    | linux(arm32)  | runner-arm-latest |
+    | linux(arm64)  | runner-arm64-latest |
+	
+* 4.注意事项
+    *  4.1docker镜像中不包含本项目代码，docker启动时会自动下载
+    *  4.2下载代码的版本号由参数`-t`指定，只有指定`-t 版本号`时才会缓存代码下次使用，`-t latest`和`-t newest`均为每次下载代码
+    *  4.3缓存代码后每次只会执行缓存的代码,要更新版本必须删除缓存才会重新下载新代码(指定了`-t latest`(默认)和`-t newest`除外)
+    *  4.4日志也存放在挂载目录中，且增量保存，可以定时清理
+	
+* 5.其他docker版本
+除了不带代码的`runner`版本，也有携带代码的`happy888888/biliexp:latest`,`happy888888/biliexp:arm64-latest`版本docker镜像可以使用，这些版本执行后会立即退出不能指定参数常驻后台
 
 </br></br></br>
 
@@ -291,6 +329,11 @@ BiliExp
 </br></br></br>
 
 ## 更新日志
+
+### 2020/12/09更新
+
+* 1.完善音频稿件发布和下载部分
+* 2.完善助手脚本docker部署方法
 
 ### 2020/12/01更新
 
