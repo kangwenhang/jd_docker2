@@ -80,6 +80,7 @@ BiliExp
   - [四、windows本地部署(依靠任务计划启动)](#方式四windows本地部署)
   - [五、linux本地部署(依靠crontab启动,shell自动下载安装)](#方式五linux本地部署)
   - [六、docker部署](#方式六docker安装)
+  - [七、openwrt等路由器部署](#方式七openwrt等路由器部署)
 - [使用说明(下载器部分)](#使用方式下载器部分)
 - [使用说明(视频投稿部分)](#使用说明视频投稿部分)
 - [使用说明(专栏、视频和音频的发表,面向开发者)](/机器人up主#python实现B站发布专栏视频和音频的方法)
@@ -238,6 +239,36 @@ BiliExp
 * 5.其他docker版本
 除了不带代码的`runner`版本，也有携带代码的`happy888888/biliexp:latest`,`happy888888/biliexp:arm64-latest`版本docker镜像可以使用，这些版本执行后会立即退出不能指定参数常驻后台
 
+### 方式七、openwrt等路由器部署
+
+此方式难度较大，如果能用其他方式请尽量使用其他方式
+
+* 1.准备
+    *  1.1一个或多个B站账号，以及登录后获取的SESSDATA，bili_jct，DedeUserID (获取方式见最下方示意图),可选：SCKEY，email用于微信或邮箱的消息推送
+    *  1.2使用xshell等工具,登录openwrt(padavan等)路由器，使用命令安装python3
+	   ```
+	   opkg update
+	   opkg install python3-light
+	   ```
+    *  1.3安装python `aiohttp`库
+	   `aiohttp`库在`openwrt`(`padavan`)等路由器的opkg软件源上并没有直接的安装包，需要自己下载项目源码在openwrt平台上构建<br>
+	   如果你的路由器架构是`mipsel`，可以下载我编译好的依赖库(与本项目代码一起打包),[BiliExp_with_aiohttp-mipsel.zip](https://github.com/happy888888/BiliExp/files/5673033/BiliExp.zip)
+
+* 2.部署
+    *  2.1下载本项目代码(步骤1.3压缩包包含代码),解压,填写config/config.json文件
+    *  2.2通过`xftp`(`WinScp`)等软件把解压的文件夹上传到路由器内(比如路径为/root/BiliExp)
+    *  2.3设置crontab使代码定时启动
+	   使用xshell等工具,登录openwrt(padavan等)路由器，输入命令
+	   ```
+	   echo "0 12 * * * /usr/bin/python3 /root/BiliExp/BiliExp.py -c /root/BiliExp/config/config.json" >> "/etc/crontabs/root"
+	   ```
+	   也可以在路由器网页上寻找类似***计划任务***的功能,在默认添加一行`0 12 * * * /usr/bin/python3 /root/BiliExp/BiliExp.py -c /root/BiliExp/config/config.json`并保存
+	   ![image](https://user-images.githubusercontent.com/67217225/101779806-b10fbe00-3b30-11eb-987b-f4b88ee3fa16.png)
+	   
+* 3.注意事项
+    *  3.1在步骤1.3中我提供的依赖库只有"mipse"架构的路由器能使用,其他架构的路由器只能自行编译"aiohttp"库并安装
+    *  3.2本项目依赖的库较大，不能外接U盘的路由器最好不要使用
+	   
 </br></br></br>
 
 ## 使用方式(下载器部分)
