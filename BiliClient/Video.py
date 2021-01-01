@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from . import bili
-import os, math, time, base64
+import os, math, time, base64, re
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 
@@ -404,7 +404,6 @@ class VideoParser(object):
         解析视频
         url  str: BV，av，ep，ss号以及包含这些号的网址
         '''
-        import re
         self._type = 0
         find = re.findall('(BV|av|ep|ss)([0-9 a-z A-Z]*)', url)
         if len(find):
@@ -420,6 +419,9 @@ class VideoParser(object):
                 data = bili.epPlayList(find[0][0] + find[0][1])
                 self._title = data["mediaInfo"]["title"]
                 self._eplist = [[f'{x["titleFormat"]} {x["longTitle"]}', x["bvid"], x["cid"]] for x in data["epList"]]
+                for section in data["sections"]:
+                    for x in section["epList"]:
+                        self._eplist.append([f'{x["titleFormat"]} {x["longTitle"]}', x["bvid"], x["cid"]])
                 self._type = 2
         else:
             raise Exception("不支持的参数")
