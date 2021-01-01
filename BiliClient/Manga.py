@@ -1,4 +1,6 @@
 from . import bili
+from requests.sessions import Session
+import os, re
 
 class MangaDownloader(object):
     "B站漫画下载类"
@@ -55,40 +57,34 @@ class MangaDownloader(object):
 
     def download(self, ep_id: int, path: str):
         "下载一个章节"
-        import os
         if not os.path.exists(path):
             os.mkdir(path)
 
-        import requests
-        _s = requests.session()
+        _s = Session()
+        _list = self.getDownloadList(ep_id)
+        for ii in range(len(_list)):
+            try:
+                with open(os.path.join(path, f'{ii+1:0>2}.jpg'), 'wb') as f:
+                    f.write(_s.get(_list[ii]).content)
+            except Exception as e:
+                print(f'在{path}下写入{ii+1:0>2}.jpg时异常', repr(e))
 
-        list = self.getDownloadList(ep_id)
-        n = 0
-        for x in list:
-            n += 1
-            with open(f'{path}/{n:0>2}.jpg', 'wb') as f:
-                f.write(_s.get(x).content)
+        _s.close()
 
     def downloadAll(self, path):
         "下载漫画所有可下载章节"
-        import os
-        if not os.path.exists(path):
-            os.makedirs(path)
-        title = self.getTitle()
-        if path[-1] == '/':
-            path = f'{path}{title}'
-        else:
-            path = f'{path}/{title}'
+        title = re.sub('[\/:*?"<>|]','',self.getTitle())
+        path = os.path.join(path, title)
         if not os.path.exists(path):
             os.makedirs(path)
         
         bq = len(str(self.getNum()))
         for x in self.getIndex():
-            name = x["title"]
+            name = re.sub('[\/:*?"<>|]','', x["title"])
             if name.replace(' ', '') == '':
                 name = x["short_title"]
             if not x["is_locked"]:
-                self.download(x['id'], f'{path}/{x["ord"]:0>{bq}}-{name}')
+                self.download(x['id'], os.path.join(path, f'{x["ord"]:0>{bq}}-{name}'))
                 print(f'{x["ord"]:0>{bq}}-{name} 下载完成')
             else:
                 print(f'{x["ord"]:0>{bq}}-{name} 目前需要解锁')
