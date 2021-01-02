@@ -1,5 +1,6 @@
 from . import bili
 from requests.sessions import Session
+from typing import Iterable, Union
 import os, re
 
 class MangaDownloader(object):
@@ -55,7 +56,7 @@ class MangaDownloader(object):
         url_list = [f'{x["url"]}?token={x["token"]}' for x in data]
         return url_list
 
-    def download(self, ep_id: int, path: str):
+    def downloadEp(self, ep_id: int, path: str):
         "下载一个章节"
         if not os.path.exists(path):
             os.mkdir(path)
@@ -71,6 +72,39 @@ class MangaDownloader(object):
 
         _s.close()
 
+    def downloadIndexes(self, index: Union[int, Iterable[int]], path: str):
+        "下载章节序号,序号从0开始"
+        title = re.sub('[\/:*?"<>|]','',self.getTitle())
+        path = os.path.join(path, title)
+        if not os.path.exists(path):
+            os.makedirs(path)
+        
+        bq = len(str(self.getNum()))
+        mlist = self.getIndex()
+        if isinstance(index, Iterable):
+            for x in index:
+                name = re.sub('[\/:*?"<>|]','', mlist[x]["title"])
+                if name.replace(' ', '') == '':
+                    name = mlist[x]["short_title"]
+                if not mlist[x]["is_locked"]:
+                    self.downloadEp(mlist[x]['id'], os.path.join(path, f'{mlist[x]["ord"]:0>{bq}}-{name}'))
+                    print(f'{mlist[x]["ord"]:0>{bq}}-{name} 下载完成')
+                else:
+                    print(f'{mlist[x]["ord"]:0>{bq}}-{name} 目前需要解锁')
+
+        elif isinstance(index, int) and index < len(mlist):
+            name = re.sub('[\/:*?"<>|]','', mlist[index]["title"])
+            if name.replace(' ', '') == '':
+                name = x["short_title"]
+            if not x["is_locked"]:
+                self.download(mlist[index]['id'], os.path.join(path, f'{mlist[index]["ord"]:0>{bq}}-{name}'))
+                print(f'{mlist[index]["ord"]:0>{bq}}-{name} 下载完成')
+            else:
+                print(f'{mlist[index]["ord"]:0>{bq}}-{name} 目前需要解锁')
+
+        else:
+            raise ValueError('index必须为整数或可迭代类型')
+
     def downloadAll(self, path):
         "下载漫画所有可下载章节"
         title = re.sub('[\/:*?"<>|]','',self.getTitle())
@@ -84,7 +118,7 @@ class MangaDownloader(object):
             if name.replace(' ', '') == '':
                 name = x["short_title"]
             if not x["is_locked"]:
-                self.download(x['id'], os.path.join(path, f'{x["ord"]:0>{bq}}-{name}'))
+                self.downloadEp(x['id'], os.path.join(path, f'{x["ord"]:0>{bq}}-{name}'))
                 print(f'{x["ord"]:0>{bq}}-{name} 下载完成')
             else:
                 print(f'{x["ord"]:0>{bq}}-{name} 目前需要解锁')

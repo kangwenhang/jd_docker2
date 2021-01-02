@@ -31,11 +31,7 @@ def download_interactive():
         import fitz, glob
         print("正在合并下载图片为pdf")
         title = mag.getTitle()
-        if path[-1] == '/':
-            path = f'{path}{title}'
-        else:
-            path = fr'{path}/{title}'
-
+        path = os.path.join(path, title)
         doc = fitz.open()
         for name in glob.glob(f'{path}/*/*.jpg'):
             imgdoc = fitz.open(name)
@@ -68,39 +64,22 @@ def download_task(task, path: str):
             else:
                 if int(P) <= ep_len:
                     ep_P.add(int(P)-1)
+        mag.downloadIndexes(ep_P, path)
 
-        if path.endswith('/'):
-            dpath = path + title
-        else:
-            dpath = path + '/' + title
-        os.makedirs(dpath)
-        bq = len(str(mag.getNum()))
-        for x in ep_P:
-            name = ep_list[x]["title"]
-            if name.replace(' ', '') == '':
-                name = ep_list[x]["short_title"]
-            if not ep_list[x]["is_locked"]:
-                mag.download(ep_list[x]['id'], f'{dpath}/{ep_list[x]["ord"]:0>{bq}}-{name}')
-                print(f'{ep_list[x]["ord"]:0>{bq}}-{name} 下载完成')
-            else:
-                print(f'{ep_list[x]["ord"]:0>{bq}}-{name} 目前需要解锁')
     print('下载任务结束')
 
     if task[2]:
         import fitz, glob
         print("正在合并下载图片为pdf")
-        if path.endswith('/'):
-            dpath = path + title
-        else:
-            dpath = path + '/' + title
+        path = os.path.join(path, title)
         doc = fitz.open()
-        for name in glob.glob(f'{dpath}/*/*.jpg'):
+        for name in glob.glob(f'{path}/*/*.jpg'):
             imgdoc = fitz.open(name)
             pdfbytes = imgdoc.convertToPDF()
             imgpdf = fitz.open("pdf", pdfbytes)
             doc.insertPDF(imgpdf)
-        doc.save(f'{dpath}/{title}.pdf')
-        print(f'文件保存至{dpath}/{title}.pdf')
+        doc.save(f'{path}/{title}.pdf')
+        print(f'文件保存至{path}/{title}.pdf')
 
 def main(*args, **kwargs):
     if kwargs["task"][0]:
