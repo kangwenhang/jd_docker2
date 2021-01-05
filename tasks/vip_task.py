@@ -42,7 +42,7 @@ async def vip_task(biliapi: asyncbili,
                     cbp = (await biliapi.getUserWallet())["data"]["couponBalance"] #B币劵数量
                     if cbp > 0:
                         cbp = cbp if cbp < task_config["BpCharge"][x] else task_config["BpCharge"][x]
-                        ret = await biliapi.elecPay(biliapi.uid, cbp * 10)
+                        ret = await biliapi.elecPayBcoin(biliapi.uid, cbp)
                         if ret["data"]["order_no"]:
                             logging.info(f'{biliapi.name}: 成功用{cbp}张B币劵给自己充电，订单编号为{ret["data"]["order_no"]}')
                         else:

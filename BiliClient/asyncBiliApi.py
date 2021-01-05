@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from aiohttp import ClientSession
-import time
+from typing import Iterable, Mapping
+import time, json
 
 class asyncBiliApi(object):
     '''B站异步接口类'''
@@ -92,6 +93,11 @@ class asyncBiliApi(object):
         '''获取登录的账户uid'''
         return self._uid
 
+    @property
+    def level(self) -> int:
+        '''获取登录的账户等级'''
+        return self._level
+
     async def refreshInfo(self) -> None:
         '''刷新账户信息(需要先登录)'''
         ret = await self.getWebNav()
@@ -139,8 +145,7 @@ class asyncBiliApi(object):
             uid = self._uid
         url = f'https://api.bilibili.com/x/relation/followings?vmid={uid}&pn={pn}&ps={ps}&order={order}&order_type={order_type}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def spaceArticle(self, 
                             uid: int = None,
@@ -159,8 +164,7 @@ class asyncBiliApi(object):
             uid = self._uid
         url = f'https://api.bilibili.com/x/space/article?mid={uid}&pn={pn}&ps={ps}&sort={sort}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def spaceArcSearch(self, 
                           uid: int = None,
@@ -183,8 +187,7 @@ class asyncBiliApi(object):
             uid = self._uid
         url = f'https://api.bilibili.com/x/space/arc/search?mid={uid}&pn={pn}&ps={ps}&tid={tid}&order={order}&keyword={keyword}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def search(self, 
                      keyword: str = '',
@@ -220,8 +223,7 @@ class asyncBiliApi(object):
             }
         url = 'https://api.bilibili.com/x/web-interface/search/type'
         async with self._session.get(url, params=params, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def followUser(self, 
                          followid: int, 
@@ -239,15 +241,13 @@ class asyncBiliApi(object):
             "csrf_token": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def getMyGroups(self) -> dict:
         '''取应援团列表'''
         url = "https://api.vc.bilibili.com/link_group/v1/member/my_groups"
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def groupSign(self,
                         group_id: int,
@@ -260,15 +260,13 @@ class asyncBiliApi(object):
         '''
         url = f'https://api.vc.bilibili.com/link_setting/v1/link_setting/sign_in?group_id={group_id}&owner_id={owner_id}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def getRelationTags(self) -> dict:
         '''取关注用户分组列表'''
         url = "https://api.bilibili.com/x/relation/tags"
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def getRelationByUid(self,
                           uid: int
@@ -280,8 +278,7 @@ class asyncBiliApi(object):
         '''
         url = f"https://api.bilibili.com/x/relation?fid={uid}"
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def getRelation(self,
                           tagid: int = 0,
@@ -294,8 +291,7 @@ class asyncBiliApi(object):
         '''
         url = f"https://api.bilibili.com/x/relation/tag?tagid={tagid}&pn={pn}&ps={ps}"
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def getWebNav(self) -> dict:
         '''取导航信息'''
@@ -308,8 +304,7 @@ class asyncBiliApi(object):
         '''取B站经验信息'''
         url = "https://account.bilibili.com/home/reward"
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
     
     async def likeCv(self, 
                      cvid: int, 
@@ -326,8 +321,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def vipPrivilegeReceive(self, 
                                   type: int = 1
@@ -342,8 +336,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def getUserWallet(self, 
                             platformType: int = 3
@@ -357,29 +350,28 @@ class asyncBiliApi(object):
             "platformType": platformType
             }
         async with self._session.post(url, json=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
-    async def elecPay(self, 
+    async def elecPayBcoin(self, 
                       uid: int, 
-                      num: int = 50
+                      num: int = 5
                       ) -> dict:
         '''
         用B币给up主充电
         uid int up主uid
-        num int 充电电池数量
+        num int B币数量
         '''
-        url = 'https://api.bilibili.com/x/ugcpay/trade/elec/pay/quick'
+        url = 'https://api.bilibili.com/x/ugcpay/web/v2/trade/elec/pay/quick'
         post_data = {
-            "elec_num": num,
+            "bp_num": num,
+            "is_bp_remains_prior": True,
             "up_mid": uid,
             "otype": 'up',
             "oid": uid,
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveFansMedal(self, 
                            page: int = 1,
@@ -392,8 +384,7 @@ class asyncBiliApi(object):
         '''
         url = f'https://api.live.bilibili.com/fans_medal/v5/live_fans_medal/iApiMedal?page={page}&pageSize={pageSize}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveAnchorCheck(self,
                                roomid: int
@@ -404,8 +395,7 @@ class asyncBiliApi(object):
         '''
         url = f'https://api.live.bilibili.com/xlive/lottery-interface/v1/Anchor/Check?roomid={roomid}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveAnchorJoin(self,
                               id: int,
@@ -429,17 +419,15 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
+            return await r.json()
         #{"code":400,"data":null,"message":"余额不足","msg":"余额不足"}
-        return ret
 
     async def xliveFeedHeartBeat(self) -> dict:
         '''直播心跳 feed'''
         url = 'https://api.live.bilibili.com/relation/v1/Feed/heartBeat'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
+            return await r.json()
         #{"code":0,"msg":"success","message":"success","data":{"open":1,"has_new":0,"count":0}}
-        return ret
 
     async def xliveMsgSend(self, 
                            roomid: int,
@@ -471,8 +459,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveBp2Gold(self, 
                            num: int = 5, 
@@ -497,24 +484,21 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        #返回示例{"code":1300014,"message":"b币余额不足","ttl":1,"data":null}
+            return await r.json()
+        #{"code":1300014,"message":"b币余额不足","ttl":1,"data":null}
         #{"code":0,"message":"0","ttl":1,"data":{"status":2,"order_id":"2011042258413961167422787","gold":0,"bp":0}}
-        return ret
 
     async def xliveSign(self) -> dict:
         '''B站直播签到'''
         url = "https://api.live.bilibili.com/xlive/web-ucenter/v1/sign/DoSign"
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveGetRecommendList(self) -> dict:
         '''B站直播获取首页前10条直播'''
         url = f'https://api.live.bilibili.com/relation/v1/AppWeb/getRecommendList'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveGetRoomInfo(self,
                                room_id: int
@@ -525,15 +509,13 @@ class asyncBiliApi(object):
         '''
         url = f'https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom?room_id={room_id}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveGiftBagList(self) -> dict:
         '''B站直播获取背包礼物'''
         url = 'https://api.live.bilibili.com/xlive/web-room/v1/gift/bag_list'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveBagSend(self,
                            biz_id,
@@ -573,8 +555,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def coin(self, 
                    aid: int, 
@@ -596,8 +577,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def coinCv(self,
                     cvid: int, 
@@ -625,8 +605,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def articleViewInfo(self, 
                               cvid: int
@@ -637,8 +616,7 @@ class asyncBiliApi(object):
         '''
         url = f'https://api.bilibili.com/x/article/viewinfo?id={cvid}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveWebHeartBeat(self, 
                      hb: str = None, 
@@ -656,8 +634,7 @@ class asyncBiliApi(object):
             params["pf"] = pf
         url = 'https://live-trace.bilibili.com/xlive/rdata-interface/v1/heartbeat/webHeartBeat'
         async with self._session.get(url, params=params, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveGetBuvid(self) -> str:
         '''获得B站直播buvid参数'''
@@ -704,8 +681,7 @@ class asyncBiliApi(object):
             }
         url = 'https://live-trace.bilibili.com/xlive/data-interface/v1/x25Kn/X'
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveHeartBeatE(self, 
                      id: list, 
@@ -735,8 +711,7 @@ class asyncBiliApi(object):
         '''获得佩戴的勋章'''
         url = "https://api.live.bilibili.com/fans_medal/v1/fans_medal/get_home_medals"
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def report(self, 
                      aid: int, 
@@ -757,8 +732,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def share(self, 
                     aid
@@ -773,8 +747,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def xliveGetStatus(self) -> dict:
         '''B站直播获取金银瓜子状态'''
@@ -790,8 +763,7 @@ class asyncBiliApi(object):
             "csrf_token": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def getRegions(self, 
                          rid=1, 
@@ -804,8 +776,7 @@ class asyncBiliApi(object):
         '''
         url = "https://api.bilibili.com/x/web-interface/dynamic/region?ps=" + str(num) + "&rid=" + str(rid)
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def mangaClockIn(self, 
                      platform="android"
@@ -826,8 +797,7 @@ class asyncBiliApi(object):
         '''获取漫画积分'''
         url = f'https://manga.bilibili.com/twirp/pointshop.v1.Pointshop/GetUserPoint'
         async with self._session.post(url, json={}, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def mangaShopExchange(self, 
                                 product_id: int, 
@@ -846,15 +816,13 @@ class asyncBiliApi(object):
             "product_num": product_num
             }
         async with self._session.post(url, json=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def mangaGetVipReward(self) -> dict:
         '''获取漫画大会员福利'''
         url = 'https://manga.bilibili.com/twirp/user.v1.User/GetVipReward'
         async with self._session.post(url, json={"reason_id":1}, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def mangaComrade(self, 
                            platform="web"
@@ -865,8 +833,7 @@ class asyncBiliApi(object):
         '''
         url = f'https://manga.bilibili.com/twirp/activity.v1.Activity/Comrade?platform={platform}'
         async with self._session.post(url, json={}, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def mangaPayBCoin(self, 
                             pay_amount: int, 
@@ -885,8 +852,7 @@ class asyncBiliApi(object):
             "product_id": product_id
             }
         async with self._session.post(url, json=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def mangaGetCoupons(self, 
                               not_expired=True, 
@@ -911,8 +877,7 @@ class asyncBiliApi(object):
             "tab_type": tab_type
             }
         async with self._session.post(url, json=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def mangaListFavorite(self, 
                                 page_num=1, 
@@ -937,8 +902,7 @@ class asyncBiliApi(object):
             "wait_free": wait_free
             }
         async with self._session.post(url, json=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def mangaDetail(self, 
                           comic_id: int, 
@@ -956,8 +920,7 @@ class asyncBiliApi(object):
             "comic_id": comic_id
             }
         async with self._session.post(url, json=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def mangaGetEpisodeBuyInfo(self, 
                                ep_id: int, 
@@ -973,8 +936,7 @@ class asyncBiliApi(object):
             "ep_id": ep_id
             }
         async with self._session.post(url, json=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def mangaBuyEpisode(self, 
                         ep_id: int, 
@@ -1000,10 +962,8 @@ class asyncBiliApi(object):
             post_data["coupon_id"] = coupon_id
         if auto_pay_gold_status:
             post_data["auto_pay_gold_status"] = auto_pay_gold_status
-
         async with self._session.post(url, json=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def mangaAddFavorite(self, 
                                comic_id: int
@@ -1017,9 +977,8 @@ class asyncBiliApi(object):
             "comic_id": comic_id
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
+            return await r.json()
         #{'code': 0, 'msg': '', 'data': {'first_fav_status': {'25902': True}}}
-        return ret
 
     async def mangaAddHistory(self, 
                               comic_id: int,
@@ -1036,9 +995,8 @@ class asyncBiliApi(object):
             "ep_id": ep_id
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
+            return await r.json()
         #{"code":0,"msg":"","data":{}}
-        return ret
 
     async def activityAddTimes(self, 
                                sid: str, 
@@ -1056,8 +1014,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def activityDo(self, 
                          sid: str, 
@@ -1075,8 +1032,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def activityMyTimes(self, 
                               sid: str
@@ -1087,8 +1043,7 @@ class asyncBiliApi(object):
         '''
         url = f'https://api.bilibili.com/x/activity/lottery/mytimes?sid={sid}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def getDynamic(self, 
                          offset_dynamic_id: int = 0,
@@ -1100,8 +1055,7 @@ class asyncBiliApi(object):
         else:
             url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/dynamic_new?uid={self._uid}&type_list={type_list}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json(content_type=None)
-        return ret
+            return await r.json()
 
     async def getDynamicDetail(self, 
                          dynamic_id: int
@@ -1112,8 +1066,7 @@ class asyncBiliApi(object):
         '''
         url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/get_dynamic_detail?dynamic_id={dynamic_id}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def dynamicReplyAdd(self, 
                               oid: int, 
@@ -1137,8 +1090,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def dynamicLike(self, 
                           dynamic_id: int, 
@@ -1158,8 +1110,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def dynamicRepost(self, 
                             dynamic_id: int, 
@@ -1184,9 +1135,8 @@ class asyncBiliApi(object):
             "csrf_token": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
+            return await r.json()
         #{"code":0,"msg":"","message":"","data":{"result":0,"errmsg":"符合条件，允许发布","_gt_":0}}
-        return ret
 
     async def dynamicRepostReply(self, 
                                  rid: int, 
@@ -1217,8 +1167,42 @@ class asyncBiliApi(object):
             "csrf_token": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
+
+    async def dynamicCreate(self, 
+                            content: str, 
+                            ctrl: Iterable[Mapping[str, str]] = ()
+                            ) -> dict:
+        '''
+        创建动态(纯文本动态,图片动态请用dynamicCreateDraw方法)
+        content str                         动态内容(内容中有@请看ctrl参数，否则忽略ctrl参数)
+        ctrl    Iterable[Mapping[str, str]] 控制字段，比如动态内容为"你好@呵呵 再见"，
+                                            控制字段为[{"location":2,"type":1,"length":4,"data":"84667"}],
+                                            其中2为@出现的位置("你"为0,"好"为1,"@"为2,必须精确)，
+                                            类型,为1就行，
+                                            4为@的用户名称长度加2(@字符本身与后面必须跟上的空格各占一个长度,"@呵呵 "占4个字符,注意末尾空格)，
+                                            84667为@的用户uid(字符串形式而不是整数)，
+                                            如果没有控制字段则content中@是无效的，会被当做纯文本而不能点击
+                                            尚不清楚利用此参数是否能"指桑骂槐"
+        '''
+        url = 'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/create'
+        post_data = {
+            "dynamic_id": 0,
+            "rid": 0, #没发现其他取值，非转发的动态一般取0，转发的就不同了
+            "type": 4, #动态类型，纯文本动态为4，非纯文本动态的其他类型动态并不能使用本方法进行创建，包括图片动态，定时动态等有其他接口
+            "content": content,
+            "extension": '{"emoji_type":1,"from":{"emoji_type":1},"flag_cfg":{}}',
+            "at_uids": ",".join([u["data"] for u in ctrl if "type" in u and u["type"] == 1]), # @的用户的uid，多个用逗号(,)隔开
+            "ctrl": json.dumps(ctrl),
+            "up_choose_comment": 0,
+            "up_close_comment": 0,
+            "csrf": self._bili_jct,
+            "csrf_token": self._bili_jct
+            }
+        async with self._session.post(url, data=post_data, verify_ssl=False) as r:
+            return await r.json()
+        #{"code":500103,"msg":"你忘记写内容啦","message":"你忘记写内容啦","data":{}}
+        #{"code":0,"msg":"","message":"","data":{"result":0,"errmsg":"; Create dynamic:475557908802625377, res:0, result:1; Push create kafka:0; Push create databus:0; Register comment result:0; Add outbox result:1; Send at_msg result:0","dynamic_id":475557908802625377,"create_result":1,"dynamic_id_str":"475557908802625377","_gt_":0}}
 
     async def getSpaceDynamic(self, 
                               uid: int = 0,
@@ -1232,8 +1216,7 @@ class asyncBiliApi(object):
             uid = self._uid
         url = f'https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/space_history?host_uid={uid}&need_top=0&offset_dynamic_id={offset_dynamic_id}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def removeDynamic(self, 
                             dynamic_id: int
@@ -1248,8 +1231,7 @@ class asyncBiliApi(object):
             "csrf_token": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def getLotteryNotice(self, 
                                dynamic_id: int
@@ -1260,8 +1242,7 @@ class asyncBiliApi(object):
         '''
         url = f'https://api.vc.bilibili.com/lottery_svr/v1/lottery_svr/lottery_notice?dynamic_id={dynamic_id}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def juryInfo(self) -> dict:
         '''
@@ -1269,8 +1250,7 @@ class asyncBiliApi(object):
         '''
         url = 'https://api.bilibili.com/x/credit/jury/jury'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def juryCaseObtain(self) -> dict:
         '''
@@ -1281,8 +1261,7 @@ class asyncBiliApi(object):
             "csrf": self._bili_jct
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def juryCaseInfo(self,
                            cid: int
@@ -1292,8 +1271,7 @@ class asyncBiliApi(object):
         '''
         url = f'https://api.bilibili.com/x/credit/jury/caseInfo?cid={cid}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def juryVote(self,
                        cid: int,
@@ -1351,8 +1329,7 @@ class asyncBiliApi(object):
             **kwargs #所有可选参数
             }
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
 
     async def accInfo(self,
                       uid: int
@@ -1363,8 +1340,75 @@ class asyncBiliApi(object):
         '''
         url = f'https://api.bilibili.com/x/space/acc/info?mid={uid}'
         async with self._session.get(url, verify_ssl=False) as r:
-            ret = await r.json()
-        return ret
+            return await r.json()
+
+    async def getMsgNotify(self) -> dict:
+        '''获取主站消息提示(恢复，@，赞，系统提示等)'''
+        url = f'https://api.vc.bilibili.com/link_setting/v1/link_setting/get?msg_notify=1&show_unfollowed_msg=1&build=0&mobi_app=web'
+        async with self._session.get(url, verify_ssl=False) as r:
+            return await r.json()
+        #{"code":0,"msg":"ok","message":"ok","data":{"show_unfollowed_msg":0,"msg_notify":1,"set_like":0,"set_comment":0,"set_at":0,"is_group_fold":1,"should_receive_group":1,"receive_unfollow_msg":1,"followed_reply":0,"keys_reply":0,"recv_reply":0,"voyage_reply":0,"_gt_":0}}
+
+    async def msgFeedUnread(self) -> dict:
+        '''获取主站未读消息(恢复，@，赞，系统提示等)数量'''
+        url = f'https://api.bilibili.com/x/msgfeed/unread?build=0&mobi_app=web'
+        async with self._session.get(url, verify_ssl=False) as r:
+            return await r.json()
+        #{"code":0,"message":"0","ttl":1,"data":{"at":1,"chat":0,"like":0,"reply":0,"sys_msg":0,"up":0}}
+
+    async def msgFeedAt(self) -> dict:
+        '''获取主站未读的@消息具体内容'''
+        url = f'https://api.bilibili.com/x/msgfeed/at?build=0&mobi_app=web'
+        async with self._session.get(url, verify_ssl=False) as r:
+            return await r.json()
+        #{"code":0,"message":"0","ttl":1,"data":{"at":1,"chat":0,"like":0,"reply":0,"sys_msg":0,"up":0}}
+
+    async def getSessions(self,
+                          session_type: int = 1,
+                          sort_rule: int = 2,
+                          size: int = None,
+                          mobi_app: str = 'web'
+                          ) -> dict:
+        '''
+        获取主站消息中心的消息
+        session_type   int 对话类型，目前已知1是私信消息，3是应援团消息，其他取值未知
+        sort_rule      int 排序方式，2为时间倒序，其他取值未知
+        size           int 返回消息数量，可以忽略本参数
+        mobi_app       str 客户端类型
+        '''
+        url = f'https://api.vc.bilibili.com/session_svr/v1/session_svr/get_sessions?session_type={session_type}&group_fold=1&unfollow_fold=0&sort_rule={sort_rule}&build=0&mobi_app={mobi_app}'
+        if size:
+            url = f'{url}&size={size}'
+        async with self._session.get(url, verify_ssl=False) as r:
+            return await r.json()
+        #{"code":0,"msg":"ok","message":"ok","data":{"session_list":[{"talker_id":203984353,"session_type":1,"top_ts":0,"is_follow":1,"is_dnd":0,"ack_seqno":14,"ack_ts":1609766791060393,"session_ts":1609767856196942,"unread_count":1,"last_msg":{"sender_uid":203984353,"receiver_type":1,"receiver_id":8466742,"msg_type":1,"content":"{\"content\":\"666\"}","msg_seqno":15,"timestamp":1609767856,"at_uids":[0],"msg_key":6913900296672394953,"msg_status":0,"notify_code":""},"can_fold":0,"status":0,"max_seqno":15,"new_push_msg":0,"setting":0}],"has_more":1,"_gt_":0}}
+
+    async def sessionUpdateAck(self,
+                               talker_id: int,
+                               ack_seqno: int,
+                               session_type: int = 1,
+                               mobi_app: str = 'web'
+                               ) -> dict:
+        '''
+        确认主站消息中心的消息(即设置未读消息为已读)
+        talker_id      int 对话对方的uid
+        ack_seqno      int 确认的消息号，一个消息号对应一条消息的序号，随着消息条数递增
+        session_type   int 对话类型，目前已知1是私信消息，3是应援团消息，其他取值未知
+        mobi_app       str 客户端类型
+        '''
+        url = 'https://api.vc.bilibili.com/session_svr/v1/session_svr/update_ack'
+        post_data = {
+            "talker_id": talker_id,
+            "session_type": session_type,
+            "ack_seqno": ack_seqno,
+            "build": 0,
+            "mobi_app": mobi_app,
+            "csrf_token": self._bili_jct,
+            "csrf": self._bili_jct
+            }
+        async with self._session.post(url, data=post_data, verify_ssl=False) as r:
+            return await r.json()
+        #{"code":0,"msg":"ok","message":"ok","data":[]}
 
     async def __aenter__(self):
         return self

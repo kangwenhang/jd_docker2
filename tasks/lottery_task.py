@@ -103,11 +103,17 @@ async def repost_task_E(biliapi: asyncbili,
                 break
 
             if 'previous' in x["desc"]:
-                dyid = x["desc"]["previous"]["dynamic_id_str"]
+                if "dynamic_id_str" in x["desc"]["previous"]:
+                    dyid = x["desc"]["previous"]["dynamic_id_str"]
+                else:
+                    dyid = x["desc"]["pre_dy_id_str"]
                 oid, type = dyid, 17
                 uid = x["desc"]["previous"]["uid"]
             elif 'origin' in x["desc"]:
-                dyid = x["desc"]["origin"]["dynamic_id_str"]
+                if "dynamic_id_str" in x["desc"]["origin"]:
+                    dyid = x["desc"]["origin"]["dynamic_id_str"]
+                else:
+                    dyid = x["desc"]["orig_dy_id_str"]
                 if x["desc"]["origin"]["type"] == 8: #x[desc][orig_type]
                     oid, type = x["desc"]["origin"]["rid_str"], 1
                 elif x["desc"]["origin"]["type"] == 4 or x["desc"]["origin"]["type"] == 1:
@@ -117,7 +123,7 @@ async def repost_task_E(biliapi: asyncbili,
                 uid = x["desc"]["origin"]["uid"]
             else:
                 continue
-
+            
             if 'card' in x:
                 card = json.loads(x["card"])
                 if 'origin_user' in card and 'info' in card["origin_user"] and 'uname' in card["origin_user"]["info"]:
@@ -246,7 +252,8 @@ async def repost_task_X(biliapi: asyncbili,
             find = 'extension' in x and 'lott' in x["extension"] #若抽奖标签存在
 
         if find:
-            dyid: str = x["desc"]["dynamic_id_str"]
+            if 'dynamic_id_str' in x["desc"]:
+                dyid = x["desc"]["dynamic_id_str"]
             if x["desc"]["type"] == 8:
                 oid, type = x["desc"]["rid_str"], 1
             elif x["desc"]["type"] == 4:

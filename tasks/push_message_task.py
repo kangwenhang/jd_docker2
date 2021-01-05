@@ -36,7 +36,7 @@ class WebHook:
     async def send(self):
         if self._is_set and len(self):
             try:
-                timeout = ClientTimeout(total=30, connect=5, sock_connect=15, sock_read=15)
+                timeout = ClientTimeout(total=30, connect=15, sock_connect=30, sock_read=25)
                 async with ClientSession(timeout=timeout) as s:
                     await asyncio.wait([self._send(ii, s) for ii in range(len(self))])
             except Exception as e: 

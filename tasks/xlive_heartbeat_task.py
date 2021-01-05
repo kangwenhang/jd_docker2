@@ -55,6 +55,15 @@ class xliveHeartBeat:
             }
         self._secret_rule: list = None
 
+    def reset(self):
+        '''重新进入房间心跳'''
+        data = {
+            "id": self._data["id"],
+            "device": self._data["device"]
+            }
+        data["id"][2] = 0
+        self._data = data
+
     async def _encParam(self) -> str:
         '''加密参数'''
         urls = ('http://116.85.43.27:3000/enc', 'http://www.madliar.com:6000/enc')
@@ -180,11 +189,20 @@ async def heartbeat_task(biliapi: asyncbili,
 
     ii = 0
     ltime = 0
+    retry = 2
     try:
-        async for code, message, wtime in xliveHeartBeat(biliapi, buvid, parent_area_id, area_id, room_id): #每一次迭代发送一次心跳
+        heart_beat = xliveHeartBeat(biliapi, buvid, parent_area_id, area_id, room_id)
+        async for code, message, wtime in heart_beat: #每一次迭代发送一次心跳
             if code != 0:
-                logging.warning(f'{biliapi.name}: 直播心跳错误，原因为{message}，跳过直播心跳')
-                return
+                if retry:
+                    logging.warning(f'{biliapi.name}: 直播心跳错误，原因为{message}，重新进入房间')
+                    heart_beat.reset()
+                    retry -= 1
+                    continue
+                else:
+                    logging.warning(f'{biliapi.name}: 直播心跳错误，原因为{message}，跳过')
+                    break
+            
             ii += 1
             ltime += wtime
             if ii >= num:

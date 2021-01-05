@@ -5,7 +5,10 @@ import os, json, sys, re, time
 
 def main(*args, **kwargs):
     try:
-        if os.path.exists('./config/config.json'):
+        if os.path.exists('./config.json'):
+            with open('./config.json','r',encoding='utf-8') as fp:
+                configData: dict = json.loads(re.sub(r'\/\*[\s\S]*?\*\/', '', fp.read()))
+        elif os.path.exists('./config/config.json'):
             with open('./config/config.json','r',encoding='utf-8') as fp:
                 configData: dict = json.loads(re.sub(r'\/\*[\s\S]*?\*\/', '', fp.read()))
         elif os.path.exists('/etc/BiliExp/config.json'):
@@ -111,7 +114,7 @@ if __name__=="__main__":
             print('以上参数中只有-v --videopath为必选参数，其他均为可选参数')
             exit()
         elif opt in ('-V','--version'):
-            print('B站视频上传器 videoDownloader v1.1.8')
+            print('B站视频上传器 videoDownloader v1.1.9')
             exit()
         elif opt in ('-v','--videopath'):
             kwargs["path"] = arg.replace(r'\\', '/')

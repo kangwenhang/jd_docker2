@@ -3,11 +3,14 @@ from BiliClient import MangaDownloader
 import json, re, os, sys
 from getopt import getopt
 
-if os.path.exists('/etc/BiliExp/config.json'):
-    with open('/etc/BiliExp/config.json','r',encoding='utf-8') as fp:
+if os.path.exists('./config.json'):
+    with open('./config.json','r',encoding='utf-8') as fp:
         configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
 elif os.path.exists('./config/config.json'):
     with open('./config/config.json','r',encoding='utf-8') as fp:
+        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
+elif os.path.exists('/etc/BiliExp/config.json'):
+    with open('/etc/BiliExp/config.json','r',encoding='utf-8') as fp:
         configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
 else:
     configData = None
@@ -104,7 +107,7 @@ if __name__=="__main__":
             print(' -h --help      显示帮助信息')
             exit()
         elif opt in ('-V','--version'):
-            print('B站漫画下载器 mangaDownloader v1.1.8')
+            print('B站漫画下载器 mangaDownloader v1.1.9')
             exit()
         elif opt in ('-p','--path'):
             kwargs["path"] = arg.replace(r'\\', '/')
