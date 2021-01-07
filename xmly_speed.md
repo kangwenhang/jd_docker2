@@ -20,7 +20,7 @@
 
 
 ### 邀请任务
-[注册链接直达](https://m.ximalaya.com/xmds-node-spa/apps/speed-growth-activities/web-earn/landing?parentUserId=58434192&channel=1&srcChannel=weixin&srcPicUrl=https://fdfs.xmcdn.com/group63/M06/26/3C/wKgMcl0Z7-bgXtm3AAAP_-xdbjM707.png&srcText=1) (手机号注册)    
+[注册链接直达](https://service-6q5z0csv-1301215769.bj.apigw.tencentcs.com/release/xmly1) (手机号注册)    
 或者扫码下载
 <p align="center">
   <img src="https://i.loli.net/2020/12/31/stKVJTUcvBkbl74.png" alt="邀请码" width='50%' height='50%'/>
