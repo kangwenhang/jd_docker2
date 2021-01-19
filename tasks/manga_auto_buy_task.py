@@ -85,7 +85,7 @@ async def manga_auto_buy_task(biliapi: asyncbili,
             return
 
     if len(buy_list) == 0:
-        logging.info('f{biliapi.name}: 没有需要购买的漫画，跳过消费即将过期漫读劵')
+        logging.info(f'{biliapi.name}: 没有需要购买的漫画，跳过消费即将过期漫读劵')
         return
 
     su = er = 0

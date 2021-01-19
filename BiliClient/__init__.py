@@ -13,6 +13,8 @@ from .Audio import Audio as Audio
 from .Audio import AudioMenu as AudioMenu
 from .Audio import AudioUploader as AudioUploader
 from .Audio import CompilationUploader as CompilationUploader
+from .asyncXliveWs import asyncXliveRoomMsgGenerator as asyncXliveRoomMsgGenerator
+from .asyncXliveWs import asyncXliveRoomMsgGeneratorMulti as asyncXliveRoomMsgGeneratorMulti
 
 __all__ = (
     'asyncbili',
@@ -25,5 +27,7 @@ __all__ = (
     "Danmu2Ass",
     "Audio",
     "AudioMenu",
-    "AudioUploader"
+    "AudioUploader",
+    "asyncXliveRoomMsgGenerator",
+    "asyncXliveRoomMsgGeneratorMulti"
 )

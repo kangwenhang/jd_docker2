@@ -4,11 +4,11 @@ from .import_once import now_time
 import logging
 
 async def xlive_bag_send_task(biliapi: asyncbili,
-                              task_config: dict = None
+                              task_config: dict
                               ) -> None:
-    if task_config and task_config["room_id"]:
-        room_id = task_config["room_id"]
-    else:
+
+    room_id = task_config.get("room_id", 0)
+    if room_id == 0:
         try:
             room_id = (await biliapi.xliveGetRecommendList())["data"]["list"][6]["roomid"]
         except Exception as e:
@@ -16,11 +16,7 @@ async def xlive_bag_send_task(biliapi: asyncbili,
             webhook.addMsg('msg_simple', f'{biliapi.name}:直播送出礼物失败\n')
             return
 
-    if task_config:
-        expire = task_config.get("expire", 172800)
-    else:
-        expire = 172800
-
+    expire = task_config.get("expire", 172800)
     try:
          uid = (await biliapi.xliveGetRoomInfo(room_id))["data"]["room_info"]["uid"]
          bagList = (await biliapi.xliveGiftBagList())["data"]["list"]
@@ -32,7 +28,7 @@ async def xlive_bag_send_task(biliapi: asyncbili,
                  if ret["code"] == 0:
                      logging.info(f'{biliapi.name}: {ret["data"]["send_tips"]} {ret["data"]["gift_name"]} 数量{ret["data"]["gift_num"]}')
          if not ishave:
-             logging.info(f'{biliapi.name}: 没有2天内过期的直播礼物，跳过赠送')
+             logging.info(f'{biliapi.name}: 没有{expire}s内过期的直播礼物，跳过赠送')
     except Exception as e:
         logging.warning(f'{biliapi.name}: 直播送出即将过期礼物异常，原因为{str(e)}')
         webhook.addMsg('msg_simple', f'{biliapi.name}:直播送出礼物失败\n')

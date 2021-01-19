@@ -1,4 +1,4 @@
-__version__ = '1.1.9'
+__version__ = '1.2.0'
 
 from .activity_task import activity_task as activity_task
 from .clean_dynamic_task import clean_dynamic_task as clean_dynamic_task

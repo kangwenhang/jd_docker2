@@ -1,12 +1,16 @@
 from BiliClient import asyncbili
 from .push_message_task import webhook
-import logging, aiohttp
+import logging
+from asyncio import TimeoutError, sleep
+from concurrent.futures import CancelledError
+from async_timeout import timeout
+from typing import Awaitable, Tuple
 
 voteInfo = ("未投票", "封禁", "否认", "弃权", "删除")
 
 async def judgement_task(biliapi: asyncbili, 
                          task_config: dict
-                         ) -> None:
+                         ) -> Awaitable:
     '''风纪委员会投票任务'''
     try:
         ret = await biliapi.juryInfo()
@@ -26,74 +30,83 @@ async def judgement_task(biliapi: asyncbili,
         logging.warning(f'{biliapi.name}: 风纪委员投票失败，风纪委员资格失效')
         webhook.addMsg('msg_simple', f'{biliapi.name}:风纪委资格失效\n')
         return
-    rightRadio =  ret["data"]["rightRadio"]
-    su, er = 0, 0
-    while True:
-        try:
-            ret = await biliapi.juryCaseObtain()
-        except Exception as e:
-            logging.warning(f'{biliapi.name}: 获取风纪委员案件异常，原因为{str(e)}，跳过投票')
-            er += 1
-            break
-        if ret["code"] == 25008:
-            logging.warning(f'{biliapi.name}: 风纪委员投票失败，没有新案件了，当前裁决正确率为：{rightRadio}%')
-            break
-        elif ret["code"] == 25014:
-            logging.warning(f'{biliapi.name}: 风纪委员投票失败，案件已审满，当前裁决正确率为：{rightRadio}%')
-            break
-        elif ret["code"] != 0:
-            logging.warning(f'{biliapi.name}: 风纪委员投票失败，信息为：{ret["message"]}，当前裁决正确率为：{rightRadio}%')
-            er += 1
-            break
 
-        cid = ret["data"]["id"]  #案件id
-        params = task_config["params"] #获取默认投票参数
+    logging.info(f'{biliapi.name}: 拥有风纪委员身份，开始获取案件投票，当前裁决正确率为：{ret["data"]["rightRadio"]}%')
+    webhook.addMsg('msg_simple', f'{biliapi.name}:风纪委当前裁决正确率为：{ret["data"]["rightRadio"]}%\n')
 
-        if 'baiduNLP' in task_config and task_config["baiduNLP"]["confidence"] > 0:
-            try:
-                ret = await biliapi.juryCaseInfo(cid)
-            except Exception as e:
-                logging.warning(f'{biliapi.name}: 获取id为{cid}的案件信息异常，原因为{str(e)}，使用默认投票参数')
-            else:
-                if ret["code"] != 0:
-                    logging.warning(f'{biliapi.name}: 获取id为{cid}的案件信息失败，原因为{ret["message"]}，使用默认投票参数')
-                else:
+    baiduNLPConfig = task_config.get("baiduNLP", None)
+    params = task_config.get("params", {})
+    vote_num = task_config.get("vote_num", 20)
+    check_interval = task_config.get("check_interval", 420)
+    Timeout = task_config.get("timeout", 850)
+    run_once = task_config.get("run_once", False)
+
+    su = 0
+    try:
+        async with timeout(Timeout):
+            while True:
+                while True:
                     try:
-                        ret = await baiduNLP(ret["data"]["originContent"][0:255])
+                        ret = await biliapi.juryCaseObtain()
+                    except CancelledError as e:
+                        raise e
                     except Exception as e:
-                        logging.warning(f'{biliapi.name}: 百度NLP接口异常，原因为{str(e)}，使用默认投票参数')
+                        logging.warning(f'{biliapi.name}: 获取风纪委员案件异常，原因为{str(e)}，跳过本次投票')
+                        break
+                    if ret["code"] == 25008:
+                        logging.warning(f'{biliapi.name}: 风纪委员没有新案件了')
+                        break
+                    elif ret["code"] == 25014:
+                        logging.warning(f'{biliapi.name}: 风纪委员案件已审满')
+                        break
+                    elif ret["code"] != 0:
+                        logging.warning(f'{biliapi.name}: 获取风纪委员案件失败，信息为：{ret["message"]}')
+                        break
+                    cid = ret["data"]["id"]
+                    params = task_config.get("params", {})
+                    default = True
+                    try:
+                        ret = await biliapi.juryCase(cid)
+                    except CancelledError as e:
+                        raise e
+                    except Exception as e:
+                        logging.warning(f'{biliapi.name}: 获取风纪委员案件他人投票结果异常，原因为{str(e)}，使用默认投票参数')
                     else:
-                        if ret["errno"] != 0:
-                            logging.warning(f'{biliapi.name}: 调用百度NLP接口失败，原因为{ret["msg"]}，使用默认投票参数')
-                        elif ret["data"]["items"][0]["confidence"] > task_config["baiduNLP"]["confidence"]:
+                        if ret["code"] == 0:
+                            vote = [(4, ret["data"]["voteDelete"]), (2, ret["data"]["voteBreak"]), (1, ret["data"]["voteRule"])]
+                            vote.sort(key=lambda x: x[1], reverse=True)
                             params = params.copy()
-                            if ret["data"]["items"][0]["negative_prob"] > task_config["baiduNLP"]["negative_prob"]:
-                                params["vote"] = params["vote"] if 'vote' in params and params["vote"] in (1, 4) else 4
-                            elif ret["data"]["items"][0]["positive_prob"] > task_config["baiduNLP"]["positive_prob"]:
-                                params["vote"] = 2
-                            else:
-                                params["vote"] = 3
-        try:
-            ret = await biliapi.juryVote(cid, **params) #将参数params展开后传参
-        except Exception as e:
-            logging.warning(f'{biliapi.name}: 风纪委员投票id为{cid}的案件异常，原因为{str(e)}，跳过投票')
-            er += 1
-            continue
-        if ret["code"] == 0:
-            logging.info(f'{biliapi.name}: 风纪委员成功为id为{cid}的案件投({voteInfo[params["vote"]]})票，当前裁决正确率为：{rightRadio}%')
-            su += 1
-        else:
-            logging.warning(f'{biliapi.name}: 风纪委员投票id为{cid}的案件失败，信息为：{ret["message"]}，当前裁决正确率为：{rightRadio}%')
-            er += 1
-    if er > 0:
-        webhook.addMsg('msg_simple', f'{biliapi.name}:风纪委投票成功{su}次,失败或异常{er}次裁决正确率{rightRadio}%\n')
+                            params["vode"] = vote[0][0]
+                            default = False
+                        else:
+                            logging.warning(f'{biliapi.name}: 获取风纪委员案件他人投票结果异常，原因为{ret["message"]}，使用默认投票参数')
 
-async def baiduNLP(text: str) -> dict:
-    '''百度NLP语言情感识别'''
-    async with aiohttp.request("post",
-                               url='https://ai.baidu.com/aidemo', 
-                               data={"apiType": "nlp", "type": "sentimentClassify", "t1": text}, 
-                               headers={"Cookie": "BAIDUID=0"}
-                               ) as r:
-        ret = await r.json(content_type=None)
-    return ret
+                    try:
+                        ret = await biliapi.juryVote(cid, **params) #将参数params展开后传参
+                    except CancelledError as e:
+                        raise e
+                    except Exception as e:
+                        logging.warning(f'{biliapi.name}: 风纪委员投票id为{cid}的案件异常，原因为{str(e)}')
+                    else:
+                        if ret["code"] == 0:
+                            su += 1
+                            if default:
+                                logging.info(f'{biliapi.name}: 风纪委员成功为id为{cid}的案件投({voteInfo[params["vote"]]})票')
+                            else:
+                                logging.info(f'{biliapi.name}: 风纪委员成功为id为{cid}的案件投({voteInfo[params["vote"]]})票，当前案件投票数({voteInfo[vote[0][0]]}{vote[0][1]}票),({voteInfo[vote[1][0]]}{vote[1][1]}票),({voteInfo[vote[2][0]]}{vote[2][1]}票)')
+                        else:   
+                            logging.warning(f'{biliapi.name}: 风纪委员投票id为{cid}的案件失败，信息为：{ret["message"]}')
+
+                if run_once or su >= vote_num:
+                    logging.info(f'{biliapi.name}: 风纪委员投票成功完成{su}次后退出')
+                    break
+                else:
+                    logging.info(f'{biliapi.name}: 风纪委员投票等待{check_interval}s后继续获取案件')
+                    await sleep(check_interval)
+
+    except TimeoutError:
+        logging.info(f'{biliapi.name}: 风纪委员投票任务超时({Timeout}秒)退出')
+    except CancelledError:
+        logging.warning(f'{biliapi.name}: 风纪委员投票任务被强制取消')
+
+    webhook.addMsg('msg_simple', f'{biliapi.name}:风纪委投票成功{su}次\n')
