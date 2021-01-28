@@ -1,4 +1,11 @@
-# -*- coding: utf-8 -*-
+
+__all__ = (
+    'Audio',
+    'AudioMenu',
+    'AudioUploader',
+    'CompilationUploader'
+)
+
 from . import bili
 import re, os, base64, time, math
 

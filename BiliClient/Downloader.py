@@ -1,3 +1,8 @@
+
+__all__ = (
+    'Downloader',
+)
+
 import threading, asyncio, time, aiohttp, io
 from typing import Dict
 from types import MappingProxyType

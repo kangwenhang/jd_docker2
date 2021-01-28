@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 from aiohttp import ClientSession
-from typing import Iterable, Mapping, Dict, Awaitable, Any
+from typing import Iterable, Mapping, Dict, Awaitable, Any, Optional
 import time, json
-has_enc = False
-try:
-    from .wasm_enc import calc_sign #加载直播心跳验证模块
-    has_enc = True
-except:                             #没有直播心跳验证模块使用服务器验证，否则注释下行
+from importlib.util import find_spec
+from . import __name__ as top_module_name
+
+if find_spec('.wasm_enc', top_module_name):  #从本模块下顶层目录寻找直播心跳解密模块，如果没找到使用在线解密服务器
+    from .wasm_enc import calc_sign
+elif find_spec('wasm_enc'):
+    from wasm_enc import calc_sign
+else:
     enc_server = 'https://1578907340179965.cn-shanghai.fc.aliyuncs.com/2016-08-15/proxy/bili_server/heartbeat/'
-    ...
 
 class asyncBiliApi(object):
     '''B站异步接口类'''
@@ -257,6 +259,12 @@ class asyncBiliApi(object):
     async def getMyGroups(self) -> Awaitable[Dict[str, Any]]:
         '''取应援团列表'''
         url = "https://api.vc.bilibili.com/link_group/v1/member/my_groups"
+        async with self._session.get(url, verify_ssl=False) as r:
+            return await r.json()
+
+    async def expRewardInfo(self) -> Awaitable[Dict[str, Any]]:
+        '''取经验获取信息'''
+        url = "https://api.bilibili.com/x/member/web/exp/reward"
         async with self._session.get(url, verify_ssl=False) as r:
             return await r.json()
 
@@ -764,7 +772,7 @@ class asyncBiliApi(object):
         async with self._session.get(url, verify_ssl=False) as r:
             return await r.json()
         #{"code":0,"message":"0","ttl":1,"data":{"uid":xxx,"uname":"xxx","face":"https://i0.hdslb.com/bfs/face/2e79160cf78dd083c9aef01798e6335920930b66.jpg","billCoin":0.1,"silver":632,"gold":566,"achieve":70,"vip":0,"svip":0,"user_level":8,"user_next_level":9,"user_intimacy":29800,"user_next_intimacy":100000,"is_level_top":0,"user_level_rank":"\u003e50000","user_charged":0,"identification":1}}
-
+    
     async def coin(self, 
                    aid: int, 
                    num: int = 1, 
@@ -891,9 +899,9 @@ class asyncBiliApi(object):
             "csrf_token": self._bili_jct,
             "csrf": self._bili_jct,
             }
-        if has_enc:            #有本地心跳验证模块
+        if 'calc_sign' in globals():            #有本地心跳验证模块
             post_data["s"] = calc_sign(post_data, secret_rule) #依靠id，device，ts，ets，benchmark和secret_rule计算
-        elif enc_server:       #没有本地验证模块则使用服务器
+        elif enc_server:                        #没有本地验证模块则使用服务器
             async with self._session.post(enc_server, json={"t":post_data,"r":secret_rule}, verify_ssl=False) as r:
                 post_data["s"] = await r.text()
         else:
@@ -1675,6 +1683,43 @@ class asyncBiliApi(object):
         async with self._session.post(url, data=post_data, verify_ssl=False) as r:
             return await r.json()
         #{"code":0,"msg":"ok","message":"ok","data":[]}
+
+    async def sendMsg(self,
+                      receiver_id: int,
+                      content: Optional[str] = None,
+                      image_url: Optional[str] = None,
+                      mobi_app: str = 'web'
+                      ) -> Awaitable[Dict[str, Any]]:
+        '''
+        主站消息中心的发送消息
+        receiver_id    int 对话对方的uid
+        content        str 消息的文本内容，当发送文本消息时填写，与image_url参数强制二选一
+        image_url      str 消息的图片链接，当发送图片时填写，与content参数强制二选一
+        mobi_app       str 客户端类型
+        '''
+        if not (content or image_url):
+            raise ValueError('content参数与image_url参数必填一个')
+        url = 'https://api.vc.bilibili.com/web_im/v1/web_im/send_msg'
+        post_data = {
+            "msg[sender_uid]": self._uid,
+            "msg[receiver_id]": receiver_id,
+            "msg[receiver_type]": 1,
+            "msg[msg_type]": 1 if content else 2,
+            "msg[msg_status]": 0,
+            "msg[content]": f'{{"content":"{content}"}}' if content else f'{{"url":"{image_url}"}}',
+            #{"url":"http://i0.hdslb.com/bfs/album/82fa5c3b97dc733160b0b7d6198eb037329bb01b.jpg","height":1120,"width":720,"imageType":"jpeg","original":1,"size":170}
+            "msg[new_face_version]": 0,
+            "msg[timestamp]": int(time.time()),
+            "msg[dev_id]": "D75CA37F-E130-457E-A6FD-D2DA00EA5C92",
+            "from_firework": 0,
+            "build": 0,
+            "mobi_app": mobi_app,
+            "csrf_token": self._bili_jct,
+            "csrf": self._bili_jct
+            }
+        async with self._session.post(url, data=post_data, verify_ssl=False) as r:
+            return await r.json()
+        #{"code":1600001,"message":"您的账号可能存在风险，暂时无法发送消息，请确保账号资料属实并绑定真实手机号码","ttl":1,"data":{}}
 
     async def getRoomIdByUid(self,
                              uid: int

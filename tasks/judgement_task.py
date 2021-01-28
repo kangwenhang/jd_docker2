@@ -41,6 +41,7 @@ async def judgement_task(biliapi: asyncbili,
     Timeout = task_config.get("timeout", 850)
     run_once = task_config.get("run_once", False)
 
+    over = False
     su = 0
     try:
         async with timeout(Timeout):
@@ -54,10 +55,11 @@ async def judgement_task(biliapi: asyncbili,
                         logging.warning(f'{biliapi.name}: 获取风纪委员案件异常，原因为{str(e)}，跳过本次投票')
                         break
                     if ret["code"] == 25008:
-                        logging.warning(f'{biliapi.name}: 风纪委员没有新案件了')
+                        logging.info(f'{biliapi.name}: 风纪委员没有新案件了')
                         break
                     elif ret["code"] == 25014:
-                        logging.warning(f'{biliapi.name}: 风纪委员案件已审满')
+                        over = True
+                        logging.info(f'{biliapi.name}: 风纪委员案件已审满')
                         break
                     elif ret["code"] != 0:
                         logging.warning(f'{biliapi.name}: 获取风纪委员案件失败，信息为：{ret["message"]}')
@@ -97,7 +99,7 @@ async def judgement_task(biliapi: asyncbili,
                         else:   
                             logging.warning(f'{biliapi.name}: 风纪委员投票id为{cid}的案件失败，信息为：{ret["message"]}')
 
-                if run_once or su >= vote_num:
+                if over or run_once or su >= vote_num:
                     logging.info(f'{biliapi.name}: 风纪委员投票成功完成{su}次后退出')
                     break
                 else:

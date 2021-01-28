@@ -1020,6 +1020,28 @@ class BiliApi(object):
             data["bvid"] = bvid
         return self._session.get(url, params=data).json()
 
+    def getRoomPlayInfo(self,
+                        room_id: int,
+                        protocol: str = '0,1',
+                        format: str = '0,2',
+                        codec: str = '0,1',
+                        qn: int = 1000,
+                        ptype: int = 16,
+                        platform: str = 'web'
+                        ) -> dict:
+        '''B站直播获取视频流'''
+        params = {
+            "room_id": room_id,
+            "protocol": protocol,
+            "format": format,
+            "codec": codec,
+            "qn": qn,
+            "ptype": ptype,
+            "platform": platform
+            }
+        url = 'https://api.live.bilibili.com/xlive/web-room/v2/index/getRoomPlayInfo'
+        return self._session.get(url, params=params).json()
+
     def audioMenuInfo(self, 
                       am_id: int
                       ) -> dict:

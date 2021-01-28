@@ -1,4 +1,9 @@
-# -*- coding: utf-8 -*-
+
+__all__ = (
+    "VideoUploader",
+    "VideoParser"
+)
+
 from . import bili
 import os, math, time, base64, re
 from concurrent.futures import ThreadPoolExecutor

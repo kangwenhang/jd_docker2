@@ -1,3 +1,8 @@
+
+__all__ = (
+    'Danmu2Ass',
+)
+
 from xml.dom.minidom import parse, parseString, Element
 from _io import FileIO
 

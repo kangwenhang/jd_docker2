@@ -1,3 +1,8 @@
+
+__all__ = (
+    'MangaDownloader',
+)
+
 from . import bili
 from requests.sessions import Session
 from typing import Iterable, Union
