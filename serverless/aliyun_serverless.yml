@@ -4,17 +4,15 @@ Resources:
   BiliExp:
     Type: 'Aliyun::Serverless::Service'
     Properties:
-      Description: 'B站经验脚本'
+      Description: 'B站自动操作脚本'
     
     BiliExp:
       Type: 'Aliyun::Serverless::Function'
       Properties:
         Handler: BiliExp.main
         Runtime: python3
-        EnvironmentVariables:
-          PYTHONPATH: /code/other_models/ #第三方模块安装位置
-        CodeUri: ../upload.zip
-        Description: 'B站经验脚本'
+        CodeUri: ./
+        Description: 'B站自动操作脚本'
         Timeout: 900
       Events:
         Timer:

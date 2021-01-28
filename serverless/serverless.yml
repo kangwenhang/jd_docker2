@@ -3,7 +3,7 @@ app: bilibili
 component: scf # (必填) 引用 component 的名称，当前用到的是 tencent-scf 组件
 name: BiliExp # (必填) 创建的实例名称，请修改成您的实例名称
 
-#B站自动领取经验
+#B站自动操作
 inputs:
   name: ${app}-BiliExp #函数名称
   #namespace: bilibili
