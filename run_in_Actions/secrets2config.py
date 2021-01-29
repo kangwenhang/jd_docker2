@@ -41,7 +41,7 @@ if BILICONFIG:
             cookieDatas["bili_jct"] = cookie
             bili_jct = True
             print(f'biliconfig第{ii+1}行解析为bili_jct')
-        elif re.match("[0-9]+?", cookie):
+        elif re.match("^[0-9]{5,}$", cookie):
             cookieDatas["DedeUserID"] = cookie
             DedeUserID = True
             print(f'biliconfig第{ii+1}行解析为DedeUserID')
