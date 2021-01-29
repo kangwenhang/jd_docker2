@@ -121,8 +121,9 @@ BiliExp
 	   
        <div align="center"><img src="https://s1.ax1x.com/2020/09/23/wjM09e.png" width="800" height="450" title="获取cookies示例"></div>
     *  1.2 fork本项目
+	   本步骤目的是将Actions Workflow文件(.github/workflows/run_BiliExp.yml)文件放到你自己的仓库，当然你也可以不fork直接新建一个仓库将***.github/workflows/run_BiliExp.yml***文件放进去(路径保持一致)，如果这样做请不要跳过步骤3
 * 2.部署
-    *  2.1 在fork后的github仓库的 “Settings” --》“Secrets” 中添加"Secrets"，name(不用在意大小写)和value分别为：
+    *  2.1 在fork后的github仓库(或者你新建的存放run_BiliExp.yml的仓库)的 “Settings” --》“Secrets” 中添加"Secrets"，name(不用在意大小写)和value分别为：
         *  2.1.1 name为"biliconfig"           value为B站账号登录信息(可多个)，格式如下
         ```
         SESSDATA(账号1)
@@ -161,6 +162,16 @@ BiliExp
 		![image](https://user-images.githubusercontent.com/67217225/98933791-16659480-251c-11eb-9713-c3dbcc6321bf.png)
 		![image](https://user-images.githubusercontent.com/67217225/98934269-c935f280-251c-11eb-8bce-b8fa04c68cb8.png)
         *  2.2.2 第一次启动后，脚本会每天12:00自动执行，不需要再次手动执行(第一次手动执行这个步骤不能忽略)。
+* 3.其他secrets
+    *  3.1 repository
+	   (可选)仓库名称，指定Actions执行时从哪个仓库获取代码，此项不存在时默认为你自己的仓库(也就是fork后的仓库)，也可以填写我的仓库`happy888888/BiliExp`
+    *  3.2 ref
+	   (可选)仓库分支名称或者sha，指定Actions执行时从仓库的哪个分支获取代码，此项不存在时默认为仓库默认分支的最新一次提交，也可以填写`master`
+	```
+	这两个secrets是用来当Actions和代码不在同一个仓库里使用的
+	可以将 .github/workflows/run_BiliExp.yml 文件放到其他仓库里执行而不是fork本仓库
+	当然fork本身是携带代码的，不需要配置这两个secrets即可使用
+	```
 
 ### 方式二、使用腾讯云函数
 
