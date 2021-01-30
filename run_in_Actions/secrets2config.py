@@ -94,11 +94,11 @@ if PUSH_MESSAGE:
                 "name": f"邮箱消息推送{i}",
                 "msg_separ": r"<br>",
                 "method": 0,
-                "url": "http://liuxingw.com/api/mail/api.php",
+                "url": "https://email.berfen.com/api",
                 "params": {
-                    "address": value,
-                    "name": "{title}",
-                    "certno": f"{{{msg_type}}}"
+                    "to": value,              # 收件人
+                    "title": "{title}",       # 邮件标题
+                    "text": f"{{{msg_type}}}" # 邮件内容
                 }
             })
         else:
