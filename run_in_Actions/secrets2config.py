@@ -32,7 +32,7 @@ if BILICONFIG:
     users = []
     cookieDatas = {}
     for ii, x in enumerate(BILICONFIG.split("\n")):
-        cookie = x.strip().replace(",", "%2C")
+        cookie = x.strip().replace(",", "%2C").replace("%2A", "*")
         if re.match("[a-z0-9]{8}%2C[0-9a-z]{10}%2C[a-z0-9]{5}.[a-z0-9]{2}", cookie):
             cookieDatas["SESSDATA"] = cookie
             SESSDATA = True
@@ -93,12 +93,22 @@ if PUSH_MESSAGE:
             webhooks.append({
                 "name": f"邮箱消息推送{i}",
                 "msg_separ": r"<br>",
-                "method": 0,
+                "method": 1,
                 "url": "https://email.berfen.com/api",
                 "params": {
                     "to": value,              # 收件人
                     "title": "{title}",       # 邮件标题
                     "text": f"{{{msg_type}}}" # 邮件内容
+                }
+            })
+        elif re.match("^[0-9a-z]{32}$", value):
+            i += 1
+            webhooks.append({
+                "name": f"酷推个人QQ消息推送{i}",
+                "method": 3,
+                "url": f"https://push.xuthus.cc/send/{value}",
+                "params": {
+                    "c": f"{{{msg_type}}}"
                 }
             })
         else:
