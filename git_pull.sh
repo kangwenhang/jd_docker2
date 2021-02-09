@@ -40,9 +40,9 @@ fi
 function Git_PullShell {
   echo -e "更新shell脚本，原地址：${ShellURL}\n"
   cd ${ShellDir}
-  git fetch https://github.com/kangwenhang/jd_docker2.git main
+  git fetch --all
   ExitStatusShell=$?
-  git reset --hard https://github.com/kangwenhang/jd_docker2.git/main
+  git reset --hard origin/main
 }
 
 ## 更新crontab
