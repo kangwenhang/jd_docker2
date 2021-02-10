@@ -3,7 +3,7 @@
 ## Author: Evine Deng
 ## Source: https://github.com/EvineDeng/jd-base
 ## Modified： 2021-02-08
-## Version： v3.6.2
+## Version： v3.6.3
 
 ## 文件路径、脚本网址、文件版本以及各种环境的判断
 ShellDir=${JD_DIR:-$(cd $(dirname $0); pwd)}
@@ -29,7 +29,7 @@ isTermux=${ANDROID_RUNTIME_ROOT}${ANDROID_ROOT}
 WhichDep=$(grep "/jd_docker2" "${ShellDir}/.git/config")
 
 if [[ ${WhichDep} == *github* ]]; then
-  ScriptsURL=https://github.com/LXK9301/jd_scripts
+  ScriptsURL=https://gitee.com/lxk0301/jd_scripts
   ShellURL=https://github.com/kangwenhang/jd_docker2
 else
   ScriptsURL=https://gitee.com/lxk0301/jd_scripts
