@@ -27,6 +27,6 @@ jobs:
         if: env.PAT
         with:
           source_repo: "https://github.com/happy888888/BiliExp"
-          source_tag: "1.1.9"
+          sync_tags: "1.1.9"
           destination_branch: "BiliExp"
           github_token: ${{ secrets.PAT }}
