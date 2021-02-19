@@ -88,7 +88,7 @@ class MangaDownloader(object):
         mlist = self.getIndex()
         if isinstance(index, Iterable):
             for x in index:
-                name = re.sub('[\/:*?"<>|]','', mlist[x]["title"])
+                name = re.sub('[\/:*?"<>|]','', mlist[x]["title"]).strip()
                 if name.replace(' ', '') == '':
                     name = mlist[x]["short_title"]
                 if not mlist[x]["is_locked"]:
@@ -98,10 +98,10 @@ class MangaDownloader(object):
                     print(f'{mlist[x]["ord"]:0>{bq}}-{name} 目前需要解锁')
 
         elif isinstance(index, int) and index < len(mlist):
-            name = re.sub('[\/:*?"<>|]','', mlist[index]["title"])
+            name = re.sub('[\/:*?"<>|]','', mlist[index]["title"]).strip()
             if name.replace(' ', '') == '':
-                name = x["short_title"]
-            if not x["is_locked"]:
+                name =  mlist[index]["short_title"]
+            if not mlist[index]["is_locked"]:
                 self.download(mlist[index]['id'], os.path.join(path, f'{mlist[index]["ord"]:0>{bq}}-{name}'))
                 print(f'{mlist[index]["ord"]:0>{bq}}-{name} 下载完成')
             else:
@@ -119,7 +119,7 @@ class MangaDownloader(object):
         
         bq = len(str(self.getNum()))
         for x in self.getIndex():
-            name = re.sub('[\/:*?"<>|]','', x["title"])
+            name = re.sub('[\/:*?"<>|]','', x["title"]).strip()
             if name.replace(' ', '') == '':
                 name = x["short_title"]
             if not x["is_locked"]:

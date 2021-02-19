@@ -892,13 +892,15 @@ class BiliApi(object):
         #{"code":0,"msg":"","data":{"total_remain_amount":4,"user_coupons":[{"ID":2093696,"remain_amount":2,"expire_time":"2020-10-21 10:40:17","reason":"B币兑换","type":"福利券","ctime":"2020-09-21 10:40:17","total_amount":2,"limits":[],"type_num":7,"will_expire":0,"discount":0,"discount_limit":0,"is_from_card":0},{"ID":2093703,"remain_amount":2,"expire_time":"2020-10-21 10:47:43","reason":"B币兑换","type":"福利券","ctime":"2020-09-21 10:47:43","total_amount":2,"limits":[],"type_num":7,"will_expire":0,"discount":0,"discount_limit":0,"is_from_card":0}],"coupon_info":{"new_coupon_num":0,"coupon_will_expire":0,"rent_will_expire":0,"new_rent_num":0,"discount_will_expire":0,"new_discount_num":0,"month_ticket_will_expire":0,"new_month_ticket_num":0,"silver_will_expire":0,"new_silver_num":0,"remain_item":0,"remain_discount":0,"remain_coupon":4,"remain_silver":0}}}
         return self._session.post(url, json=post_data).json()
 
-    def mangaDetail(self, comic_id: int, device='pc', platform='web'):
+    def mangaDetail(self, comic_id: int, device='android', version='3.7.0'):
         "获取漫画信息"
-        url = f'https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail?device={device}&platform={platform}'
+        url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/ComicDetail'
         post_data = {
+            "device": device,
+            "version": version,
             "comic_id": comic_id
             }
-        return self._session.post(url, json=post_data).json()
+        return self._session.post(url, post_data).json()
 
     def mangaGetPoint(self):
         "获取漫画积分"
@@ -928,13 +930,15 @@ class BiliApi(object):
             }
         return self._session.post(url, json=post_data).json()
 
-    def mangaImageIndex(self, ep_id: int, device='pc', platform='web'):
+    def mangaImageIndex(self, ep_id: int, device='android', version='3.7.0'):
         "获取漫画图片列表"
-        url = f'https://manga.bilibili.com/twirp/comic.v1.Comic/GetImageIndex?device={device}&platform={platform}'
+        url = 'https://manga.bilibili.com/twirp/comic.v1.Comic/GetImageIndex'
         post_data = {
+            "device": device,
+            "version": version,
             "ep_id": ep_id
             }
-        return self._session.post(url, json=post_data).json()
+        return self._session.post(url, post_data).json()
 
     def mangaGetImageBytes(self, url: str):
         "获取漫画图片"
