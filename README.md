@@ -146,14 +146,16 @@ BiliExp
         ```
 		注：每行一个cookie项(SESSDATA bili_jct uid或者空行)，***不规定顺序***但必须一个账户三个参数填完才能开始填下一个账户的参数
 		![image](https://user-images.githubusercontent.com/67217225/98549976-73700900-22d6-11eb-9356-22802456da50.png)
-        *  2.1.2 (可选)name为"push_message"           value为推送SCKEY或email或telegramBot_token用于消息推送，格式如下
+        *  2.1.2 (可选)name为"push_message"           value为推送SCKEY或email或telegramBot_token或SKEY用于消息推送，格式如下
         ```
         SCU10xxxxxxxxxxxxxxxd547519b62d027xxxxxxxxx20f3578cbe6
 		example@qq.com
 		1443793198:AAEI9TGazdrj4Jh6X6B7CvuAKX4IivEb450,1459469720
+		efa28782a2b4a7b25daz12f7d595ae26
         ```
-		注：每行一个推送参数(SCKEY email telegramBot_token或者空行)，***可以同时提供多个或不提供SCKEY或email或telegramBot_token，填写后会同时推送***,<br>
-		***使用telegramBot的注意，除了填写token,还要填写chat_id,在同一行用逗号隔开***,比如例子提供的意思是telegram token为`1443793198:AAEI9TGazdrj4Jh6X6B7CvuAKX4IivEb450`,chat_id为`1459469720`
+		注：每行一个推送参数(SCKEY email telegramBot_token SKEY或者空行)，***可以同时提供多个或不提供SCKEY或email或telegramBot_token或SKEY，填写后会同时推送***,<br>
+		***使用telegramBot的注意，除了填写token,还要填写chat_id,在同一行用逗号隔开***,比如例子提供的意思是telegram token为`1443793198:AAEI9TGazdrj4Jh6X6B7CvuAKX4IivEb450`,chat_id为`1459469720`,<br>
+		***SCKEY来自server酱(微信推送)，email为你的邮箱，SKEY来自酷推(QQ推送)***
         *  2.1.3 (可选)name为"advconfig"           value为/config/config.json文件的所有内容(直接复制粘贴整个文件)
 		***此项为详细配置文件，可配置所有细节参数，可直接替代前两个secrets也可以与前两个secrets共同使用，注意此项不存在时直接使用默认配置***<br>
 		如果使用***天选时刻***，***风纪委员投票***和 ***直播心跳(获取小心心)*** 功能可参考 [部分功能推荐配置](https://github.com/happy888888/BiliExp/issues/178)

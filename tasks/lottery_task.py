@@ -163,7 +163,7 @@ async def repost_task_E(biliapi: asyncbili,
             else:
                 reply: str = task_config["reply"]
 
-            if await dynamicReply(biliapi, dyid, oid, reply, type, uname):
+            if await dynamicReply(biliapi, dyid, oid, reply, type, name):
                 su1 += 1
             else:
                 er1 += 1
@@ -173,7 +173,7 @@ async def repost_task_E(biliapi: asyncbili,
             else:
                 er2 += 1
 
-            await dynamicLike(biliapi, dyid, uname)
+            await dynamicLike(biliapi, dyid, name)
 
             if force_follow and not uid in users:
                 if await followUser(biliapi, uid):

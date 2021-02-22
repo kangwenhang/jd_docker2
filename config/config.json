@@ -27,16 +27,16 @@
             "timeout": 45,       // 心跳分钟数，值为数字(单位分钟,允许小数),心跳的时间，达到时间退出
         },
         "xlive_anchor_task": {   // 任务:参与直播天选时刻，下面为本功能详细配置
-        	"enable": true,          //任务开关，值为true或false分别代表开启和关闭
-        	"anchor_type": [[0, 0], [1, 0]], //参与条件，值为n*2维整数数组，详见下方
+            "enable": true,          //任务开关，值为true或false分别代表开启和关闭
+            "anchor_type": [[0, 0], [1, 0]], //参与条件，值为n*2维整数数组，详见下方
                                              /*
                                              [0, 0] 无  [1, 0] 关注主播
                                              [2, x] 当前主播粉丝勋章至少x级(注:x为整数)
-        		                             [3, 2] 至少成为主播的提督 [3, 3] 至少成为主播的舰长
-        		                             注意本项的值为二维数组，例子参与无条件和需要关注主播和粉丝勋章至少为1级的天选时刻，本项的值应为 [[0, 0], [1, 0], [2, 1]]
-        		                              */
+                                             [3, 2] 至少成为主播的提督 [3, 3] 至少成为主播的舰长
+                                             注意本项的值为二维数组，例子参与无条件和需要关注主播和粉丝勋章至少为1级的天选时刻，本项的值应为 [[0, 0], [1, 0], [2, 1]]
+                                              */
             "delay": 0,          //延迟，值为整数(单位秒)，每参与一次天选时刻延迟运行
-        	"room_filter": [],   //直播间黑名单，值为整数数组，指定直播间的天选将不会参与
+            "room_filter": [],   //直播间黑名单，值为整数数组，指定直播间的天选将不会参与
             "gift_filter": [],   //礼物名称黑名单，值为字符串数组，排除掉一些不需要参与的礼物
             "danmu_filter": [],  //弹幕过滤关键字，值为字符串数组，弹幕包含此值会被过滤
             "price_limit": 0,            //金瓜子上限，值为整数，投喂金瓜子超过此值会被过滤
@@ -44,17 +44,17 @@
             "follow_group": "",          //用户分组名称，值为字符串，将需要关注的主播放进用户分组里，空字符串为"默认分组",若不存在自动创建
             "clean_group_interval": 0,   //用户分组清理周期，值为整数，当日期能被此数整除时将follow_group参数指定的分组清空(全部取关),为0或者follow_group为空时不清空
             "search_interval": 300,     //搜索执行周期，值为整数(单位秒)，搜索直播间->抽奖->等待搜索周期->下一轮搜索
-        	"search_areas": [           //搜索区域数组，数组中每个值包含一个直播分区，在分区数组中搜索直播间
-        		{"paid": 1,"aid": 0,"sort": "","ps": 40},
-        		{"paid": 2,"aid": 0,"sort": "","ps": 40},
-        		{"paid": 3,"aid": 0,"sort": "","ps": 40}
-        		/* paid 大区域id，值为整数，目前已知区域 2网游 3手游 6单机 1娱乐 5电台 9虚拟主播 10生活 11学习
+            "search_areas": [           //搜索区域数组，数组中每个值包含一个直播分区，在分区数组中搜索直播间
+                {"paid": 1,"aid": 0,"sort": "","ps": 40},
+                {"paid": 2,"aid": 0,"sort": "","ps": 40},
+                {"paid": 3,"aid": 0,"sort": "","ps": 40}
+                /* paid 大区域id，值为整数，目前已知区域 2网游 3手游 6单机 1娱乐 5电台 9虚拟主播 10生活 11学习
                    aid  小区域id，值为整数，0为全部区域，在娱乐分区下有 145视频聊天 399日常，在网游分区下有 86英雄联盟 80绝地求生，这里不详细列举
                    sort 排序方式，值为字符串，为空则默认排序
                    ps   最大搜索页数，值为整数，每页20个直播间，增大此参数可在分区中获得更多直播间
-        		*/
-        	],
-        	"timeout": 2700,      //超时时间，值为数字(单位为秒)，超过这个时间退出此任务，如果设置unfollow为true会不等待天选结束直接取关主播
+                */
+            ],
+            "timeout": 2700,      //超时时间，值为数字(单位为秒)，超过这个时间退出此任务，如果设置unfollow为true会不等待天选结束直接取关主播
             "run_once": true    //参与一次即退出，值为true或false，值为false才会等待超时退出(Actions上默认)，云函数上推荐设置为true并每隔10分钟调用此功能
         },
         "coin_task": {           // 任务:每日投币获取经验，下面为本功能详细配置
@@ -171,26 +171,27 @@
         }
     },
     "webhook": { /* 用于自定义消息推送,server酱消息推送只需填写下面SCKEY参数和在hooks参数中enable设置为true，另外提供邮箱推送和telegram推送模板
-    	            使用actions的用户也可以直接使用secrets(push_message)，不需要填写本项
-    	            如果使用其他推送平台，请自行查阅相应平台数据格式，按照本模板添加到本配置中，理论上本项目从配置文件上支持所有http格式的消息推送平台    */
+                    使用actions的用户也可以直接使用secrets(push_message)，不需要填写本项
+                    如果使用其他推送平台，请自行查阅相应平台数据格式，按照本模板添加到本配置中，理论上本项目从配置文件上支持所有http格式的消息推送平台    */
 
         "http_header": {"User-Agent":"Mozilla/5.0"}, // 定义http头部，访问消息推送接口时使用
         "variable": { // 声明变量,在hooks参数中的url参数和params参数中使用大括号{}可直接引用在此声明的变量，"msg_"开头变量为程序内置变量不允许赋值
             "msg_simple": null, // msg_simple为简化的日志消息，用于下面hooks消息推送接口引用
         //  "msg_raw": null,    // msg_raw为完整的日志消息，用于下面hooks消息推送接口引用，若不引用最好注释掉，否则占用内存空间
 
-            "title": "B站经验脚本消息推送", // 此为自定义变量，用于下面hooks消息推送接口引用
+            "title": "B站助手脚本消息推送", // 此为自定义变量，用于下面hooks消息推送接口引用
             "SCKEY": "" ,
         /*  "email": "",
             "telegram_bot_token": "",
-            "telegram_bot_chatid": "" */
+            "telegram_bot_chatid": "",
+            "SKEY": "" */
         },
         "hooks": [ // 在这里以数组的形式定义所有消息推送回调接口
             {
                 "enable": false, // 开关，需要开启请直接把本项删除或设置为true
                 "name": "server酱消息推送", // webhook名称，仅用于日志显示不用于实际消息推送
                 "msg_separ": "\n\n",       // 消息分隔符，推送消息时将每一条消息用两个换行符(\n)隔开
-                "method": 1,               // 请求方式,0为get,1为post,2为以json方式post
+                "method": 1,               // 请求方式,0为get,1为post,3为以json方式post
                 "url": "https://sc.ftqq.com/{SCKEY}.send", // 请求地址,{SCKEY}为对上面variable变量中的SCKEY的引用，当然也可以直接把SCKEY的值放在url里面
                 "params": {                                // 请求参数,server酱推送需要text和desp两个参数，分别把变量里title和msg_simple(简化消息)赋值进去
                     "text": "{title}",
@@ -198,25 +199,34 @@
                 }
             }/*, //若要实现其他消息推送接口，需要自己查阅相关文档构建method，url和params三个参数，下面是邮箱推送和telegram_bot推送的例子，其他平台自行探索
             {
-            	"enable": false,
+                "enable": false,
                 "name": "邮箱消息推送",
                 "msg_separ": "<br>",
-                "method": 0,
-                "url": "http://liuxingw.com/api/mail/api.php",
+                "method": 1,
+                "url": "https://email.berfen.com/api",
                 "params": {
-                    "address": "{email}",
-                    "name": "{title}",
-                    "certno": "{msg_simple}" 
+                    "to": "{email}",
+                    "title": "{title}",
+                    "text": "{msg_simple}" 
                 }
             },
             {
-            	"enable": false,
+                "enable": false,
                 "name": "telegram_bot消息推送",
                 "method": 1,
                 "url": "https://api.telegram.org/bot{telegram_bot_token}/sendMessage",
                 "params": {
                     "chat_id": "{telegram_bot_chatid}",
                     "text": "{msg_simple}"
+                }
+            },
+            {
+                "enable": false,
+                "name": "酷推个人QQ消息推送",
+                "method": 3,
+                "url": "https://push.xuthus.cc/send/{SKEY}",
+                "params": {
+                    "c": "{msg_simple}"
                 }
             }*/
         ]
@@ -242,8 +252,8 @@
         },
         "show_name": "账号2",
         "tasks": {                //上面default参数中投币任务和风纪委任务都是开启的，这里在第二个账号上关闭而不影响其他任务和其他账号
-        	"coin_task": false,   //直接赋值false是简化的关闭方法，也可以像default中那样用enable参数关闭，若只修改投币数量(配置中的其中一项)则必须按照default中的格式指定
-        	"judgement_task": false
+            "coin_task": false,   //直接赋值false是简化的关闭方法，也可以像default中那样用enable参数关闭，若只修改投币数量(配置中的其中一项)则必须按照default中的格式指定
+            "judgement_task": false
         }
     }*/]
 }
