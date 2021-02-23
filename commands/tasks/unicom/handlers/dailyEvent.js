@@ -231,7 +231,8 @@ let lookVideoDouble = (params1, params2, title) => {
     }
 
     do {
-      if (num < 0) {
+      if (num < -1) {
+        //再最后执行一次保证完整性
         break;
       }
       console.log("🎞 看视频第", num, "次");
