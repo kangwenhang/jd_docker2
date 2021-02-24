@@ -26,7 +26,7 @@ isTermux=${ANDROID_RUNTIME_ROOT}${ANDROID_ROOT}
 ScriptsURL=git@gitee.com:lxk0301/jd_scripts
 ScriptsURL2=https://github.com/Zero-S1/xmly_speed
 ScriptsURL3=https://github.com/kangwenhang/jd_docker2
-ShellURL=https://gitee.com/dockere/jd-base
+ShellURL=https://github.com/kangwenhang/jd_docker2
 
 ## 更新crontab，gitee服务器同一时间限制5个链接，因此每个人更新代码必须错开时间，每次执行git_pull随机生成。
 ## 每天只更新两次,(分.时.延迟)为随机cron

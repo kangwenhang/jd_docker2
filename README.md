@@ -30,4 +30,5 @@
 	--hostname jd \
 	--restart always \
 	noobx/jd:gitee
+项目地址：https://github.com/dockere/jd-base
 ```
