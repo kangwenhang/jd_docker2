@@ -591,4 +591,5 @@ EnableExtraShell=""
 export XMLY_SPEED_COOKIE=""
 
 ###############################联通，爱奇艺，bilibili，52pojie#############################
-##请至config文件夹中相应的.json文件进行查看。
+##请至config文件夹中相应的.json文件进行查看。参考仓库地址：https://github.com/kangwenhang/jd_docker2/tree/AutoSignMachine（非原仓库地址）
+##注意：.json文件配置完成后请删除内容注释那一行。
