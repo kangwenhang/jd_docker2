@@ -86,7 +86,7 @@ function Git_PullScripts2 {
 }
 
 ## 克隆scripts2
-function Git_CloneScripts23 {
+function Git_CloneScripts3 {
   echo -e "克隆AutoSignMachine脚本\n"
   git clone -b AutoSignMachine ${ScriptsURL3} ${ScriptsDir3}
   ExitStatusScripts3=$?
