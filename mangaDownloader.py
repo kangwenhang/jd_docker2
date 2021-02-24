@@ -1,19 +1,31 @@
 # -*- coding: utf-8 -*-
 from BiliClient import MangaDownloader
-import json, re, os, sys
+import os, sys
 from getopt import getopt
+try:
+    from json5 import load
+except:
+    from json import load
 
 if os.path.exists('./config.json'):
-    with open('./config.json','r',encoding='utf-8') as fp:
-        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
+    with open('./config.json','r',encoding='utf-8-sig') as fp:
+        configData = load(fp)
 elif os.path.exists('./config/config.json'):
-    with open('./config/config.json','r',encoding='utf-8') as fp:
-        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
+    with open('./config/config.json','r',encoding='utf-8-sig') as fp:
+        configData = load(fp)
 elif os.path.exists('/etc/BiliExp/config.json'):
-    with open('/etc/BiliExp/config.json','r',encoding='utf-8') as fp:
-        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
+    with open('/etc/BiliExp/config.json','r',encoding='utf-8-sig') as fp:
+        configData = load(fp)
 else:
     configData = None
+
+def print_format(string, way, width, fill= ' ',ed = ''):
+    count = 0
+    for word in string:
+        if (word >='\u4e00' and word <= '\u9fa5') or word in ['；','：','，','（','）','！','？','——','……','、','》','《']:
+            count+=1
+    width = width-count if width>=count else 0
+    print('{0:{1}{2}{3}}'.format(string,fill,way,width),end = ed,flush=True)
 
 def download_interactive():
     id = int(input('请输入B站漫画id(整数，不带mc前缀)：'))
@@ -21,13 +33,16 @@ def download_interactive():
     pdf = input('下载后是否合并为一个pdf(y/n)：')
     if not path:
         path = os.getcwd()
-    path = path.replace('\\', '/')
-    if configData:
-         mag = MangaDownloader(id, configData["users"][0]["cookieDatas"])
-    else:
-         mag = MangaDownloader(id)
+    mag = MangaDownloader(id, configData["users"][0]["cookieDatas"]) if configData else MangaDownloader(id)
     print(f'开始下载漫画 "{mag.getTitle()}"')
-    mag.downloadAll(path)
+    for ret in mag.downloadAll(path):
+        print_format(ret.name, '<', 30)
+        if ret.code == MangaDownloader.DownloadCode.Ok:
+            print(' 下载成功')
+        elif ret.code == MangaDownloader.DownloadCode.Locked:
+            print(' 没有解锁')
+        elif ret.code == MangaDownloader.DownloadCode.Error:
+            print(' 下载失败')
     print('下载任务结束')
 
     if pdf.upper() == 'Y':
@@ -36,13 +51,14 @@ def download_interactive():
         title = mag.getTitle()
         path = os.path.join(path, title)
         doc = fitz.open()
-        for name in glob.glob(f'{path}/*/*.jpg'):
+        for name in glob.glob(os.path.join(path, "*", "*.jpg")):
             imgdoc = fitz.open(name)
             pdfbytes = imgdoc.convertToPDF()
             imgpdf = fitz.open("pdf", pdfbytes)
             doc.insertPDF(imgpdf)
-        doc.save(f'{path}/{title}.pdf')
-        print(f'文件保存至{path}/{title}.pdf')
+        path = os.path.join(path, title + ".pdf")
+        doc.save(path)
+        print(f'文件保存至{path}')
 
 def download_task(task, path: str):
     if configData:
@@ -67,8 +83,15 @@ def download_task(task, path: str):
             else:
                 if int(P) <= ep_len:
                     ep_P.add(int(P)-1)
-        mag.downloadIndexes(ep_P, path)
 
+    for ret in mag.downloadIndexes(ep_P, path):
+        print_format(ret.name, '<', 30)
+        if ret.code == MangaDownloader.DownloadCode.Ok:
+            print(' 下载成功')
+        elif ret.code == MangaDownloader.DownloadCode.Locked:
+            print(' 没有解锁')
+        elif ret.code == MangaDownloader.DownloadCode.Error:
+            print(' 下载失败')
     print('下载任务结束')
 
     if task[2]:
@@ -76,13 +99,14 @@ def download_task(task, path: str):
         print("正在合并下载图片为pdf")
         path = os.path.join(path, title)
         doc = fitz.open()
-        for name in glob.glob(f'{path}/*/*.jpg'):
+        for name in glob.glob(os.path.join(path, "*", "*.jpg")):
             imgdoc = fitz.open(name)
             pdfbytes = imgdoc.convertToPDF()
             imgpdf = fitz.open("pdf", pdfbytes)
             doc.insertPDF(imgpdf)
-        doc.save(f'{path}/{title}.pdf')
-        print(f'文件保存至{path}/{title}.pdf')
+        path = os.path.join(path, title + ".pdf")
+        doc.save(path)
+        print(f'文件保存至{path}')
 
 def main(*args, **kwargs):
     if kwargs["task"][0]:
@@ -107,7 +131,7 @@ if __name__=="__main__":
             print(' -h --help      显示帮助信息')
             exit()
         elif opt in ('-V','--version'):
-            print('B站漫画下载器 mangaDownloader v1.1.9')
+            print('B站漫画下载器 mangaDownloader v1.2.0')
             exit()
         elif opt in ('-p','--path'):
             kwargs["path"] = arg.replace(r'\\', '/')
