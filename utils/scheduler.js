@@ -199,7 +199,7 @@ let scheduler = {
   },
   hasWillTask: async (command, params) => {
     const { taskKey, tryrun } = params;
-    scheduler.clean();
+    await scheduler.clean();
     scheduler.isTryRun = tryrun;
     scheduler.taskKey = taskKey || "default";
     console.log(
