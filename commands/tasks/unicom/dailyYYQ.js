@@ -129,6 +129,8 @@ let dailyYYQ = {
           await dailyYYQ.lookVideoDouble(axios, {
             ...options,
           });
+          console.log("🎉 正在看视频，稍等一会儿");
+          await sleep(35);
           await dailyYYQ.lookVideoDoubleResult(axios, {
             ...options,
             Authorization,
