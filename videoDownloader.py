@@ -1,32 +1,29 @@
 # -*- coding: utf-8 -*-
 from BiliClient import (VideoParser, Downloader, bili, Danmu2Ass)
-import sys, json, re, time, curses, os
+import sys, re, time, curses, os
 from getopt import getopt
+from json import dump
+try:
+    from json5 import load
+except:
+    from json import load
 
 is_win = os.name == 'nt'
 
 ReverseProxy = 'http://biliapi.8box.top/playerproxy' #解析接口代理
 
-if os.path.exists('./config.json'):
-    with open('./config.json','r',encoding='utf-8') as fp:
-        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
-elif os.path.exists('./config/config.json'):
-    with open('./config/config.json','r',encoding='utf-8') as fp:
-        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
-elif os.path.exists('/etc/BiliExp/config.json'):
-    with open('/etc/BiliExp/config.json','r',encoding='utf-8') as fp:
-        configData = json.loads(re.sub(r'\/\*[\s\S]*?\/', '', fp.read()))
-else:
-    configData = None
+for path in ('./user.json', './config/user.json', '/etc/BiliExp/user.json', None):
+    if os.path.exists(path):
+        break
 
-def get_input_tasks() -> list:
+def get_input_tasks(video_parser: VideoParser) -> list:
     '''通过控制台输入获得下载任务'''
     ret = []
     reverse = input('是否使用内部代理(可下载港澳台)(y/n)：').upper() == 'Y'
     add_another = True
     while add_another:
         url = input('请输入视频链接(或者av,bv号)：')
-        video_parser = VideoParser(url)
+        video_parser.parser(url)
         print(f'当前视频标题为：{video_parser.getTitle()}')
         video_list = video_parser.all()
         if len(video_list) == 1:
@@ -38,9 +35,9 @@ def get_input_tasks() -> list:
             video = video_list[P-1]
 
         if reverse:
-            video_stream_list = video.allStream(configData["users"][0]["cookieDatas"], reverse_proxy=ReverseProxy)
+            video_stream_list = video.allStream(reverse_proxy=ReverseProxy)
         else:
-            video_stream_list = video.allStream(configData["users"][0]["cookieDatas"])
+            video_stream_list = video.allStream()
 
         for ii in range(len(video_stream_list)):
             print(f'{ii+1}. {video_stream_list[ii]}')
@@ -52,11 +49,12 @@ def get_input_tasks() -> list:
         add_another = input('是否再添加一个任务(y:再添加一个/n:立即开始下载)：').upper() == 'Y'
     return ret
 
-def get_arg_tasks(tasks: list) -> list:
+def get_arg_tasks(video_parser: VideoParser, tasks: list) -> list:
     '''通过参数列表输入获得下载任务'''
     ret = []
     for xx in tasks:
-        video_list = VideoParser(xx[0]).all()
+        video_parser.parser(xx[0])
+        video_list = video_parser.all()
         video_len = len(video_list)
         videos_P = set()
         for P in xx[1].split(','):
@@ -69,7 +67,7 @@ def get_arg_tasks(tasks: list) -> list:
                 if int(P) <= video_len:
                     videos_P.add(int(P)-1)
         for x in videos_P:
-            video_stream_list = video_list[x].allStream(configData["users"][0]["cookieDatas"] if configData else None, ReverseProxy if xx[3] == 1 else '')
+            video_stream_list = video_list[x].allStream(ReverseProxy if xx[3] == 1 else '')
             if not video_stream_list:
                 continue
             if xx[2] < len(video_stream_list) - 1:
@@ -80,12 +78,16 @@ def get_arg_tasks(tasks: list) -> list:
 
 def downloader_put_tasks(downloader, tasks, path: str):
     '''将下载任务放进下载器'''
-    if not path.endswith('/'):
-        path += '/'
     if not os.path.exists(path):
         os.makedirs(path)
     for xx in tasks:
-        downloader.add(url=xx.url, name=xx.fliename, dst=path + xx.fliename, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)","Referer":"https://www.bilibili.com/"})
+        downloader.add(url=xx.url, 
+                       name=xx.fliename, 
+                       dst=os.path.join(path, xx.fliename), 
+                       headers={
+                           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                           "Referer":"https://www.bilibili.com/"
+                           })
 
 def show(stdscr, tasklist: list, tasknum: tuple or list) -> None:
     stdscr.clear()
@@ -137,19 +139,50 @@ def display(downloader: Downloader) -> None:
 
 def download_danmu(tasks: list, path: str):
     '''下载弹幕'''
-    if not path.endswith('/'):
-        path += '/'
     if not os.path.exists(path):
         os.makedirs(path)
     for xx in tasks:
         xml = bili.dmList(xx.cid)
-        Danmu2Ass(xml).toAssFile(path + xx.fliename + '.ass')
+        Danmu2Ass(xml).toAssFile(os.path.join(path, xx.fliename + '.ass'))
 
 def main(*args, **kwargs):
-    if kwargs["tasklist"]:
-        tasks = get_arg_tasks(kwargs["tasklist"])
+    biliapi = bili()
+    if path:
+        with open(path,'r',encoding='utf-8-sig') as fp:
+            userData = load(fp)
+        if userData["SESSDATA"] and \
+           biliapi.login_by_cookie({"SESSDATA": userData["SESSDATA"]}):
+            ...
+        elif userData["access_token"] and \
+            userData["refresh_token"] and \
+            biliapi.login_by_access_token(userData["access_token"], userData["refresh_token"], True):
+            userData["SESSDATA"] = biliapi.SESSDATA
+            userData["bili_jct"] = biliapi.bili_jct
+            userData["access_token"] = biliapi.access_token
+            userData["refresh_token"] = biliapi.refresh_token
+            with open(path,'w',encoding='utf-8') as fp:
+                dump(userData, fp, ensure_ascii=False, indent=4)
+        elif userData["username"] and \
+            userData["password"] and \
+            biliapi.login_by_password(userData["username"], userData["password"]):
+            userData["SESSDATA"] = biliapi.SESSDATA
+            userData["bili_jct"] = biliapi.bili_jct
+            userData["access_token"] = biliapi.access_token
+            userData["refresh_token"] = biliapi.refresh_token
+            with open(path,'w',encoding='utf-8') as fp:
+                dump(userData, fp, ensure_ascii=False, indent=4)
+        else:
+            print("当前处于未登录状态")
     else:
-        tasks = get_input_tasks()
+        print("当前处于未登录状态")
+
+    video_parser = VideoParser(biliapi=biliapi)
+    if kwargs["tasklist"]:
+        tasks = get_arg_tasks(video_parser, kwargs["tasklist"])
+    else:
+        tasks = get_input_tasks(video_parser)
+    del video_parser
+
     if kwargs["ass"]:
         download_danmu(tasks, kwargs["path"])
 
@@ -162,7 +195,7 @@ def main(*args, **kwargs):
 if __name__=="__main__":
     kwargs = {
        "tasklist": [],
-       "path": './',
+       "path": '.',
        "ass": False
         }
     episode, quality, proxy, video = [], [], [], []
@@ -181,7 +214,7 @@ if __name__=="__main__":
             print(' -h --help      显示帮助信息')
             exit()
         elif opt in ('-V','--version'):
-            print('B站视频下载器 videoDownloader v1.1.9')
+            print('B站视频下载器 videoDownloader v1.2.0')
             exit()
         elif opt in ('-p','--path'):
             kwargs["path"] = arg.replace(r'\\', '/')

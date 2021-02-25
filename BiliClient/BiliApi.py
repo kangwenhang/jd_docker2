@@ -1,22 +1,52 @@
 # -*- coding: utf-8 -*-
-import requests, json, re
+from requests.sessions import Session
+import requests, json, re, time
+from _io import BufferedReader
+from urllib.parse import quote, quote_plus
+from typing import Union, Mapping, Sequence
+try:
+    import rsa
+except:
+    ...
+else:
+    import hashlib, base64
+    APPKEY = 'aae92bc66f3edfab'
+    APPSECRET = 'af125a0d5279fd576c1b4418a3e8276d'
 
 class BiliApi(object):
     "B站api接口"
 
     def __init__(self):
         #创建session
-        self._session = requests.sessions.Session()
+        self._session = Session()
         #设置header
-        self._session.headers.update({"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/63.0.3239.108","Referer": "https://www.bilibili.com/",'Connection': 'keep-alive'})
+        self._session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/63.0.3239.108",
+                "Referer": "https://www.bilibili.com/",
+                'Connection': 'keep-alive'
+             }
+            )
         self._islogin = False
+        self._access_token = None
+        self._refresh_token = None
 
-    def login_by_cookie(self, cookieData: dict) -> bool:
+    def login_by_cookie(self, 
+                        cookieData: Union[Mapping[str, str], Sequence[Mapping[str, str]]]
+                        ) -> bool:
         '''
         登录并获取账户信息
-        cookieData dict 账户cookie
+        cookieData Union[Mapping[str, str], Sequence[Mapping[str, str]]] 账户cookie
         '''
-        requests.utils.add_dict_to_cookiejar(self._session.cookies, cookieData)
+        cj = self._session.cookies
+        if isinstance(cookieData, Mapping):
+            for name in cookieData:
+                cj.set(name, cookieData[name])
+        elif isinstance(cookieData, Sequence):
+            for cookie in cookieData:
+                cj.set(**{k:v for k,v in cookie.items() if k in ("name", "value", "path", "domain", "expires", "secure")})
+        else:
+            raise ValueError('cookieData格式不正确')
         ret = self._session.get("https://api.bilibili.com/x/web-interface/nav").json()
         if ret["code"] != 0:
             return False
@@ -34,13 +64,120 @@ class BiliApi(object):
         self._verified = ret["data"]["mobile_verified"]
         self._coin = ret["data"]["money"]
         self._exp = ret["data"]["level_info"]["current_exp"]
-
-        code = BiliApi.likeCv(self, 7793107)["code"]
-        if code != 0 and code != 65006 and code != -404:
-            import warnings
-            warnings.warn(f'{self._name}:账号异常，请检查bili_jct参数是否有效或本账号是否被封禁')
-
         return True
+
+    def login_by_password(self, 
+                          username: str, 
+                          password: str
+                          ) -> bool:
+        '''
+        通过账号密码登录
+        username  str  账户名
+        password  str  账户密码
+        '''
+        hash, pubkey = BiliApi._getKey(self)
+        encrypted_password = BiliApi._encrypt_login_password(password, hash, pubkey)
+        url_encoded_username = quote_plus(username)
+        url_encoded_password = quote_plus(encrypted_password)
+
+        post_data = {
+            'appkey': APPKEY,
+            'password': url_encoded_password,
+            'platform': "pc",
+            'ts': int(time.time()),
+            'username': url_encoded_username
+        }
+
+        post_data['sign'] = BiliApi._sign_dict(post_data, APPSECRET)
+        post_data['username'] = username
+        post_data['password'] = encrypted_password
+
+        ret = self._session.post(
+            "https://passport.bilibili.com/api/oauth2/login",
+            data=post_data
+            ).json()
+
+        if ret["code"] != 0:
+            return False
+
+        self._access_token = ret["data"]['access_token']
+        self._refresh_token = ret["data"]['refresh_token']
+        self._uid = ret["data"]['mid']
+        return BiliApi.refreshToken(self)
+
+    def login_by_access_token(self, 
+                              access_token: str, 
+                              refresh_token: str = None,
+                              refreshToken: bool = False
+                              ) -> bool:
+        '''
+        通过access_token(可选refresh_token)登录
+        access_token  str  登录令牌，代表登录状态
+        refresh_token str  刷新令牌，负责刷新access_token
+        refreshToken  bool 是否马上刷新令牌，只有刷新令牌后才能得到cookie使用web接口，否则登录后只能使用app接口
+        '''
+        login_params = {
+            'appkey': APPKEY,
+            'access_token': access_token,
+            'platform': "pc",
+            'ts': int(time.time()),
+        }
+        login_params['sign'] = BiliApi._sign_dict(login_params, APPSECRET)
+
+        ret = self._session.get(
+            url="https://passport.bilibili.com/api/oauth2/info",
+            params=login_params
+        ).json()
+
+        if ret["code"] != 0:
+            return False
+
+        self._access_token = ret["data"]["access_token"]
+        self._refresh_token = refresh_token
+        self._uid = ret["data"]["mid"]
+
+        if refreshToken:
+            return BiliApi.refreshToken(self)
+        return True
+
+    def refreshToken(self, 
+                     access_token: str = None, 
+                     refresh_token: str = None
+                     ) -> bool:
+        '''
+        刷新当前令牌，并获得cookie
+        access_token  str  登录令牌，代表登录状态
+        refresh_token str  刷新令牌，负责刷新access_token
+        '''
+        if not access_token:
+            access_token = self._access_token
+        if not refresh_token:
+            refresh_token = self._refresh_token
+
+        if (not access_token) or (not refresh_token):
+            return False
+
+        post_data = {
+            'appkey': APPKEY,
+            'access_token': access_token,
+            'access_key': access_token,
+            'refresh_token': refresh_token,
+            'ts': int(time.time()),
+        }
+        post_data['sign'] = BiliApi._sign_dict(post_data, APPSECRET)
+
+        ret = self._session.post(
+            url="https://passport.bilibili.com/api/v2/oauth2/refresh_token",
+            data=post_data
+            ).json()
+
+        if 0 != ret["code"]:
+            return False
+
+        self._access_token = ret["data"]["token_info"]["access_token"]
+        self._refresh_token = ret["data"]["token_info"]["refresh_token"]
+        self._uid = ret["data"]["token_info"]["mid"]
+        return BiliApi.login_by_cookie(self, ret["data"]["cookie_info"]["cookies"])
 
     @property
     def islogin(self):
@@ -77,10 +214,30 @@ class BiliApi(object):
         '''获取登录账户的等级'''
         return self._level
 
-    def getReward(self):
-        "取B站经验信息"
-        url = "https://account.bilibili.com/home/reward"
-        return self._session.get(url).json()["data"]
+    @property
+    def access_token(self) -> str:
+        '''获取登录账户的access_token'''
+        return self._access_token
+
+    @property
+    def access_token(self) -> str:
+        '''获取登录账户的access_token'''
+        return self._access_token
+
+    @property
+    def refresh_token(self) -> str:
+        '''获取登录账户的access_token'''
+        return self._refresh_token
+
+    @property
+    def SESSDATA(self):
+        '''获取cookie SESSDATA'''
+        return self._session.cookies.get("SESSDATA", "")
+
+    @property
+    def bili_jct(self):
+        '''获取cookie bili_jct'''
+        return self._session.cookies.get("bili_jct", "")
 
     def getWebNav(self):
         "取导航信息"
@@ -186,7 +343,7 @@ class BiliApi(object):
 
     def report(self, aid, cid, progres):
         "B站上报观看进度"
-        url = "http://api.bilibili.com/x/v2/history/report"
+        url = "https://api.bilibili.com/x/v2/history/report"
         post_data = {
             "aid": aid,
             "cid": cid,
@@ -621,7 +778,12 @@ class BiliApi(object):
         "申请上传，返回上传信息"
         from urllib.parse import quote
         name = quote(filename)
-        url = f'https://member.bilibili.com/preupload?name={name}&size={filesize}&r=upos&profile={profile}&ssl=0&version=2.8.9&build=2080900&upcdn=bda2&probe_version=20200628'
+        url = f'https://member.bilibili.com/preupload?name={name}&size={filesize}&r=upos&profile={profile}&ssl=0&version=2.8.9&build=2080900&upcdn=bda2&probe_version=20200628&mid={self._uid}'
+        return self._session.get(url).json()
+
+    def videoPreuploadApp(self, profile='ugcfr%2Fpc3'):
+        '''申请上传，返回上传信息(APP端)'''
+        url = f'https://member.bilibili.com/preupload?access_key={self._access_token}&profile={profile}&mid={self._uid}'
         return self._session.get(url).json()
 
     def videoUploadId(self, url, auth):
@@ -629,10 +791,35 @@ class BiliApi(object):
         return self._session.post(f'{url}?uploads&output=json', headers={"X-Upos-Auth": auth}).json()
 
     def videoUpload(self, url, auth, upload_id, data, chunk, chunks, start, total):
-        "上传视频分块"
+        '''上传视频分块(web)'''
         size = len(data)
         end = start + size
         content = self._session.put(f'{url}?partNumber={chunk+1}&uploadId={upload_id}&chunk={chunk}&chunks={chunks}&size={size}&start={start}&end={end}&total={total}', data=data, headers={"X-Upos-Auth": auth})
+
+    def videoUploadApp(self, url, filename, data, md5, chunk, chunks, version='1.6.0.1006'):
+        '''上传视频分块(APP)'''
+        files = {
+            'version': (None, version),
+            'filesize': (None, len(data)),
+            'md5': (None, md5),
+            'chunk': (None, chunk),
+            'chunks': (None, chunks),
+            'file':(filename, data, 'application/octet-stream')
+            }
+        return self._session.post(url, files=files).json()
+        #{"OK": 1, "info": "Successful."}
+
+    def videoUploadCompleteApp(self, url, filename, filesize, md5, chunks, version='1.6.0.1006'):
+        '''上传视频分块完成(APP)'''
+        post_data = {
+            'version': (None, version),
+            'filesize': (None, filesize),
+            'name': (None, filename),
+            'md5': (None, md5),
+            'chunks': (None, chunks)
+            }
+        return self._session.post(url, post_data).json()
+        #{"OK": 1, "info": "Successful."}
 
     def videoUploadInfo(self, url, auth, parts, filename, upload_id, biz_id, profile='ugcupos%2Fbup'):
         "查询上传视频信息"
@@ -641,28 +828,45 @@ class BiliApi(object):
         return self._session.post(f'{url}?output=json&name={name}&profile={profile}&uploadId={upload_id}&biz_id={biz_id}', json={"parts":parts}, headers={"X-Upos-Auth": auth}).json()
 
     def videoRecovers(self, fns: '视频编号'):
-        "查询以前上传的视频信息"
+        "查询视频封面信息"
         url = f'https://member.bilibili.com/x/web/archive/recovers?fns={fns}'
         return self._session.get(url=url).json()
 
     def videoUpcover(self, cover: '封面图片base64字符串'):
-        "上传视频封面"
+        "上传视频封面(web端)"
         url = 'https://member.bilibili.com/x/vu/web/cover/up'
         post_data = {
             "cover": cover,
             "csrf": self._bili_jct
             }
-        return self._session.post(url=url, data=data).json()
+        return self._session.post(url=url, data=post_data).json()
+
+    def videoUpcoverApp(self, coverFile: '封面图片字节集或实现了read方法的文件对象'):
+        "上传视频封面(APP端)"
+        url = f'https://member.bilibili.com/x/vu/client/cover/up?access_key={self._access_token}'
+        files = {
+            "file": ("cover.png", coverFile)
+            }
+        return self._session.post(url=url, files=files).json()
 
     def videoTags(self, title: '视频标题', filename: "上传后的视频名称", typeid="", desc="", cover="", groupid=1, vfea=""):
-        "上传视频后获得推荐标签"
-        from urllib.parse import quote
-        url = f'https://member.bilibili.com/x/web/archive/tags?typeid={typeid}&title={quote(title)}&filename=filename&desc={desc}&cover={cover}&groupid={groupid}&vfea={vfea}'
+        "上传视频后获得推荐标签(web端)"
+        url = f'https://member.bilibili.com/x/web/archive/tags?typeid={typeid}&title={quote(title)}&filename=filename&desc={quote(desc)}&cover={cover}&groupid={groupid}&vfea={vfea}'
+        return self._session.get(url=url).json()
+
+    def videoTagsApp(self, title: '视频标题', typeid="", desc=""):
+        "获得视频推荐标签(APP端)"
+        url = f'https://member.bilibili.com/x/client/archive/tags?access_key={self._access_token}&typeid={typeid}&title={quote(title)}&desc={quote(desc)}&build=1006'
         return self._session.get(url=url).json()
 
     def videoAdd(self, videoData:"dict 视频参数"):
-        "发布视频"
+        "发布视频(web端)"
         url = f'https://member.bilibili.com/x/vu/web/add?csrf={self._bili_jct}'
+        return self._session.post(url, json=videoData).json()
+
+    def videoAddApp(self, videoData:"dict 视频参数"):
+        "发布视频(APP端)"
+        url = f'https://member.bilibili.com/x/vu/client/add?access_key={self._access_token}'
         return self._session.post(url, json=videoData).json()
 
     def videoPre(self):
@@ -965,32 +1169,28 @@ class BiliApi(object):
         #{"code":69801,"message":"你已领取过该权益","ttl":1}
         return self._session.post(url, data=post_data).json()
 
-    @staticmethod
-    def webView(bvid: str):
+    def webView(self, bvid: str):
         "通过bv号获取视频信息"
         url = f'https://api.bilibili.com/x/web-interface/view?bvid={bvid}'
-        return requests.get(url,headers={"User-Agent": "Mozilla/5.0","Referer": "https://www.bilibili.com/"}).json()
+        return self._session.get(url).json()
 
-    @staticmethod
-    def webStat(aid: int):
+    def webStat(self, aid: int):
         "通过av号获取视频信息"
         url = f'https://api.bilibili.com/x/web-interface/archive/stat?aid={aid}'
-        return requests.get(url,headers={"User-Agent": "Mozilla/5.0","Referer": "https://www.bilibili.com/"}).json()
+        return self._session.get(url).json()
 
-    @staticmethod
-    def playList(bvid='', aid=0):
+    def playList(self, bvid='', aid=0):
         "获取播放列表"
         if bvid:
             url = f'https://api.bilibili.com/x/player/pagelist?bvid={bvid}'
         elif aid:
             url = f'https://api.bilibili.com/x/player/pagelist?bvid={aid}'
-        return requests.get(url).json()
+        return self._session.get(url).json()
 
-    @staticmethod
-    def epPlayList(ep_or_ss: str):
+    def epPlayList(self, ep_or_ss: str):
         "获取番剧播放列表"
         url = f'https://www.bilibili.com/bangumi/play/{ep_or_ss}'
-        text = requests.get(url, headers={'User-Agent':'Mozilla/5.0'}).text
+        text = self._session.get(url, headers={'User-Agent':'Mozilla/5.0'}).text
         find = re.findall(r'window.__INITIAL_STATE__=({.*});\(function\(\)', text, re.S)
         return json.loads(find[0])
 
@@ -1264,6 +1464,50 @@ class BiliApi(object):
             r[s[i]] = table[aid//58**i%58]
         return ''.join(r)
         #return BiliApi.webStat(aid)["data"]["bvid"]
+
+    def _getKey(self):
+        '''获得登录秘钥'''
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': "application/json, text/javascript, */*; q=0.01"
+        }
+        post_data = {
+            'appkey': APPKEY,
+            'platform': "pc",
+            'ts': int(time.time())
+        }
+        post_data['sign'] = BiliApi._sign_dict(post_data, APPSECRET)
+
+        ret = self._session.post(
+            'https://passport.bilibili.com/api/oauth2/getKey',
+            headers=headers,
+            data=post_data
+            ).json()
+        assert 0 == ret["code"]
+
+        return ret["data"]["hash"], ret["data"]["key"]
+
+    @staticmethod
+    def _sign_str(data: str, app_secret: str):
+        return hashlib.md5((data + app_secret).encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _sign_dict(data: dict, app_secret: str):
+        data_str = []
+        keys = list(data.keys())
+        keys.sort()
+        for key in keys:
+            data_str.append("{}={}".format(key, data[key]))
+        data_str = "&".join(data_str)
+        data_str = data_str + app_secret
+        return hashlib.md5(data_str.encode("utf-8")).hexdigest()
+
+    @staticmethod
+    def _encrypt_login_password(password, hash, pubkey):
+        return base64.b64encode(rsa.encrypt(
+            (hash + password).encode('utf-8'),
+            rsa.PublicKey.load_pkcs1_openssl_pem(pubkey.encode()),
+        ))
 
     def close(self):
         '''关闭'''

@@ -1,34 +1,47 @@
 # -*- coding: utf-8 -*-
-from BiliClient import VideoUploader
+#from BiliClient import VideoUploaderWeb as VideoUploader    # 模拟网页端上传，支持多线程但不能分P
+from BiliClient import VideoUploaderApp  as VideoUploader    # 模拟APP端上传，支持分P但没有多线程
 from getopt import getopt
-import os, json, sys, re, time
+import os, sys, re, time
+from json import dump
+try:
+    from json5 import load
+except:
+    from json import load
+
+for path in ('./user.json', './config/user.json', '/etc/BiliExp/user.json', None):
+    if os.path.exists(path):
+        break
+if not path:
+    raise FileNotFoundError('未找到账户配置文件')
 
 def main(*args, **kwargs):
-    try:
-        if os.path.exists('./config.json'):
-            with open('./config.json','r',encoding='utf-8') as fp:
-                configData: dict = json.loads(re.sub(r'\/\*[\s\S]*?\*\/', '', fp.read()))
-        elif os.path.exists('./config/config.json'):
-            with open('./config/config.json','r',encoding='utf-8') as fp:
-                configData: dict = json.loads(re.sub(r'\/\*[\s\S]*?\*\/', '', fp.read()))
-        elif os.path.exists('/etc/BiliExp/config.json'):
-            with open('/etc/BiliExp/config.json','r',encoding='utf-8') as fp:
-                configData: dict = json.loads(re.sub(r'\/\*[\s\S]*?\*\/', '', fp.read()))
-        else:
-            raise FileNotFoundError('未找到账户配置文件')
-    except Exception as e: 
-        print(f'配置加载异常，原因为{str(e)}，退出程序')
-        sys.exit(6)
+    with open(path,'r',encoding='utf-8-sig') as fp:
+        userData = load(fp)
+
+    video_uploader = VideoUploader()
+    isLogin = False
+    if userData["access_token"] and \
+        video_uploader.login_by_access_token(userData["access_token"], userData["refresh_token"]):
+        ...
+    elif userData["username"] and \
+        userData["password"] and \
+        video_uploader.login_by_password(userData["username"], userData["password"]):
+        userData["access_token"] = video_uploader.access_token
+        userData["refresh_token"] = video_uploader.refresh_token
+        with open(path,'w',encoding='utf-8') as fp:
+            dump(userData, fp, ensure_ascii=False, indent=4)
+    else:
+        print("账户登录失败")
+        exit(6)
 
     if not kwargs["path"]:
         raise ValueError('未提供视频文件路径')
-    if not os.path.exists(kwargs["path"]):
-        raise FileNotFoundError(kwargs["path"])
     if kwargs["cover"] and not os.path.exists(kwargs["cover"]):
         raise FileNotFoundError(kwargs["cover"])
 
-    video_uploader = VideoUploader(configData["users"][0]["cookieDatas"])
-    video_uploader.setTid(kwargs["tid"])
+    if kwargs["tid"]:
+        video_uploader.setTid(kwargs["tid"])
     if kwargs["title"]:
         video_uploader.setTitle(kwargs["title"])
     if kwargs["desc"]:
@@ -43,38 +56,19 @@ def main(*args, **kwargs):
         video_uploader.setDtime(kwargs["dtime"])
 
     print('正在上传中.....')
-    if kwargs["singleThread"]:
-        video_info = video_uploader.uploadFileOneThread(kwargs["path"])
-    else:
-        video_info = video_uploader.uploadFile(kwargs["path"])
-    
-    if not video_info:
-        print('上传失败')
-        exit()
-
-    video_uploader.add(video_info)
+    for v in kwargs["path"]:
+        fname, fename = os.path.split(v)
+        video_info = video_uploader.uploadFileOneThread(v)
+        video_uploader.add(video_info)
+        print(f'上传"{fename}"成功')
 
     if kwargs["cover"]:
         video_uploader.setCover(kwargs["cover"])
-    else:
-        print('未设置封面，等待官方生成封面...')
-        i = 12
-        pics = []
-        while i:
-            time.sleep(10) #B站需要足够的时间来生成封面
-            try:
-                pics = video_uploader.recovers(video_info) #获取视频截图，刚上传的视频可能获取不到
-            except:
-                ...
-            if pics:
-                video_uploader.setCover(pics[0]) #设置视频封面
-                break
-            i -= 1
 
     if kwargs["tags"]:
         video_uploader.setTag(kwargs["tags"])
     else:
-        video_uploader.setTag(video_uploader.getTags(video_info)[0:1])
+        video_uploader.setTag(video_uploader.getTags()[0:1])
 
     result = video_uploader.submit()
     if result["code"] == 0:
@@ -84,7 +78,7 @@ def main(*args, **kwargs):
 
 if __name__=="__main__":
     kwargs = {
-        "path": None,
+        "path": [],
         "title": None,
         "desc": None,
         "cover": None,
@@ -92,7 +86,6 @@ if __name__=="__main__":
         "tags": None,
         "nonOriginal": False,
         "source": None,
-        "singleThread": False,
         "dtime": 0
         }
     opts, args = getopt(sys.argv[1:], "hVnSv:t:d:c:i:T:s:D:", ["help", "version", "nonOriginal", "singleThread", "videopath=", "title=", "desc=", "cover=", "tid=", "tags=", "source=", "DelayTime="])
@@ -108,16 +101,15 @@ if __name__=="__main__":
             print(' -n --nonOriginal   勾选转载，不指定本项默认为原创')
             print(' -s --source        -n参数存在时指定转载源视频网址')
             print(' -D --DelayTime     发布时间戳,10位整数,官方的延迟发布,时间戳距离现在必须大于4小时')
-            print(' -S --singleThread  单线程上传,如果出现上传失败时使用,不指定本项为3线程上传')
             print(' -V --version       显示版本信息')
             print(' -h --help          显示帮助信息')
             print('以上参数中只有-v --videopath为必选参数，其他均为可选参数')
             exit()
         elif opt in ('-V','--version'):
-            print('B站视频上传器 videoDownloader v1.1.9')
+            print('B站视频上传器 videoDownloader v1.2.0')
             exit()
         elif opt in ('-v','--videopath'):
-            kwargs["path"] = arg.replace(r'\\', '/')
+            kwargs["path"].append(arg)
         elif opt in ('-t','--title'):
             kwargs["title"] = arg
         elif opt in ('-d','--desc'):
@@ -132,8 +124,6 @@ if __name__=="__main__":
             kwargs["nonOriginal"] = True
         elif opt in ('-s','--source'):
             kwargs["source"] = arg
-        elif opt in ('-S','--singleThread'):
-            kwargs["singleThread"] = True
         elif opt in ('-D','--DelayTime'):
             kwargs["dtime"] = int(arg)
     main(**kwargs)

@@ -30,31 +30,25 @@ class MangaDownloader(object):
     '''B站漫画下载类'''
 
     DownloadCode = DownloadCode
+    login_by_cookie = bili.login_by_cookie
+    login_by_access_token = bili.login_by_access_token
+    login_by_password = bili.login_by_password
+    access_token = bili.access_token
+    refresh_token = bili.refresh_token
+    SESSDATA = bili.SESSDATA
+    bili_jct = bili.bili_jct
 
     def __init__(self, 
-                 comic_id: int = 0, 
-                 cookieData: dict = None
+                 comic_id: int = 0
                  ):
         '''
         comic_id    int   漫画id
-        cookieData  dict  账户cookie
         '''
         bili.__init__(self)
-        if cookieData:
-            bili.login_by_cookie(self, cookieData)
         if comic_id:
             self.setComicId(comic_id)
         else:
             self._manga_detail = None
-
-    def login_by_cookie(self, 
-                        cookieData: dict
-                        ) -> bool:
-        '''
-        使用cookie登录
-        cookieData  dict  账户cookie
-        '''
-        return bili.login_by_cookie(self, cookieData)
 
     def setComicId(self, comic_id: int) -> None:
         '''

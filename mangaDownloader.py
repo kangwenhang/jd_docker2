@@ -2,22 +2,15 @@
 from BiliClient import MangaDownloader
 import os, sys
 from getopt import getopt
+from json import dump
 try:
     from json5 import load
 except:
     from json import load
 
-if os.path.exists('./config.json'):
-    with open('./config.json','r',encoding='utf-8-sig') as fp:
-        configData = load(fp)
-elif os.path.exists('./config/config.json'):
-    with open('./config/config.json','r',encoding='utf-8-sig') as fp:
-        configData = load(fp)
-elif os.path.exists('/etc/BiliExp/config.json'):
-    with open('/etc/BiliExp/config.json','r',encoding='utf-8-sig') as fp:
-        configData = load(fp)
-else:
-    configData = None
+for path in ('./user.json', './config/user.json', '/etc/BiliExp/user.json', None):
+    if os.path.exists(path):
+        break
 
 def print_format(string, way, width, fill= ' ',ed = ''):
     count = 0
@@ -27,13 +20,14 @@ def print_format(string, way, width, fill= ' ',ed = ''):
     width = width-count if width>=count else 0
     print('{0:{1}{2}{3}}'.format(string,fill,way,width),end = ed,flush=True)
 
-def download_interactive():
+def download_interactive(mag: MangaDownloader):
     id = int(input('请输入B站漫画id(整数，不带mc前缀)：'))
     path = input('请输入保存路径(默认当前目录)：')
     pdf = input('下载后是否合并为一个pdf(y/n)：')
     if not path:
         path = os.getcwd()
-    mag = MangaDownloader(id, configData["users"][0]["cookieDatas"]) if configData else MangaDownloader(id)
+
+    mag.setComicId(id)
     print(f'开始下载漫画 "{mag.getTitle()}"')
     for ret in mag.downloadAll(path):
         print_format(ret.name, '<', 30)
@@ -60,12 +54,8 @@ def download_interactive():
         doc.save(path)
         print(f'文件保存至{path}')
 
-def download_task(task, path: str):
-    if configData:
-         mag = MangaDownloader(task[0], configData["users"][0]["cookieDatas"])
-    else:
-         mag = MangaDownloader(task[0])
-
+def download_task(mag: MangaDownloader, task, path: str):
+    mag.setComicId(task[0])
     title = mag.getTitle()
     print(f'开始下载漫画 "{title}"')
     if task[1] == 'a':
@@ -109,10 +99,40 @@ def download_task(task, path: str):
         print(f'文件保存至{path}')
 
 def main(*args, **kwargs):
-    if kwargs["task"][0]:
-        download_task(kwargs["task"], kwargs["path"])
+    manga = MangaDownloader()
+    if path:
+        with open(path,'r',encoding='utf-8-sig') as fp:
+            userData = load(fp)
+        if userData["SESSDATA"] and \
+           manga.login_by_cookie({"SESSDATA": userData["SESSDATA"]}):
+            ...
+        elif userData["access_token"] and \
+            userData["refresh_token"] and \
+            manga.login_by_access_token(userData["access_token"], userData["refresh_token"], True):
+            userData["SESSDATA"] = manga.SESSDATA
+            userData["bili_jct"] = manga.bili_jct
+            userData["access_token"] = manga.access_token
+            userData["refresh_token"] = manga.refresh_token
+            with open(path,'w',encoding='utf-8') as fp:
+                dump(userData, fp, ensure_ascii=False, indent=4)
+        elif userData["username"] and \
+            userData["password"] and \
+            manga.login_by_password(userData["username"], userData["password"]):
+            userData["SESSDATA"] = manga.SESSDATA
+            userData["bili_jct"] = manga.bili_jct
+            userData["access_token"] = manga.access_token
+            userData["refresh_token"] = manga.refresh_token
+            with open(path,'w',encoding='utf-8') as fp:
+                dump(userData, fp, ensure_ascii=False, indent=4)
+        else:
+            print("当前处于未登录状态")
     else:
-        download_interactive()
+        print("当前处于未登录状态")
+
+    if kwargs["task"][0]:
+        download_task(manga, kwargs["task"], kwargs["path"])
+    else:
+        download_interactive(manga)
 
 if __name__=="__main__":
     kwargs = {

@@ -66,15 +66,15 @@ BiliExp
 
 </br>[命令行视频投稿工具](#使用说明视频投稿部分)
 
-**三、B站漫画下载mangaDownloader.py**支持合并为单个pdf文件,允许使用账号cookie下载已解锁部分
-* [x] 支持使用账号cookie下载已解锁部分
+**三、B站漫画下载mangaDownloader.py**
+* [x] 支持使用账号密码登录下载已解锁部分
 * [x] 支持下载app端限时免费漫画(需登录)
 * [x] 支持合并为单个pdf文件
 </br>[快速使用](#使用方式下载器部分)
 </br>
 
 **四、B站视频下载videoDownloader.py**
-* [x] 支持使用账号cookie下载大会员视频
+* [x] 支持使用账号密码登录下载大会员视频
 * [x] 支持下载港澳台番剧(内置一个反向代理接口，接口源码见"player_proxy"文件夹，支持阿里/腾讯云函数部署此接口)
 * [x] 支持下载弹幕(转成ass字幕文件,需要用支持ass字幕的播放器打开,目前只支持滚动弹幕和顶部/底部弹幕,不支持高级弹幕)
 </br>[快速使用](#使用方式下载器部分)
@@ -320,9 +320,8 @@ BiliExp
 ## 使用方式(下载器部分)
 
 * 1.转至[release](https://github.com/happy888888/BiliExp/releases) ，下载BiliDownloader，解压。
-* 2.从浏览器获取SESSDATA，bili_jct，DedeUserID这三个参数 ([获得B站账户cookies方法](#获得cookies方法))
-* 3.将上述获取的三个参数填入config文件夹中的config.json文件(linux可将文件放入/etc/BiliExp/config.json)
-* 4.使用videoDownloader
+* 2.将账户密码填入config文件夹中的user.json文件(linux可将文件放入/etc/BiliExp/user.json)
+* 3.使用videoDownloader
     ```
 	命令行参数
 	videoDownloader -a -p <下载文件夹> -v <视频1> -e <分集数> -q <质量序号> -v <视频2> -e <分集数> -q <质量序号> ...
@@ -346,7 +345,7 @@ BiliExp
 	shell中执行
 	videoDownloader -v BV1qt411x7yQ -e 1-3,6 -p ~/download
 	```
-* 5.使用mangaDownloader
+* 4.使用mangaDownloader
     ```
 	命令行参数
 	mangaDownloader -p <下载文件夹> -m <漫画> -e <章节数> -f
@@ -372,9 +371,8 @@ BiliExp
 
 ## 使用说明(视频投稿部分)
 * 1.转至[release](https://github.com/happy888888/BiliExp/releases) ，下载videoUploader，解压。
-* 2.从浏览器获取SESSDATA，bili_jct，DedeUserID这三个参数 ([获得B站账户cookies方法](#获得cookies方法))
-* 3.将上述获取的三个参数填入config文件夹中的config.json文件(linux可将文件放入/etc/BiliExp/config.json)
-* 4.使用videoUploader
+* 2.将账户密码填入config文件夹中的user.json文件(linux可将文件放入/etc/BiliExp/user.json)
+* 3.使用videoUploader
     ```
 	命令行参数
 	VideoUploader -v <视频文件路径> -t <视频标题> -d <视频简介> -c <视频封面图片路径> -t <视频标签> -n -s <非原创时视频来源 网址>
@@ -387,7 +385,6 @@ BiliExp
 	-n --nonOriginal   勾选转载，不指定本项默认为原创
 	-s --source        -n参数存在时指定转载源视频网址
 	-D --DelayTime     发布时间戳,10位整数,官方的延迟发布,时间戳距离现在必须大于4小时
-	-S --singleThread  单线程上传,如果出现上传失败时使用,不指定本项为3线程上传
 	-V --version       显示版本信息
 	-h --help          显示帮助信息
 	以上参数中只有-v --videopath为必选参数，其他均为可选参数
@@ -406,6 +403,13 @@ BiliExp
 </br></br></br>
 
 ## 更新日志
+
+### 2021/02/26更新
+
+* 1.漫画视频下载，视频稿件上传功能支持账号密码登录
+* 2.视频稿件支持多P上传
+
+</br>
 
 ### 2021/01/19更新
 
