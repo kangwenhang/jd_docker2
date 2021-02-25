@@ -1,7 +1,7 @@
 const _request = require("../../../utils/request");
-const { scheduler } = require("../../../utils/scheduler");
+// const { scheduler } = require("../../../utils/scheduler");
 var start = async (params) => {
-  const { cookies, options } = params;
+  const { cookies, options, scheduler } = params;
 
   let init = async (request, savedCookies) => {
     if (!savedCookies) {

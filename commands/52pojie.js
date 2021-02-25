@@ -1,6 +1,6 @@
 const path = require("path");
-const { scheduler } = require("../utils/scheduler");
-
+// const { scheduler } = require("../utils/scheduler");
+const { createScheduler } = require("../utils/scheduler");
 exports.command = "52pojie";
 
 exports.describe = "52pojie签到任务";
@@ -45,6 +45,7 @@ exports.handler = async function (argv) {
   }
   console.log("总账户数", accounts.length);
   for (let account of accounts) {
+    let scheduler = createScheduler();
     await require(path.join(__dirname, "tasks", command, command))
       .start({
         cookies: {
@@ -52,6 +53,7 @@ exports.handler = async function (argv) {
           htVD_2132_saltkey: account.htVD_2132_saltkey,
         },
         options: {},
+        scheduler: scheduler,
       })
       .catch((err) => console.log("52pojie签到任务:", err.message));
     let hasTasks = await scheduler.hasWillTask(command, {

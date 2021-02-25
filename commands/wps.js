@@ -1,5 +1,5 @@
 const path = require("path");
-const { scheduler } = require("../utils/scheduler");
+const { createScheduler } = require("../utils/scheduler");
 
 exports.command = "wps";
 
@@ -45,6 +45,7 @@ exports.handler = async function (argv) {
   }
   console.log("总账户数", accounts.length);
   for (let account of accounts) {
+    let scheduler = createScheduler();
     await require(path.join(__dirname, "tasks", command, command))
       .start({
         cookies: {
@@ -54,6 +55,7 @@ exports.handler = async function (argv) {
         options: {},
       })
       .catch((err) => console.log("wps签到任务:", err.message));
+
     let hasTasks = await scheduler.hasWillTask(command, {
       tryrun: "tryrun" in argv,
       taskKey: account.wps_sid,
