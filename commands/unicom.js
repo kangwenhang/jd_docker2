@@ -1,6 +1,6 @@
 const path = require("path");
 const tasklist = require("../utils/observersion");
-const { scheduler } = require("../utils/scheduler");
+const { createScheduler } = require("../utils/scheduler");
 
 exports.command = "unicom";
 
@@ -70,6 +70,7 @@ exports.handler = async function (argv) {
       console.log(`账号${account.user.replaceWithMask(2, 3)}未完成任务汇总: `);
       console.log(tmp);
     } else {
+      let scheduler = createScheduler();
       await require(path.join(__dirname, "tasks", command, command))
         .start({
           cookies: account.cookies,
@@ -78,15 +79,17 @@ exports.handler = async function (argv) {
             user: account.user,
             password: account.password,
           },
+          scheduler: scheduler,
         })
         .catch((err) => console.log(" unicom任务:", err));
       let hasTasks = await scheduler.hasWillTask(command, {
         tryrun: "tryrun" in argv,
         taskKey: account.user,
       });
+
       if (hasTasks) {
         try {
-          await scheduler.execTask(command, account.tasks);
+          scheduler.execTask(command, account.tasks);
         } catch (err) {
           console.log("unicom任务:", err);
         } finally {

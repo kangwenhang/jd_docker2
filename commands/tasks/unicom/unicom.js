@@ -42,10 +42,10 @@
  *
  *
  */
-const { scheduler } = require("../../../utils/scheduler");
+//const { createScheduler } = require("../../../utils/scheduler");
 
 var start = async (params) => {
-  const { cookies, options } = params;
+  const { cookies, options, scheduler } = params;
 
   let init = async (request, savedCookies) => {
     await require("./init")(request, {
@@ -203,9 +203,9 @@ var start = async (params) => {
     },
     taskOption
   );
-  
- ///666积分补全。。。。
-    await scheduler.regTask(
+
+  ///666积分补全。。。。
+  await scheduler.regTask(
     "jflotteryad",
     async (request) => {
       await require("./jflotteryad.js").doTask(request, options);
