@@ -64,14 +64,16 @@ exports.handler = async function (argv) {
   console.log("总账户数", accounts.length);
   for (let account of accounts) {
     if (console.log) {
-      var old = console.log;
-      console.log = function () {
-        Array.prototype.unshift.call(
-          arguments,
-          `${account.user.replaceWithMask(2, 3)}:`
-        );
-        old.apply(this, arguments);
-      };
+      (() => {
+        let old = console.log;
+        console.log = function () {
+          Array.prototype.unshift.call(
+            arguments,
+            `${account.user.replaceWithMask(2, 3)}:`
+          );
+          old.apply(this, arguments);
+        };
+      })();
     }
     if ("leftTasks" in argv) {
       let tmp = tasklist
