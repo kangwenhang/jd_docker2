@@ -52,6 +52,7 @@ let getAccount = (data, cb = null) => {
   });
   return typeof cb === "function" ? cb(account) : account;
 };
+let old = console.log;
 exports.handler = async function (argv) {
   var command = argv._[0];
   var accounts = [];
@@ -65,7 +66,6 @@ exports.handler = async function (argv) {
   for (let account of accounts) {
     if (console.log) {
       (() => {
-        let old = console.log;
         console.log = function () {
           Array.prototype.unshift.call(
             arguments,
