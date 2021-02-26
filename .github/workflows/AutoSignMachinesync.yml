@@ -1,5 +1,5 @@
 # File: .github/workflows/repo-sync.yml
-name: sync-gys619/AutoSignMachine
+name: sync-DJ-clamp/BaseSation
 on:
   schedule:
     - cron: '1 0,15 * * *'
@@ -9,7 +9,7 @@ on:
   push:
     branches: [ dockerjs ]
   repository_dispatch:
-    types: sync-gys619/AutoSignMachine
+    types: sync-DJ-clamp/BaseSation
 jobs:
   repo-sync:
     env:
@@ -22,11 +22,11 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: sync-gys619/AutoSignMachine
+      - name: sync-DJ-clamp/BaseSation
         uses: repo-sync/github-sync@v2
         if: env.PAT
         with:
-          source_repo: "https://github.com/gys619/AutoSignMachine.git"
+          source_repo: "https://github.com/DJ-clamp/BaseSation.git"
           source_branch: "main"
           destination_branch: "AutoSignMachine"
           github_token: ${{ secrets.PAT }}
