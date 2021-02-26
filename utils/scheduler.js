@@ -118,8 +118,20 @@ function createScheduler() {
         }
 
         if (taskJson.queues.length !== Object.keys(tasks).length) {
-          console.log("📑 数量已变更，重新生成任务配置");
+          console.log("📑 任务数量已变更，重新调整任务配置");
           let queues = await scheduler.buildQueues();
+
+          for (let child of queues) {
+            for (let taskChild of taskJson.queues) {
+              if (child.taskName === taskChild.taskName) {
+                child.taskState = taskChild.taskState;
+                child.willTime = taskChild.willTime;
+                child.waitTime = taskChild.waitTime;
+                break;
+              }
+            }
+          }
+
           fs.writeFileSync(
             scheduler.taskFile,
             JSON.stringify({
