@@ -19,6 +19,7 @@
 ```
 -v /安装目录/jd/scripts2:/jd/scripts2 \ `# 此为py脚本目录 若需要加py脚本请添加至此目录`
 ```
+```
 -v /安装目录/jd/scripts3:/jd/scripts3 \ `# 此为其他js脚本目录`
 ```
 运行py脚本的方式
