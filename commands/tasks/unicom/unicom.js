@@ -180,6 +180,7 @@ var start = async (params) => {
       await require("./dailyVideoFreeGoods").doTask(request, options);
     },
     {
+      ...taskOption,
       isCircle: true,
       startTime: 10 * 3600,
       intervalTime: 4 * 3600,
@@ -487,7 +488,6 @@ var start = async (params) => {
       await require("./fetchCoins.js").doTask(request, options);
     },
     {
-      ...taskOption,
       ...taskOption,
       startTime: 21 * 3600,
       ignoreRelay: true,

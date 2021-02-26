@@ -11,6 +11,7 @@ const UNICOM_APPID = "UNICOM_APPID";
 String.prototype.replaceWithMask = function (start, end) {
   return this.substr(0, start) + "******" + this.substr(-end, end);
 };
+
 let env = require("dotenv").config({
   path: path.resolve(__dirname, "../config", ".env"),
 }).parsed;
@@ -62,6 +63,16 @@ exports.handler = async function (argv) {
   });
   console.log("总账户数", accounts.length);
   for (let account of accounts) {
+    if (console.log) {
+      var old = console.log;
+      console.log = function () {
+        Array.prototype.unshift.call(
+          arguments,
+          `${account.user.replaceWithMask(2, 3)}:`
+        );
+        old.apply(this, arguments);
+      };
+    }
     if ("leftTasks" in argv) {
       let tmp = tasklist
         .getTasks({ command: command, taskKey: account.user })
