@@ -51,6 +51,12 @@ else
   fi
 fi
 
+cd /tmp/BiliExp
+
+if [ -f "./Docker/init.sh" ]; then
+  /bin/sh "./Docker/init.sh";
+fi
+
 #执行代码
 if [ $daemon = "yes" ];then
   echo "$cron /usr/local/bin/python3 /tmp/BiliExp/BiliExp.py -c /BiliExp/config.json -l /BiliExp/BiliExp.log" > "/etc/crontabs/`whoami`"
@@ -59,5 +65,5 @@ if [ $daemon = "yes" ];then
     sleep 24h
   done
 else
-  python3 /tmp/BiliExp/BiliExp.py -c /BiliExp/config.json -l /BiliExp/BiliExp.log
+  /usr/local/bin/python3 BiliExp.py -c /BiliExp/config.json -l /BiliExp/BiliExp.log
 fi
