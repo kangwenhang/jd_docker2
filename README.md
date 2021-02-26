@@ -16,12 +16,14 @@
 ```
 -v /安装目录/jd/scripts:/jd/scripts `# 此为lxk大佬脚本目录` \ 
 ```
--v /安装目录/jd/scripts2:/jd/scripts2 `# 此为py脚本目录` \ 
+-v /安装目录/jd/scripts2:/jd/scripts2 `# 此为py脚本目录 若需要加py脚本请添加至此目录` \ 
 ```
 -v /安装目录/jd/scripts3:/jd/scripts3 `# 此为其他js脚本目录` \ 
 ```
 运行py脚本的方式
 ```
+docker exce -it jd bash jd xxx py
+具体请看sample中的docker.list.sample的cron的运行方式
 ```
 
 # 此镜像为分支项目，不定期开发，并不能保证及时更新，如有bug，请先反馈，然后切换至主项目版本。
