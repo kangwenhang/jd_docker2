@@ -13,7 +13,7 @@ String.prototype.replaceWithMask = function (start, end) {
 };
 
 let env = require("dotenv").config({
-  path: path.resolve(__dirname, "../config", ".env"),
+  path: path.resolve(__dirname, "/jd/config", ".env"),
 }).parsed;
 if (!env) {
   throw new Error("missing env file,please check it as well");
