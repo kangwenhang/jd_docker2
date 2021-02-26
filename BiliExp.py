@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import asyncio, time, logging, sys, io, os
+import encodings.idna
 from importlib import import_module
 from collections import OrderedDict
 from getopt import getopt

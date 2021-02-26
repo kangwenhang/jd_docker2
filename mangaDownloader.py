@@ -9,7 +9,7 @@ except:
     from json import load
 
 for path in ('./user.json', './config/user.json', '/etc/BiliExp/user.json', None):
-    if os.path.exists(path):
+    if path and os.path.exists(path):
         break
 
 def print_format(string, way, width, fill= ' ',ed = ''):

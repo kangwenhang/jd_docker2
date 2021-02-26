@@ -10,7 +10,7 @@ except:
     from json import load
 
 for path in ('./user.json', './config/user.json', '/etc/BiliExp/user.json', None):
-    if os.path.exists(path):
+    if path and os.path.exists(path):
         break
 if not path:
     raise FileNotFoundError('未找到账户配置文件')
