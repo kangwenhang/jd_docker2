@@ -154,7 +154,7 @@ class MangaDownloader(object):
                     else:
                         yield DownloadResult(DownloadCode.Ok, mlist[ii]['id'], title, name)
                 else:
-                    yield DownloadResult(DownloadCode.Locked, x['id'], title, name)
+                    yield DownloadResult(DownloadCode.Locked, mlist[ii]['id'], title, name)
         else:
             raise ValueError('index必须为整数或整数可迭代类型')
 
