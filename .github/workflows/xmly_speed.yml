@@ -27,6 +27,6 @@ jobs:
         if: env.PAT
         with:
           source_repo: "https://github.com/Zero-S1/xmly_speed.git"
-          source_branch: "azmodan"
-          destination_branch: "AutoSignMachine"
+          source_branch: "master"
+          destination_branch: "xmly_speed"
           github_token: ${{ secrets.PAT }}
