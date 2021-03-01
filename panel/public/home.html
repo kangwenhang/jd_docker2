@@ -31,6 +31,7 @@
                     <li><a href="./logout">退出</a></li>
                 </ul>
             </nav>
+            
             <header>
                 <h1>在线编辑工具</h1>
                 <button id="save" title="保存">保存 config.sh</button>
@@ -58,6 +59,12 @@
     <script>
         var qrcode, userCookie;
         $(document).ready(function () {
+            let timeStamp = (new Date()).getTime()
+            $.get("./checkAuthState?t="+timeStamp, function (data) {
+                if(data.err == 1){
+                    $("nav").after("<div id='notice'><span>"+data.msg+"</span></div>");
+                }
+            });
             var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
                 lineNumbers: true,
                 lineWrapping: true,
@@ -66,10 +73,12 @@
                 mode: 'shell',
                 theme: 'dracula'
             });
-            let timeStamp = (new Date()).getTime()
+            
             $.get("./api/config/config?t="+timeStamp, function (data) {
                 editor.setValue(data);
             });
+            
+            
 
             qrcode = new QRCode(document.getElementById("qrcode"),
                 {

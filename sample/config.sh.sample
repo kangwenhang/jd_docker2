@@ -1,6 +1,6 @@
-## Version: v3.27.0
-## Date: 2021-02-21
-## Update Content: 原lxk库改为私库；需要用的到秘钥拉取脚本，故重新构建了镜像，自动git_pull改为每天两次，每次拉取自动随机cron。
+## Version: v3.30.1
+## Date: 2021-02-28
+## Update Content: 同步e大代码增加惊喜财富岛互助（上次更新联通脚本，使用方法见末尾）。
 
 ## 上面版本号中，如果第2位数字有变化，那么代表增加了新的参数，如果只有第3位数字有变化，仅代表更新了注释，没有增加新的参数，可更新可不更新
 ## 如需更新，请参考WIKI（https://github.com/EvineDeng/jd-base/wiki）中"如何更新配置文件"部分的操作说明，进行智能比对后修改。
@@ -380,6 +380,24 @@ ForOtherGLOBAL4=""
 ForOtherGLOBAL5=""
 ForOtherGLOBAL6=""
 
+################################## 定义惊喜财富岛互助（选填） ##################################
+## 具体填法及要求详见本文件最下方“互助码填法示例”
+MyJdcfd1=""
+MyJdcfd2=""
+MyJdcfd3=""
+MyJdcfd4=""
+MyJdcfd5=""
+MyJdcfd6=""
+MyJdcfdA=""
+MyJdcfdB=""
+
+
+ForOtherJdcfd1=""
+ForOtherJdcfd2=""
+ForOtherJdcfd3=""
+ForOtherJdcfd4=""
+ForOtherJdcfd5=""
+ForOtherJdcfd6=""
 
 ################################## 定义东东超市蓝币兑换数量（选填） ##################################
 ## 东东超市蓝币兑换，可用值包括：
@@ -559,6 +577,9 @@ export PURCHASE_SHOPS=""
 ## 仓库下已经上传diy.sh模板，如果你想使用；可以参考本仓库下 diy.sh 文件；地址：https://raw.githubusercontent.com/dockere/jd-base/master/sample/diy.sh
 EnableExtraShell=""
 
+################################## 定义京喜财富岛通知（选填） ##################################
+## 输入true为通知,默认 "false",不填则为不通知
+export CFD_NOTIFY_CONTROL=""
 
 ################################## 互助码填法示例 ##################################
 ## **互助码是填在My系列变量中的，ForOther系统变量中只要填入My系列的变量名即可，按注释中的例子拼接，以东东农场为例，如下所示。**
@@ -593,3 +614,5 @@ export XMLY_SPEED_COOKIE=""
 ###############################联通，爱奇艺，bilibili，52pojie#############################
 ##请至config文件夹中相应的.json文件进行查看。参考仓库地址：https://github.com/kangwenhang/jd_docker2/tree/AutoSignMachine（非原仓库地址）
 ##注意：.json文件配置完成后请删除内容注释那一行。
+##联通脚本更新，请于config文件中创建.env文件并且填写参数（注意：联通的json文件不用配置，但不可以删除，必须保留并且删除第一行注释）
+##env文件参考：https://github.com/dockere/jd-base/blob/py/sample/.env.sample

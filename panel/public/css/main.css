@@ -210,6 +210,17 @@ nav .active a {
     cursor: pointer;
 }
 
+#notice{
+    margin-top: 1rem;
+    text-align: center;
+}
+#notice span{
+    background: crimson;
+    color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: inline-block;
+}
 @media screen and (max-width: 480px) {
 
     nav ul li a:link,
