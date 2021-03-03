@@ -616,3 +616,8 @@ export XMLY_SPEED_COOKIE=""
 ##注意：.json文件配置完成后请删除内容注释那一行。
 ##联通脚本更新，请于config文件中创建.env文件并且填写参数（注意：联通的json文件不用配置，但不可以删除，必须保留并且删除第一行注释）
 ##env文件参考：https://github.com/dockere/jd-base/blob/py/sample/.env.sample
+
+################################### 自定义py脚本 #########################################
+##自行添加脚本地址，以运行py脚本,使用方法如下：
+##diy2="${ScriptsDir2}/文件夹1 ${ScriptsDir2}/文件夹2"注意空格为英文字符，请勿使用中文字符。
+diy2="${ScriptsDir2}/xmly"

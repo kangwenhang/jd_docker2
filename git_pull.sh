@@ -24,8 +24,7 @@ ContentDropTask=${ShellDir}/drop_task
 SendCount=${ShellDir}/send_count
 isTermux=${ANDROID_RUNTIME_ROOT}${ANDROID_ROOT}
 ScriptsURL=git@gitee.com:lxk0301/jd_scripts
-ScriptsURL2=https://gitee.com/Zero-S1/xmly_speed
-ScriptsURL3=https://gitee.com/kangwenhang/jd_docker2
+ScriptsURL2=https://gitee.com/kangwenhang/jd_docker2
 ShellURL=https://gitee.com/kangwenhang/jd_docker2
 
 ## 更新crontab，gitee服务器同一时间限制5个链接，因此每个人更新代码必须错开时间，每次执行git_pull随机生成。
@@ -37,7 +36,10 @@ function Update_Cron {
     RanMin=$((${RANDOM} % 60))
     RanSleep=$((${RANDOM} % 56))
     H="${RanHour},${ranH}"
+    #git_pull随机cron
     perl -i -pe "s|.+(bash git_pull.+)|${RanMin} ${H} \* \* \* sleep ${RanSleep} && \1|" ${ListCron}
+    #美丽研究院分随机cron
+    perl -i -pe "s|1 7,12(.+jd_beauty\W*.*)|${ranH} 7,12\1|" ${ListCron}
     crontab ${ListCron}
   fi
 }
@@ -69,7 +71,7 @@ function Git_PullScripts {
 
 ## 克隆scripts2
 function Git_CloneScripts2 {
-  echo -e "克隆Zero-S1/xmly_speed脚本，地址：${ScriptsURL2}\n"
+  echo -e "克隆Zero-S1/xmly_speed脚本\n"
   git clone -b master ${ScriptsURL2} ${ScriptsDir2}
   ExitStatusScripts2=$?
   echo
@@ -77,7 +79,7 @@ function Git_CloneScripts2 {
 
 ## 更新scripts2
 function Git_PullScripts2 {
-  echo -e "更新Zero-S1/xmly_speed脚本，地址：${ScriptsURL2}\n"
+  echo -e "更新Zero-S1/xmly_speed脚本\n"
   cd ${ScriptsDir2}
   git fetch --all
   ExitStatusScripts2=$?
@@ -88,7 +90,7 @@ function Git_PullScripts2 {
 ## 克隆scripts2
 function Git_CloneScripts3 {
   echo -e "克隆AutoSignMachine脚本\n"
-  git clone -b AutoSignMachine ${ScriptsURL3} ${ScriptsDir3}
+  git clone -b AutoSignMachine ${ScriptsURL2} ${ScriptsDir3}
   ExitStatusScripts3=$?
   echo
 }
@@ -385,17 +387,17 @@ then
 else
   echo -e "\nshell脚本更新失败，请检查原因后再次运行git_pull.sh，或等待定时任务自动再次运行git_pull.sh...\n"
 fi
+
 ## 更新crontab
 [[ $(date "+%-H") -le 2 ]] && Update_Cron
+
 ## 克隆或更新js及py脚本
-if [ ${ExitStatusShell} -eq 0 ]; then
-  echo -e "--------------------------------------------------------------\n"
-  [ -f ${ScriptsDir}/package.json ] && PackageListOld=$(cat ${ScriptsDir}/package.json)
-  [ -f ${ScriptsDir3}/package.json ] && PackageListOld3=$(cat ${ScriptsDir3}/package.json)
-  [ -d ${ScriptsDir}/.git ] && Git_PullScripts || Git_CloneScripts
-  [ -d ${ScriptsDir2}/.git ] && Git_PullScripts2 || Git_CloneScripts2
-  [ -d ${ScriptsDir3}/.git ] && Git_PullScripts3 || Git_CloneScripts3
-fi
+[ -f ${ScriptsDir}/package.json ] && PackageListOld=$(cat ${ScriptsDir}/package.json)
+[ -f ${ScriptsDir3}/package.json ] && PackageListOld3=$(cat ${ScriptsDir3}/package.json)
+[ -d ${ScriptsDir}/.git ] && Git_PullScripts || Git_CloneScripts
+[ -d ${ScriptsDir2}/.git ] && Git_PullScripts2 || Git_CloneScripts2
+[ -d ${ScriptsDir3}/.git ] && Git_PullScripts3 || Git_CloneScripts3
+
 
 ## 执行lxk各函数
 if [[ ${ExitStatusScripts} -eq 0 ]]
