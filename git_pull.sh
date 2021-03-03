@@ -87,7 +87,7 @@ function Git_PullScripts2 {
   echo
 }
 
-## 克隆scripts2
+## 克隆scripts3
 function Git_CloneScripts3 {
   echo -e "克隆AutoSignMachine脚本\n"
   git clone -b AutoSignMachine ${ScriptsURL2} ${ScriptsDir3}
@@ -95,7 +95,7 @@ function Git_CloneScripts3 {
   echo
 }
 
-## 更新scripts2
+## 更新scripts3
 function Git_PullScripts3 {
   echo -e "更新AutoSignMachine脚本\n"
   cd ${ScriptsDir3}
