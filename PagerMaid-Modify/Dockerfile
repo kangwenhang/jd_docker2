@@ -1,7 +1,8 @@
 FROM ubuntu:latest
-RUN apt-get update -y \
-    apt-get install -y \
-    git \
+RUN sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list \
+&& apt-get clean \
+&& apt-get update \
+&& apt-get install -y install git \
     libffi \
     tesseract \
     openssl \
