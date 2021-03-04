@@ -2,7 +2,7 @@ name: "PagerMaid-Modify-docker"
 on:
   push:
     branches:
-      - dockerjs
+      - PagerMaid-Modify
   workflow_dispatch:
   watch:
         types: [started]
@@ -21,7 +21,6 @@ jobs:
         uses: ilteoood/docker_buildx@master
       - name: build
         with:
-          branches: PagerMaid-Modify
           publish: true
           imageName: k1483162508/tetelegarm
           dockerFile: Dockerfile
