@@ -19,7 +19,6 @@ jobs:
         uses: actions/checkout@master
       - name: Build and publish image
         uses: ilteoood/docker_buildx@master
-      - name: build
         with:
           publish: true
           imageName: k1483162508/tetelegarm
