@@ -2,7 +2,7 @@ name: "PagerMaid-Modify-docker"
 on:
   push:
     branches:
-      - PagerMaid-Modify
+      - dockerjs
   workflow_dispatch:
   watch:
         types: [started]
@@ -23,7 +23,7 @@ jobs:
         with:
           publish: true
           imageName: k1483162508/tetelegarm
-          dockerFile: Dockerfile
+          dockerFile: PagerMaid-Modify/Dockerfile
           platform: linux/amd64,linux/arm64,linux/arm/v7
           tag: Pagermaid
           dockerUser: ${{ secrets.DOCKER_USERNAME }}
