@@ -1,5 +1,7 @@
 FROM ubuntu:latest
-RUN sed -i ‘s/http:\/\/archive.ubuntu.com\/ubuntu\//http:\/\/mirrors.163.com\/ubuntu\//g’ /etc/apt/sources.list && apt-get update \
+RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
+&& sed -i s/security.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
+&& apt-get update && apt-get upgrade \
 && apt-get install -y git \
     libffi \
     tesseract \
