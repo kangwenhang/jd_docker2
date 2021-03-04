@@ -20,8 +20,8 @@ jobs:
       - name: Build and publish image
         uses: ilteoood/docker_buildx@master
       - name: build
-        uses: kangwenhang/jd_docker2@PagerMaid-Modify
         with:
+          branches: PagerMaid-Modify
           publish: true
           imageName: k1483162508/tetelegarm
           dockerFile: Dockerfile
