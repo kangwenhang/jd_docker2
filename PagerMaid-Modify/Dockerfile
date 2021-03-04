@@ -1,6 +1,6 @@
 FROM ubuntu:latest
-RUN apt-get update \
-&& apt-get install \
+RUN apt-get update -y \
+    apt-get install -y \
     git \
     libffi \
     tesseract \
@@ -30,14 +30,15 @@ RUN apt-get update \
     zbar \
     ffmpeg \
     file \
-    procps-ng
-RUN sed -e 's;^# \(%wheel.*NOPASSWD.*\);\1;g' -i /etc/sudoers
-RUN useradd pagermaid -r -m -d /pagermaid
-RUN usermod -aG wheel,users pagermaid
+    procps-ng \
+&& sed -e 's;^# \(%wheel.*NOPASSWD.*\);\1;g' -i /etc/sudoers \
+&& useradd pagermaid -r -m -d /pagermaid \
+&& usermod -aG wheel,users pagermaid 
 USER pagermaid
-RUN mkdir /pagermaid/workdir
-RUN git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir
+RUN mkdir /pagermaid/workdir \
+&& git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir \
+&& cd /pagermaid/workdir \
+&& python3 -m virtualenv venv \
+&& source venv/bin/activate; pip3 install -r requirements.txt
 WORKDIR /pagermaid/workdir
-RUN python3 -m virtualenv venv
-RUN source venv/bin/activate; pip3 install -r requirements.txt
 CMD ["sh","utils/docker-run.sh"]
