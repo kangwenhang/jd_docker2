@@ -12,7 +12,7 @@ RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
     sqlite \
     fortune-mod \
     figlet \
-    python-virtualenv \
+    python3-virtualenv \
     redis \
     libxslt \
     libxml2 \
