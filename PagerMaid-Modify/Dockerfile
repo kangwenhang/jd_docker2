@@ -10,12 +10,14 @@ RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
     figlet \
     python3 \
     redis \
-    libxml2 \
-    libxslt \
-    libxslt-devel \
+    libxml2-dev \
+    libxslt1-dev \
+    zlib1g-dev \
+    libevent-dev \
     curl \
     wget \
     neofetch \
+    libssl-dev3 \
     sudo \
     gcc \
     imagemagick \
