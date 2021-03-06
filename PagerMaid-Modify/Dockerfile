@@ -7,7 +7,7 @@ RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
     sqlite \
     fortune-mod \
     figlet \
-    python3 \
+    python3.8 \
     redis \
     libxml2-dev \
     libxslt1-dev \
