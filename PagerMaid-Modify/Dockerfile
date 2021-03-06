@@ -8,9 +8,11 @@ RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
     sqlite \
     fortune-mod \
     figlet \
-    python3-virtualenv \
+    python3 \
     redis \
     libxml2 \
+    libxslt \
+    libxslt-devel \
     curl \
     wget \
     neofetch \
