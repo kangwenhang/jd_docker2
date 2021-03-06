@@ -19,10 +19,8 @@ RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
     imagemagick \
     ffmpeg \
     file \
+    python3-pip \
 && sed -e 's;^# \(%wheel.*NOPASSWD.*\);\1;g' -i /etc/sudoers \
-&& useradd pagermaid -r -m -d /pagermaid \
-&& usermod -aG wheel,users pagermaid 
-USER pagermaid
 RUN mkdir /pagermaid/workdir \
 && git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir \
 && cd /pagermaid/workdir \
