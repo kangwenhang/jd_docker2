@@ -9,6 +9,7 @@ RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
     fortune-mod \
     figlet \
     python3 \
+    python \
     redis \
     libxml2-dev \
     libxslt1-dev \
@@ -17,7 +18,6 @@ RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
     curl \
     wget \
     neofetch \
-    libssl-dev3 \
     sudo \
     gcc \
     imagemagick \
