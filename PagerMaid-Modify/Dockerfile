@@ -2,7 +2,7 @@ FROM ubuntu:20.10
 RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
 && apt-get update && apt-get upgrade \
 && apt-get install -y git \
-    openssl \
+    openssl-dev \
     bzip2 \
     sqlite \
     fortune-mod \
@@ -13,6 +13,7 @@ RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
     libxslt1-dev \
     zlib1g-dev \
     libevent-dev \
+    libffi-dev \
     curl \
     wget \
     neofetch \
