@@ -21,7 +21,7 @@ RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
     file \
     python3-pip \
 && sed -e 's;^# \(%wheel.*NOPASSWD.*\);\1;g' -i /etc/sudoers \
-&& mkdir /pagermaid/workdir \
+&& mkdir -p /pagermaid/workdir \
 && git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir \
 && cd /pagermaid/workdir \
 && python3 -m virtualenv venv \
