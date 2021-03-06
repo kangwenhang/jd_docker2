@@ -1,12 +1,11 @@
-FROM python:3.6.13-alpine
+FROM ubuntu:20.04
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     LANG=zh_CN.UTF-8 \
     SHELL=/bin/bash \
     PS1="\u@\h:\w \$ " 
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
-    && apk update -f \
-    && apk upgrade \
-    && apk --no-cache add -f git \
+RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
+&& apt-get update && apt-get upgrade \
+&& apt-get install -y git \
     openssl \
     bzip2 \
     sqlite \
