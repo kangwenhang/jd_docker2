@@ -11,6 +11,7 @@ RUN source ~/.bashrc \
     && apt-get upgrade \
     && apt-get install -y tzdata \
     git \
+    libzbar-dev \
     apt-utils \
     openssl \
     bzip2 \
