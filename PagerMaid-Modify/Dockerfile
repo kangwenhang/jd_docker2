@@ -3,9 +3,11 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     LANG=zh_CN.UTF-8 \
     LC_ALL=C \
     SHELL=/bin/bash \
-    PS1="\u@\h:\w \$ " 
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update \
+    PS1="\u@\h:\w \$ " \
+    DEBIAN_FRONTEND=noninteractive
+SHELL ["/bin/bash", "-c"]
+RUN source ~/.bashrc \
+    && apt-get update \
     && apt-get upgrade \
     && apt-get install -y tzdata \
     git \
@@ -15,7 +17,7 @@ RUN apt-get update \
     sqlite \
     fortune-mod \
     figlet \
-    python3 \
+    python3.8 \
     redis \
     libxml2-dev \
     libxslt1-dev \
