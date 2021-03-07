@@ -1,17 +1,21 @@
-FROM ubuntu:20.04
+FROM ubuntu:20.10
 ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     LANG=zh_CN.UTF-8 \
+    LC_ALL=C \
     SHELL=/bin/bash \
     PS1="\u@\h:\w \$ " 
-RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
-&& apt-get update && apt-get upgrade \
-&& apt-get install -y git \
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get upgrade \
+    && apt-get install -y tzdata \
+    git \
+    apt-utils \
     openssl \
     bzip2 \
     sqlite \
     fortune-mod \
     figlet \
-    python3.8 \
+    python3 \
     redis \
     libxml2-dev \
     libxslt1-dev \
