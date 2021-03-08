@@ -7,43 +7,47 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 RUN source ~/.bashrc \
-    && apt-get update \
-    && apt-get upgrade \
-    && apt-get install -y tzdata \
+&&  sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list \
+&& sed -i s@/ports.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list \
+&& apt-get update \
+&& apt-get install -y tzdata \
     git \
+    python3.6 \
+    python3-pip \
+    imagemagick \
+    libzbar-dev \
+    fortune-mod \
+    neofetch \
+    tesseract-ocr \
+    gdebi \
+    ffmpeg \
+    file \
     net-tools \
     iputils-ping \
     iproute2 \
-    libzbar-dev \
     apt-utils \
     openssl \
     bzip2 \
     sqlite \
-    fortune-mod \
     figlet \
-    python3.8 \
     redis \
+    curl \
+    wget \
+    sudo \
     libxml2-dev \
     libxslt1-dev \
     zlib1g-dev \
     libevent-dev \
     libffi-dev \
-    curl \
-    wget \
-    neofetch \
-    sudo \
     gcc \
-    imagemagick \
-    ffmpeg \
-    file \
-    python3-pip \
-&& pip3 install virtualenv \
 && sed -e 's;^# \(%wheel.*NOPASSWD.*\);\1;g' -i /etc/sudoers \
 && mkdir -p /pagermaid/workdir \
 && git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir \
 && cd /pagermaid/workdir \
 && python3 -m virtualenv venv \
+&& pip3 install virtualenv \
 && source venv/bin/activate; pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt \
-&& apt-get clean
+&& apt-get autoremove -y libxml2-dev libxslt1-dev zlib1g-dev libevent-dev libffi-dev gcc \
+&& apt-get clean 
 WORKDIR /pagermaid/workdir
 CMD ["sh","utils/docker-run.sh"]
