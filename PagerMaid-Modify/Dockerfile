@@ -11,6 +11,9 @@ RUN source ~/.bashrc \
     && apt-get upgrade \
     && apt-get install -y tzdata \
     git \
+    net-tools \
+    iputils-ping \
+    iproute2 \
     libzbar-dev \
     apt-utils \
     openssl \
@@ -40,6 +43,7 @@ RUN source ~/.bashrc \
 && git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir \
 && cd /pagermaid/workdir \
 && python3 -m virtualenv venv \
-&& source venv/bin/activate; pip3 install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/ --trusted-host pypi.tuna.tsinghua.edu.cn 
+&& source venv/bin/activate; pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt \
+&& apt-get clean
 WORKDIR /pagermaid/workdir
 CMD ["sh","utils/docker-run.sh"]
