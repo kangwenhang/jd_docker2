@@ -40,6 +40,6 @@ RUN source ~/.bashrc \
 && git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir \
 && cd /pagermaid/workdir \
 && python3 -m virtualenv venv \
-    && source venv/bin/activate; pip3 install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/ --trusted-host pypi.tuna.tsinghua.edu.cn \
+&& source venv/bin/activate; pip3 install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple/ --trusted-host pypi.tuna.tsinghua.edu.cn 
 WORKDIR /pagermaid/workdir
 CMD ["sh","utils/docker-run.sh"]
