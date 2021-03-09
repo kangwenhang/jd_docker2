@@ -45,7 +45,6 @@ RUN source ~/.bashrc \
 && git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir \
 && cd /pagermaid/workdir \
 && python3 -m venv \
-&& pip3 install virtualenv \
 && source venv/bin/activate; pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt \
 && apt-get autoremove -y libxml2-dev libxslt1-dev zlib1g-dev libevent-dev libffi-dev gcc \
 && apt-get clean 
