@@ -7,8 +7,8 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 RUN source ~/.bashrc \
-&&  sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list \
-&& sed -i s@/ports.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list \
+&&  sed -i s@/archive.ubuntu.com/@/mirrors.163.com/@g /etc/apt/sources.list \
+&& sed -i s@/ports.ubuntu.com/@/mirrors.163.com/@g /etc/apt/sources.list \
 && apt-get update \
 && apt-get install -y tzdata \
     git \
