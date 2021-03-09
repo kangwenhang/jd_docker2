@@ -44,7 +44,8 @@ RUN source ~/.bashrc \
 && cd /pagermaid/workdir \
 && python3 -m venv \
 && source venv/bin/activate; pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt \
-&& apt-get autoremove -y libxml2-dev libxslt1-dev zlib1g-dev libevent-dev libffi-dev gcc \
-&& apt-get clean 
+&& apt-get clean \
+&& apt-get autoclean \
+&& rm -rf /var/lib/apt/lists/*
 WORKDIR /pagermaid/workdir
 CMD ["sh","utils/docker-run.sh"]
