@@ -39,10 +39,11 @@ RUN source ~/.bashrc \
     libffi-dev \
     gcc \
 && sed -e 's;^# \(%wheel.*NOPASSWD.*\);\1;g' -i /etc/sudoers \
-&& mkdir -p /pagermaid/workdir \
+&& mkdir -p /pagermaid/workdir /pagermaid/workdir/venv /pagermaid/workdir/venv/bin \
 && git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir \
 && cd /pagermaid/workdir \
 && pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt \
+&& ln -s /usr/bin /pagermaid/workdir/venv/bin \
 && apt-get clean \
 && apt-get autoclean \
 && rm -rf /var/lib/apt/lists/*
