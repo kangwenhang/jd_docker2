@@ -6,6 +6,7 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     PS1="\u@\h:\w \$ " \
     DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
+COPY /PagerMaid-Modify/docker-run.sh /root
 RUN source ~/.bashrc \
 && apt-get update \
 && apt-get install -y tzdata \
@@ -41,10 +42,9 @@ RUN source ~/.bashrc \
 && sed -e 's;^# \(%wheel.*NOPASSWD.*\);\1;g' -i /etc/sudoers \
 && mkdir -p /pagermaid/workdir \
 && git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir \
-&& mkdir -p /pagermaid/workdir/venv/bin \
+&& mv -f /root/docker-run.sh /pagermaid/workdir/utils/docker-run.sh \
 && cd /pagermaid/workdir \
 && pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt \
-&& ln -s /usr/bin /pagermaid/workdir/venv/bin \
 && apt-get clean \
 && apt-get autoclean \
 && rm -rf /var/lib/apt/lists/*
