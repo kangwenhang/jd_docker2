@@ -40,7 +40,7 @@ RUN source ~/.bashrc \
     gcc \
 && sed -e 's;^# \(%wheel.*NOPASSWD.*\);\1;g' -i /etc/sudoers \
 && mkdir -p /pagermaid/workdir \
-&& mkdir -p /pagermaid/workdir/venv/bin
+&& mkdir -p /pagermaid/workdir/venv/bin \
 && git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir \
 && cd /pagermaid/workdir \
 && pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt \
