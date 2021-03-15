@@ -60,14 +60,13 @@ configure() {
       ;;
     [nN][oO]|[nN])
       echo "安装过程继续 . . ."
+      cp -rf /pagermaid/workdir/config/config.yml /pagermaid/workdir/config.yml
       ;;
     *)
       echo "输入错误 . . ."
       exit 1
       ;;
   esac
-  cp -rf /pagermaid/workdir/config/config.yml /pagermaid/workdir/config.yml
-  exit
 }
 
 login() {
@@ -93,7 +92,6 @@ too() {
   cp -rf /pagermaid/workdir/config/pagermaid.session /pagermaid/workdir/pagermaid.session
   sleep 2
   echo "载入完成"
-  exit
 }
 
 start_installation() {
@@ -102,7 +100,7 @@ start_installation() {
     configure
     login
   else 
-    too &
+    too
     nohup redis-server &
     python3 -m pagermaid
   fi

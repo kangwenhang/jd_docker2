@@ -50,4 +50,4 @@ RUN source ~/.bashrc \
 && apt-get autoremove -y libxml2-dev libxslt1-dev zlib1g-dev libevent-dev libffi-dev gcc \
 && apt-get clean 
 WORKDIR /pagermaid/workdir
-CMD ["sh","utils/docker-run.sh"，"source venv/bin/activate"]
+CMD ["sh","utils/docker-run.sh"]
