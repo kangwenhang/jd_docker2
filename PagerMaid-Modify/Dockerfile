@@ -50,4 +50,4 @@ RUN source ~/.bashrc \
 && apt-get autoclean \
 && rm -rf /var/lib/apt/lists/*
 WORKDIR /pagermaid/workdir
-CMD ["sh","utils/docker-run.sh"]
+CMD ["/bin/bash"]

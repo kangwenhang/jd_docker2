@@ -10,10 +10,9 @@ welcome() {
 
 configure() {
   cd /pagermaid/workdir
-  config_file=config.yml
+  config_file=/pagermaid/workdir/config/config.yml
   echo "生成配置文件中 . . ."
-  cp -parents config.gen.yml /pagermaid/workdir/config/config.yml
-  ln -s /pagermaid/workdir/config/config.yml /pagermaid/workdir/config.yml
+  cp config.gen.yml /pagermaid/workdir/config/config.yml
   echo "api_key、api_hash 申请地址： https://my.telegram.org/"
   printf "请输入应用程序 api_key："
   read -r api_key <&1
@@ -67,6 +66,8 @@ configure() {
       exit 1
       ;;
   esac
+  cp -rf /pagermaid/workdir/config/config.yml /pagermaid/workdir/config.yml
+  exit
 }
 
 login() {
@@ -76,19 +77,32 @@ login() {
   echo ""
   sleep 2
   echo "Hello world!" > /pagermaid/workdir/config/install.lock
-  ln -s /pagermaid/workdir/config/install.lock /pagermaid/workdir/install.lock
+  cp -rf /pagermaid/workdir/config/install.lock /pagermaid/workdir/install.lock
   python3 -m pagermaid
-  ln -s /pagermaid/workdir/pagermaid.session /pagermaid/workdir/config/pagermaid.session
+  cp -rf /pagermaid/workdir/pagermaid.session /pagermaid/workdir/config/pagermaid.session
   exit
 }
 
+too() {
+  echo "载入配置"
+  sleep 2
+  cp -rf /pagermaid/workdir/config/config.yml /pagermaid/workdir/config.yml
+  sleep 2
+  cp -rf /pagermaid/workdir/config/install.lock /pagermaid/workdir/install.lock
+  sleep 2
+  cp -rf /pagermaid/workdir/config/pagermaid.session /pagermaid/workdir/pagermaid.session
+  sleep 2
+  echo "载入完成"
+  exit
+}
 
 start_installation() {
-  if [ ! -f "/pagermaid/workdir/install.lock" ];then
+  if [ ! -f "/pagermaid/workdir/config/install.lock" ];then
     welcome
     configure
     login
-  else
+  else 
+    too &
     nohup redis-server &
     python3 -m pagermaid
   fi
