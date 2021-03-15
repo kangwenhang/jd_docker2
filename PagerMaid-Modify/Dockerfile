@@ -45,6 +45,7 @@ RUN source ~/.bashrc \
 && mv -f /root/docker-run.sh /pagermaid/workdir/utils/docker-run.sh \
 && cd /pagermaid/workdir \
 && pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt \
+&& ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
 && apt-get clean \
 && apt-get autoclean \
 && rm -rf /var/lib/apt/lists/*
