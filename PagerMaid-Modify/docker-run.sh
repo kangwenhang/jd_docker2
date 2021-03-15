@@ -12,7 +12,8 @@ configure() {
   cd /pagermaid/workdir
   config_file=config.yml
   echo "生成配置文件中 . . ."
-  cp config.gen.yml config.yml
+  cp -parents config.gen.yml /pagermaid/workdir/config/config.yml
+  ln -s /pagermaid/workdir/config/config.yml /pagermaid/workdir/config.yml
   echo "api_key、api_hash 申请地址： https://my.telegram.org/"
   printf "请输入应用程序 api_key："
   read -r api_key <&1
@@ -74,8 +75,10 @@ login() {
   echo "请在账户授权完毕后，按 Ctrl + C 使 Docker 在后台模式下运行。"
   echo ""
   sleep 2
-  echo "Hello world!" > /pagermaid/workdir/install.lock
+  echo "Hello world!" > /pagermaid/workdir/config/install.lock
+  ln -s /pagermaid/workdir/config/install.lock /pagermaid/workdir/install.lock
   python3 -m pagermaid
+  ln -s /pagermaid/workdir/pagermaid.session /pagermaid/workdir/config/pagermaid.session
   exit
 }
 
