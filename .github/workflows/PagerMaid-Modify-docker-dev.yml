@@ -1,0 +1,29 @@
+name: "PagerMaid-Modify-docker-dev"
+on:
+  push:
+    branches:
+      - dockerjs
+  workflow_dispatch:
+  watch:
+        types: [started]
+  repository_dispatch:
+        types: build_image_telegram_dev
+  
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: PagerMaid-Modify
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@master
+      - name: Build and publish image
+        uses: ilteoood/docker_buildx@master
+        with:
+          publish: true
+          imageName: k1483162508/telegram
+          dockerFile: PagerMaid-Modify/Dockerfile
+          platform: linux/amd64,linux/arm64
+          tag: dev
+          dockerUser: ${{ secrets.DOCKER_USERNAME }}
+          dockerPassword: ${{ secrets.DOCKER_PASSWORD }}
