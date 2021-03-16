@@ -1,4 +1,4 @@
-name: "jd"
+name: "E-jd"
 on:
   push:
     branches:
@@ -7,7 +7,7 @@ on:
   watch:
         types: [started]
   repository_dispatch:
-        types: build_image_jd
+        types: build_image_E_jd
   
   
 jobs:
@@ -24,6 +24,6 @@ jobs:
           imageName: k1483162508/jd
           dockerFile: Edev/Dockerfile
           platform: linux/amd64,linux/arm64,linux/arm/v7
-          tag: dev
+          tag: E
           dockerUser: ${{ secrets.DOCKER_USERNAME }}
           dockerPassword: ${{ secrets.DOCKER_PASSWORD }}
