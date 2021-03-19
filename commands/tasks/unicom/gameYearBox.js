@@ -1,5 +1,6 @@
 
 const { default: PQueue } = require('p-queue');
+const { appInfo, buildUnicomUserAgent } = require('../../../utils/device')
 
 var transParams = (data) => {
     let params = new URLSearchParams();
@@ -9,10 +10,21 @@ var transParams = (data) => {
     return params;
 };
 
+function shuffle(arr) {
+    let length = arr.length, randomIndex, temp;
+    while (length) {
+        randomIndex = Math.floor(Math.random() * (length--));
+        temp = arr[randomIndex];
+        arr[randomIndex] = arr[length];
+        arr[length] = temp
+    }
+    return arr;
+}
+
 
 var gameYearBox = {
     games: async (axios, options) => {
-        const useragent = `Mozilla/5.0 (Linux; Android 7.1.2; SM-G977N Build/LMY48Z; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/75.0.3770.143 Mobile Safari/537.36; unicom{version:android@8.0100,desmobile:${options.user}};devicetype{deviceBrand:samsung,deviceModel:SM-G977N};{yw_code:}    `
+        const useragent = buildUnicomUserAgent(options, 'p')
         let { data, config } = await axios.request({
             headers: {
                 "user-agent": useragent,
@@ -23,17 +35,17 @@ var gameYearBox = {
             method: 'POST',
             data: transParams({
                 'methodType': 'games',
-                'clientVersion': '8.0102',
+                'clientVersion': appInfo.version,
                 'deviceType': 'Android'
             })
         })
         return {
-            games: data.data,
+            games: shuffle(data.data),
             jar: config.jar
         }
     },
     query_box_info: async (axios, options) => {
-        const useragent = `Mozilla/5.0 (Linux; Android 7.1.2; SM-G977N Build/LMY48Z; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/75.0.3770.143 Mobile Safari/537.36; unicom{version:android@8.0100,desmobile:${options.user}};devicetype{deviceBrand:samsung,deviceModel:SM-G977N};{yw_code:}    `
+        const useragent = buildUnicomUserAgent(options, 'p')
         let { data } = await axios.request({
             headers: {
                 "user-agent": useragent,
@@ -44,14 +56,18 @@ var gameYearBox = {
             method: 'POST',
             data: transParams({
                 'methodType': 'query_box_info',
-                'clientVersion': '8.0102',
+                'clientVersion': appInfo.version,
                 'deviceType': 'Android'
             })
         })
+        if(data.code !== '0'){
+            console.error(data.msg)
+            return {}
+        }
         return data.data
     },
     box_get_reward: async (axios, options) => {
-        const useragent = `Mozilla/5.0 (Linux; Android 7.1.2; SM-G977N Build/LMY48Z; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/75.0.3770.143 Mobile Safari/537.36; unicom{version:android@8.0100,desmobile:${options.user}};devicetype{deviceBrand:samsung,deviceModel:SM-G977N};{yw_code:}    `
+        const useragent = buildUnicomUserAgent(options, 'p')
         let { data } = await axios.request({
             headers: {
                 "user-agent": useragent,
@@ -62,15 +78,18 @@ var gameYearBox = {
             method: 'POST',
             data: transParams({
                 'methodType': 'box_get_reward',
-                'clientVersion': '8.0102',
+                'clientVersion': appInfo.version,
                 'deviceType': 'Android',
                 "boxFlag": options.boxFlag
             })
         })
         if (data.code === '0000') {
-            console.log(data.desc, data.data.reward_type, data.data.reward_val)
+            console.reward(data.data.reward_type, data.data.reward_val)
+            console.info(data.desc, data.data.reward_type, data.data.reward_val)
+            return true
         } else {
-            console.log(data.desc)
+            console.info(data.desc)
+            return false
         }
     },
     doTask: async (axios, options) => {
@@ -94,16 +113,16 @@ var gameYearBox = {
         }]
         for (let box of boxs) {
             if (boxinfo[box.name] === '0') {
-                console.log('领取宝箱中，尝试达成宝箱条件')
+                console.info('领取宝箱中，尝试达成宝箱条件')
                 let producGame = require('./producGame')
                 let { games, jar } = await gameYearBox.games(axios, options)
                 let queue = new PQueue({ concurrency: 2 });
-                console.log('调度任务中', '并发数', 2)
+                console.info('调度任务中', '并发数', 2)
                 let n = Math.floor((box.duration - parseInt(boxinfo.total_duration_num)) / 6) + 1
-                console.log('预计再游玩', n * 6, '分钟')
+                console.info('预计再游玩', n * 6, '分钟')
                 for (let game of games) {
                     queue.add(async () => {
-                        console.log(game.name)
+                        console.info(game.name)
                         await producGame.gameverify(axios, {
                             ...options,
                             jar,
@@ -129,18 +148,21 @@ var gameYearBox = {
                 }
                 await queue.onIdle()
                 await gameYearBox.query_box_info(axios, options)
-                await gameYearBox.box_get_reward(axios, {
+                let res = await gameYearBox.box_get_reward(axios, {
                     ...options,
                     boxFlag: box.boxFlag
                 })
+                if (!res) {
+                    throw new Error('领取失败，下轮再试')
+                }
             } else if (boxinfo[box.name] === '1') {
-                console.log('领取宝箱中')
+                console.info('领取宝箱中')
                 await gameYearBox.box_get_reward(axios, {
                     ...options,
                     boxFlag: box.boxFlag
                 })
             } else if (boxinfo[box.name] === '2') {
-                console.log('已领取，跳过')
+                console.info('已领取，跳过')
             }
         }
     }

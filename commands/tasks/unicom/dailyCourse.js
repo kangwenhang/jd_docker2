@@ -1,7 +1,7 @@
 
-const { buildUnicomUserAgent } = require('../../../utils/util')
+const { appInfo, buildUnicomUserAgent } = require('../../../utils/device')
 var crypto = require('crypto');
-
+const { signRewardVideoParams } = require('./CryptoUtil')
 var transParams = (data) => {
     let params = new URLSearchParams();
     for (let item in data) {
@@ -24,9 +24,9 @@ var dailyCourse = {
             headers: {
                 "user-agent": useragent,
                 // "accessToken": "Bearer df6a34af6cda4e2b8158898dda9810a2",
-                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=android%408.0100`,
+                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=${appInfo.unicom_version}`,
                 "jrPlatform": "10",
-                "X-Requested-With": "com.sinovatech.unicom.ui"
+                "X-Requested-With": appInfo.package_name
             },
             url: `https://edu.10155.com/wxxinterface/shouTing/shoutingAppLogin?jrPlatform=SHOUTING`,
             method: 'post',
@@ -45,9 +45,9 @@ var dailyCourse = {
             headers: {
                 "user-agent": useragent,
                 "accessToken": accessToken,
-                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=android%408.0100`,
+                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=${appInfo.unicom_version}`,
                 "jrPlatform": "10",
-                "X-Requested-With": "com.sinovatech.unicom.ui"
+                "X-Requested-With": appInfo.package_name
             },
             url: `https://edu.10155.com/wxxinterface/shouTing/detail?jrPlatform=SHOUTING`,
             method: 'get'
@@ -65,9 +65,9 @@ var dailyCourse = {
             headers: {
                 "user-agent": useragent,
                 "accessToken": accessToken,
-                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=android%408.0100`,
+                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=${appInfo.unicom_version}`,
                 "jrPlatform": "10",
-                "X-Requested-With": "com.sinovatech.unicom.ui"
+                "X-Requested-With": appInfo.package_name
             },
             url: `https://edu.10155.com/wxxinterface/course/detail?ocId=${ocId}&jrPlatform=SHOUTING`,
             method: 'get'
@@ -86,9 +86,9 @@ var dailyCourse = {
             headers: {
                 "user-agent": useragent,
                 "accessToken": accessToken,
-                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=android%408.0100`,
+                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=${appInfo.unicom_version}`,
                 "jrPlatform": "10",
-                "X-Requested-With": "com.sinovatech.unicom.ui"
+                "X-Requested-With": appInfo.package_name
             },
             url: `https://edu.10155.com/wxxinterface/shouTing/getFreeCourse?jrPlatform=SHOUTING`,
             method: 'post',
@@ -99,9 +99,9 @@ var dailyCourse = {
         })
 
         if (freedata.code === 200) {
-            console.log('获取课程成功')
+            console.info('获取课程成功')
         } else {
-            console.log('获取课程失败')
+            console.error('获取课程失败')
             return false
         }
 
@@ -109,18 +109,18 @@ var dailyCourse = {
             headers: {
                 "user-agent": useragent,
                 "accessToken": accessToken,
-                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=android%408.0100`,
+                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=${appInfo.unicom_version}`,
                 "jrPlatform": "10",
-                "X-Requested-With": "com.sinovatech.unicom.ui"
+                "X-Requested-With": appInfo.package_name
             },
             url: `https://edu.10155.com/wxxinterface/course/play?&ocId=${ocId}&ocsId=${ocsId}&jrPlatform=SHOUTING`,
             method: 'get'
         })
         if (data.code === 200) {
-            console.log('加入学习成功')
+            console.info('加入学习成功')
             return true
         } else {
-            console.log('加入学习失败')
+            console.error('加入学习失败')
             return false
         }
     },
@@ -147,19 +147,19 @@ var dailyCourse = {
             headers: {
                 "user-agent": useragent,
                 "accessToken": accessToken,
-                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=android%408.0100`,
+                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=${appInfo.unicom_version}`,
                 "jrPlatform": "10",
-                "X-Requested-With": "com.sinovatech.unicom.ui"
+                "X-Requested-With": appInfo.package_name
             },
             url: `https://edu.10155.com/wxxinterface/course/userStudyRecord?jrPlatform=SHOUTING`,
             method: 'post',
             data: transParams(params)
         })
         if (data.code === 200) {
-            console.log('上报时间成功')
+            console.info('上报时间成功')
             return true
         } else {
-            console.log('上报时间失败')
+            console.info('上报时间失败')
             return false
         }
     },
@@ -170,9 +170,9 @@ var dailyCourse = {
             headers: {
                 "user-agent": useragent,
                 accessToken,
-                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=android%408.0100`,
+                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=${appInfo.unicom_version}`,
                 "jrPlatform": "2",
-                "X-Requested-With": "com.sinovatech.unicom.ui"
+                "X-Requested-With": appInfo.package_name
             },
             url: `https://edu.10155.com/wxx-api/Api/ShoutingAct/enrollMulti`,
             method: 'post',
@@ -181,9 +181,9 @@ var dailyCourse = {
             })
         })
         if (data.code === 0) {
-            console.log('报名成功')
+            console.info('报名成功')
         } else {
-            console.log('报名失败')
+            console.error('报名失败')
         }
     },
     getStatus: async (axios, options) => {
@@ -193,9 +193,9 @@ var dailyCourse = {
             headers: {
                 "user-agent": useragent,
                 accessToken,
-                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=android%408.0100`,
+                "referer": `https://edu.10155.com/sthall/?jrPlatform=SHOUTING&envtag=sthall&chc=ByIGdlJ9V3JTYVFwUTM&stAppVersion=8&yw_code=&desmobile=${options.user}&version=${appInfo.unicom_version}`,
                 "jrPlatform": "2",
-                "X-Requested-With": "com.sinovatech.unicom.ui"
+                "X-Requested-With": appInfo.package_name
             },
             url: `https://edu.10155.com/wxx-api/Api/ShoutingAct/getUserActLog`,
             method: 'post',
@@ -219,7 +219,7 @@ var dailyCourse = {
         // enditme 1639152e6
         let phone = options.user
         if (['170', '171', '149', '162', '165', '167'].indexOf(phone.substr(0, 3)) !== -1) {
-            console.log('不支持该号码前缀', phone.substr(0, 3))
+            console.info('不支持该号码前缀', phone.substr(0, 3))
             return
         }
         let { accessToken, userInfo } = await dailyCourse.shoutingAppLogin(axios, options)
@@ -236,7 +236,7 @@ var dailyCourse = {
 
         // 1成功挑战，2中断连续
         if (status.info.sal_is_success === "1" || status.info.sal_is_success === "2") {
-            console.log('本次已结束，下次继续努力哦')
+            console.info('本次已结束，下次继续努力哦')
             return
         }
 
@@ -250,9 +250,9 @@ var dailyCourse = {
                 accessToken
             })
         } else if (state === 1) {
-            console.log('挑战状态', `已持续${status.info.sal_days}天`, `今日已学${new Number(status.time / 60).toFixed(1)}分钟`)
+            console.info('挑战状态', `已持续${status.info.sal_days}天`, `今日已学${new Number(status.time / 60).toFixed(1)}分钟`)
             if (status.time > 30 * 60) {
-                console.log('今日已学习超过30分钟，不再继续执行')
+                console.info('今日已学习超过30分钟，不再继续执行')
                 return
             }
         }
@@ -276,7 +276,7 @@ var dailyCourse = {
                 for (let chapter of chapters) {
                     let sections = chapter.sections
                     for (let section of sections) {
-                        console.log('上报时长', chapter.occName, section.ocsName)
+                        console.info('上报时长', chapter.occName, section.ocsName)
                         await dailyCourse.joinCourse(axios, {
                             ...options,
                             accessToken,
@@ -286,7 +286,7 @@ var dailyCourse = {
                         let n = Math.floor(section.ocsDuration / 15)
                         let i = 1
                         do {
-                            console.log(`第${i}次`)
+                            console.info(`第${i}次`)
                             await dailyCourse.reportTime(axios, {
                                 ...options,
                                 course,
@@ -298,7 +298,7 @@ var dailyCourse = {
                             await new Promise(resolve => setTimeout(resolve, 10 * (999 + Math.random() * 3)))
                             totaltime = totaltime + 15
                             if (totaltime >= maxtime) {
-                                console.log('今日看课30分钟已完成')
+                                console.info('今日看课30分钟已完成')
                                 return
                             }
                         } while ((++i) <= n)

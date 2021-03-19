@@ -1,0 +1,157 @@
+# see https://help.aliyun.com/document_detail/140283.html
+# see https://github.com/alibaba/funcraft/blob/master/docs/specs/2018-04-03-zh-cn.md
+
+# 阿里云函数计算
+# 执行时长不得超过600秒
+
+ROSTemplateFormatVersion: '2015-09-01'
+Transform: 'Aliyun::Serverless-2018-04-03'
+Resources:
+  local-asm:
+    Type: 'Aliyun::Serverless::Service'
+    Properties:
+      Description: '阿里云函数计算'
+    task1:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: tscf.main_handler
+        CodeUri: './'
+        Description: 'auto-sign-matchine'
+        Runtime: nodejs12
+        Timeout: 600
+        EnvironmentVariables:
+          cmd: 'unicom'
+          config: 'default.json'
+          tasks: 'dailysignin,winterTwo,dxIntegralEveryDay,dailygamebox,dailylotteryintegral,dailywoTree,dailyBookRead,dailyBookMemberDay,dailyRedbagRainVideoIntegral,dailyRedbagRain,dailyBookVideo,dailyBookLuckdraw,dailyLiuLan,dailyScratchCard,dailyNcow,dailyGrabdollPage,jflottery,dailyYYY,dailyVideoScratchcard,dailyLKMH,dailyYYQ,dailyVideo,dailylottery,producGameSignin,dailycomment,dailyBookAnswer,newYearUserSign,dailyFingerSign,dailyIngots,dailyShopVideoIntegral,dailyPackageIntegral,dailyUnicomTask,olympicgame,dailyClubLottery'
+      Events:
+        timer:
+          Type: Timer
+          Properties:
+            CronExpression: '0 10 9-10 * * *'
+            Enable: true
+    task2:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: tscf.main_handler
+        CodeUri: './'
+        Description: 'auto-sign-matchine'
+        Runtime: nodejs12
+        Timeout: 600
+        EnvironmentVariables:
+          cmd: 'unicom'
+          config: 'default.json'
+          tasks: 'dailygameflow'
+      Events:
+        timer:
+          Type: Timer
+          Properties:
+            CronExpression: '0 0/30 7-23 * * *'
+            Enable: true
+    task3:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: tscf.main_handler
+        CodeUri: './'
+        Description: 'auto-sign-matchine'
+        Runtime: nodejs12
+        Timeout: 600
+        EnvironmentVariables:
+          cmd: 'unicom'
+          config: 'default.json'
+          tasks: 'dailygameIntegral'
+      Events:
+        timer:
+          Type: Timer
+          Properties:
+            CronExpression: '0 0/30 7-23 * * *'
+            Enable: true
+    task4:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: tscf.main_handler
+        CodeUri: './'
+        Description: 'auto-sign-matchine'
+        Runtime: nodejs12
+        Timeout: 600
+        EnvironmentVariables:
+          cmd: 'unicom'
+          config: 'default.json'
+          tasks: 'gameYearBox'
+      Events:
+        timer:
+          Type: Timer
+          Properties:
+            CronExpression: '0 0/30 21-22 * * *'
+            Enable: true
+    task5:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: tscf.main_handler
+        CodeUri: './'
+        Description: 'auto-sign-matchine'
+        Runtime: nodejs12
+        Timeout: 600
+        EnvironmentVariables:
+          cmd: 'unicom'
+          config: 'default.json'
+          tasks: 'todayDailyTask'
+      Events:
+        timer:
+          Type: Timer
+          Properties:
+            CronExpression: '0 0/30 22 * * *'
+            Enable: true
+    task6:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: tscf.main_handler
+        CodeUri: './'
+        Description: 'auto-sign-matchine'
+        Runtime: nodejs12
+        Timeout: 600
+        EnvironmentVariables:
+          cmd: 'unicom'
+          config: 'default.json'
+          tasks: 'dailyOtherRewardVideo'
+      Events:
+        timer:
+          Type: Timer
+          Properties:
+            CronExpression: '0 0/30 22 * * *'
+            Enable: true
+    task7:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: tscf.main_handler
+        CodeUri: './'
+        Description: 'auto-sign-matchine'
+        Runtime: nodejs12
+        Timeout: 600
+        EnvironmentVariables:
+          cmd: 'unicom'
+          config: 'default.json'
+          tasks: 'exchangeDFlow'
+      Events:
+        timer:
+          Type: Timer
+          Properties:
+            CronExpression: '0 1 0 * * *'
+            Enable: true
+    task8:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Handler: tscf.main_handler
+        CodeUri: './'
+        Description: 'auto-sign-matchine'
+        Runtime: nodejs12
+        Timeout: 600
+        EnvironmentVariables:
+          cmd: 'unicom'
+          config: 'default.json'
+          tasks: 'exchangeDFlowCircle'
+      Events:
+        timer:
+          Type: Timer
+          Properties:
+            CronExpression: '0 0/30 1-23 * * *'
+            Enable: true

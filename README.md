@@ -1,2 +1,11 @@
-> Due to a third-party risk dispute, this script stopped sharing
-> 由于第三方风险争议，此脚本停止分享
+# beifei  
+##### 参数  
+| name | Value |  
+| --- | --- |  
+| UNICOM_USER | 手机号 |  
+| UNICOM_PASSWORD | 服务密码 |  
+| UNICOM_APPID | appid |  
+| UNICOM_USER | 手机号2 |  
+| UNICOM_PASSWORD | 服务密码2 |  
+| UNICOM_APPID | appid2 |  
+| NOTIFY_SCKEY | Server酱SendKey（可选） |

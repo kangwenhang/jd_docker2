@@ -1,3 +1,6 @@
+
+const { device, appInfo, buildUnicomUserAgent } = require('../../../utils/device')
+
 var transParams = (data) => {
   let params = new URLSearchParams();
   for (let item in data) {
@@ -7,8 +10,8 @@ var transParams = (data) => {
 };
 module.exports = {
   commentTask: async (axios, options) => {
-    const useragent = `Mozilla/5.0 (Linux; Android 7.1.2; SM-G977N Build/LMY48Z; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/75.0.3770.143 Mobile Safari/537.36; unicom{version:android@8.0100,desmobile:${options.user}};devicetype{deviceBrand:samsung,deviceModel:SM-G977N};{yw_code:}    `
-    console.log('尝试文章点赞')
+  const useragent = buildUnicomUserAgent(options, 'p')
+  console.info('尝试文章点赞')
     let result = await axios.request({
       baseURL: 'https://m.client.10010.com/',
       headers: {
@@ -23,7 +26,7 @@ module.exports = {
         pageSize: 10,
         reqChannel: '00'
       })
-    }).catch(err => console.log('获取文章数据失败'))
+    }).catch(err => console.error('获取文章数据失败'))
     if (!result || result.data.code !== '0000') {
       throw new Error('获取文章数据失败')
     }
@@ -91,7 +94,7 @@ module.exports = {
               'praisedMobile': comment.nickId,
               'newsId': newsId.id
             })
-          }).catch(() => console.log('文章点赞失败'))
+          }).catch(() => console.error('文章点赞失败'))
           // 进行点赞
           let result = await axios.request({
             baseURL: 'https://m.client.10010.com/',
@@ -110,14 +113,14 @@ module.exports = {
               'praisedMobile': comment.nickId,
               'newsId': newsId.id
             })
-          }).catch(() => console.log('文章点赞失败'))
+          }).catch(() => console.error('文章点赞失败'))
           if (!result || result.data.code !== '0000') {
-            console.log('文章评论点赞失败', result ? result.data.desc : '')
+            console.error('文章评论点赞失败', result ? result.data.desc : '')
           } else {
             if (result.data.growScore === '0') {
               break
             }
-            console.log('文章评论点赞成功')
+            console.info('文章评论点赞成功')
           }
         }
 
@@ -138,7 +141,7 @@ module.exports = {
             'reqChannel': 'quickNews',
             'reqId': newsId.id
           })
-        }).catch(() => console.log('文章点赞失败'))
+        }).catch(() => console.error('文章点赞失败'))
         // 进行点赞
         let result = await axios.request({
           baseURL: 'https://m.client.10010.com/',
@@ -155,20 +158,20 @@ module.exports = {
             'reqChannel': 'quickNews',
             'reqId': newsId.id
           })
-        }).catch(() => console.log('文章点赞失败'))
+        }).catch(() => console.error('文章点赞失败'))
         if (!result || result.data.code !== '0000') {
-          console.log('文章点赞失败', result ? result.data.desc : '')
+          console.error('文章点赞失败', result ? result.data.desc : '')
         } else {
           if (result.data.growScore === '0') {
             break
           }
-          console.log('文章点赞成功')
+          console.info('文章点赞成功')
         }
       }
       break
     }
 
-    console.log('尝试文章评论')
+    console.info('尝试文章评论')
     let n = 5
     do {
       let news = newsIds[newsIds.length - 1]
@@ -190,11 +193,11 @@ module.exports = {
           'subTitle': news.subTitle,
           'upLoadImgName': ''
         })
-      }).catch(() => console.log('保存评论失败'))
+      }).catch(() => console.error('保存评论失败'))
       if (!result || result.data.code !== '0000') {
-        console.log('保存评论失败', result ? result.data.desc : '')
+        console.error('保存评论失败', result ? result.data.desc : '')
       } else {
-        console.log('保存评论成功')
+        console.info('保存评论成功')
         result = await axios.request({
           baseURL: 'https://m.client.10010.com/',
           headers: {
@@ -209,11 +212,11 @@ module.exports = {
             'reqId': result.data.commentDetail.id,
             'type': '01'
           })
-        }).catch(() => console.log('删除评论失败'))
+        }).catch(() => console.error('删除评论失败'))
         if (!result || result.data.code !== '0000') {
-          console.log('保存评论成功', result ? result.data.desc : '')
+          console.error('删除评论失败', result ? result.data.desc : '')
         } else {
-          console.log('删除评论成功')
+          console.info('删除评论成功')
         }
       }
     } while (--n)

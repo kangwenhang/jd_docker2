@@ -24,7 +24,7 @@ const {
           let temp = [
             {
               activityId: "Ac-de644531df54410e875ba08ca2256b6a",
-              integral: 10,
+              integral: 1,
               roundGame: null,
               activityName: "",
             }, 

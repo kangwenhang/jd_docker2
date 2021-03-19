@@ -44,7 +44,7 @@ functions:
       variables:
         cmd: unicom
         config: default.json
-        tasks: dailysignin,winterTwo,dxIntegralEveryDay,dailygamebox,dailylotteryintegral,dailywoTree,dailyLiuLan,dailycomment,producGameSignin
+        tasks: dailysignin,winterTwo,dxIntegralEveryDay,dailygamebox,dailylotteryintegral,dailywoTree,dailyBookRead,dailyBookMemberDay,dailyRedbagRainVideoIntegral,dailyRedbagRain,dailyBookVideo,dailyBookLuckdraw,dailyLiuLan,dailyScratchCard,dailyNcow,dailyGrabdollPage,jflottery,dailyYYY,dailyVideoScratchcard,dailyLKMH,dailyYYQ,dailyVideo,dailylottery,producGameSignin,dailycomment,dailyBookAnswer,newYearUserSign,dailyFingerSign,dailyIngots,dailyShopVideoIntegral,dailyPackageIntegral,dailyUnicomTask,olympicgame,dailyClubLottery
     events:
      - timer:
         name: timer
@@ -92,10 +92,74 @@ functions:
       variables:
         cmd: unicom
         config: default.json
+        tasks: gameYearBox
+    events:
+     - timer:
+        name: timer
+        parameters:
+          cronExpression: '*/30 21-22 * * *'
+          enable: true
+  task5:
+    handler: tscf.main_handler
+    runtime: Nodejs12.16
+    memorySize: 256
+    timeout: 900
+    environment:
+      variables:
+        cmd: unicom
+        config: default.json
         tasks: todayDailyTask
     events:
      - timer:
         name: timer
         parameters:
           cronExpression: '*/30 22 * * *'
+          enable: true
+  task6:
+    handler: tscf.main_handler
+    runtime: Nodejs12.16
+    memorySize: 256
+    timeout: 900
+    environment:
+      variables:
+        cmd: unicom
+        config: default.json
+        tasks: dailyOtherRewardVideo
+    events:
+     - timer:
+        name: timer
+        parameters:
+          cronExpression: '*/30 22 * * *'
+          enable: true
+  task7:
+    handler: tscf.main_handler
+    runtime: Nodejs12.16
+    memorySize: 256
+    timeout: 900
+    environment:
+      variables:
+        cmd: unicom
+        config: default.json
+        tasks: exchangeDFlow
+    events:
+     - timer:
+        name: timer
+        parameters:
+          cronExpression: '1 0 * * *'
+          enable: true
+  task8:
+    handler: tscf.main_handler
+    runtime: Nodejs12.16
+    memorySize: 256
+    timeout: 900
+    environment:
+      variables:
+        cmd: unicom
+        config: default.json
+        tasks: exchangeDFlowCircle
+    events:
+     - timer:
+        name: timer
+        parameters:
+          cronExpression: '*/30 * * * *'
           enable: true
