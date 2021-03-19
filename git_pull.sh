@@ -24,9 +24,9 @@ ContentDropTask=${ShellDir}/drop_task
 SendCount=${ShellDir}/send_count
 isTermux=${ANDROID_RUNTIME_ROOT}${ANDROID_ROOT}
 ScriptsURL=git@gitee.com:lxk0301/jd_scripts
-ScriptsURL2=https://gitee.com/kangwenhang/jd_docker2
-ScriptsURL3=https://github.com/Zero-S1/xmly_speed
-ShellURL=https://gitee.com/kangwenhang/jd_docker2
+ScriptsURL2=https://github.com/Zero-S1/xmly_speed
+ScriptsURL3=https://github.com/kangwenhang/jd_docker2
+ShellURL=https://github.com/kangwenhang/jd_docker2
 
 ## 更新crontab，gitee服务器同一时间限制5个链接，因此每个人更新代码必须错开时间，每次执行git_pull随机生成。
 ## 每天只更新两次,(分.时.延迟)为随机cron
@@ -41,6 +41,8 @@ function Update_Cron {
     perl -i -pe "s|.+(bash git_pull.+)|${RanMin} ${H} \* \* \* sleep ${RanSleep} && \1|" ${ListCron}
     #美丽研究院分随机cron
     perl -i -pe "s|1 7,12(.+jd_beauty\W*.*)|${ranH} 7,12\1|" ${ListCron}
+    #修复joy_run错误cron
+    perl -i -pe "s|18 11,14(.+jd_joy_run\W*.*)|${RanHour} 9-20/2\1|" ${ListCron}
     crontab ${ListCron}
   fi
 }
@@ -72,15 +74,15 @@ function Git_PullScripts {
 
 ## 克隆scripts2
 function Git_CloneScripts2 {
-  echo -e "克隆Zero-S1/xmly_speed脚本\n"
-  git clone -b master ${ScriptsURL3} ${ScriptsDir2}
+  echo -e "克隆Zero-S1/xmly_speed脚本，地址：${ScriptsURL2}\n"
+  git clone -b master ${ScriptsURL2} ${ScriptsDir2}
   ExitStatusScripts2=$?
   echo
 }
 
 ## 更新scripts2
 function Git_PullScripts2 {
-  echo -e "更新Zero-S1/xmly_speed脚本\n"
+  echo -e "更新Zero-S1/xmly_speed脚本，地址：${ScriptsURL2}\n"
   cd ${ScriptsDir2}
   git fetch --all
   ExitStatusScripts2=$?
@@ -88,15 +90,15 @@ function Git_PullScripts2 {
   echo
 }
 
-## 克隆scripts3
+## 克隆scripts2
 function Git_CloneScripts3 {
   echo -e "克隆AutoSignMachine脚本\n"
-  git clone -b AutoSignMachine ${ScriptsURL2} ${ScriptsDir3}
+  git clone -b AutoSignMachine ${ScriptsURL3} ${ScriptsDir3}
   ExitStatusScripts3=$?
   echo
 }
 
-## 更新scripts3
+## 更新scripts2
 function Git_PullScripts3 {
   echo -e "更新AutoSignMachine脚本\n"
   cd ${ScriptsDir3}
@@ -127,10 +129,12 @@ function Change_JoyRunPins {
     CookieTemp=${!Tmp}
     PinTemp=$(echo ${CookieTemp} | perl -pe "{s|.*pt_pin=(.+);|\1|; s|%|\\\x|g}")
     PinTempFormat=$(printf ${PinTemp})
-    PinALL="${PinTempFormat},${PinALL}"
+    PinALL=",${PinTempFormat}${PinALL}"
     let j--
   done
-  perl -i -pe "{s|(let invite_pins = \[\")(.+\"\];?)|\1${PinALL}\2|; s|(let run_pins = \[\")(.+\"\];?)|\1${PinALL}\2|}" ${ScriptsDir}/jd_joy_run.js
+  PinEvine=",jd_nlGJfCMVydhw,5141779-21548625"
+  PinALL="${PinEvine}${PinALL}"
+  perl -i -pe "{s|(let invite_pins = \[\'.+)(\'\];?)|\1${PinALL}\2|; s|(let run_pins = \[\'.+)(\'\];?)|\1${PinALL}\2|}" ${ScriptsDir}/jd_joy_run.js
 }
 
 ## 修改lxk0301大佬js文件的函数汇总
@@ -139,7 +143,7 @@ function Change_ALL {
     . ${FileConf}
     if [ -n "${Cookie1}" ]; then
       Count_UserSum
-      Change_JoyRunPins
+   #   Change_JoyRunPins
     fi
   fi
 }
@@ -388,17 +392,17 @@ then
 else
   echo -e "\nshell脚本更新失败，请检查原因后再次运行git_pull.sh，或等待定时任务自动再次运行git_pull.sh...\n"
 fi
-
 ## 更新crontab
 [[ $(date "+%-H") -le 2 ]] && Update_Cron
-
 ## 克隆或更新js及py脚本
-[ -f ${ScriptsDir}/package.json ] && PackageListOld=$(cat ${ScriptsDir}/package.json)
-[ -f ${ScriptsDir3}/package.json ] && PackageListOld3=$(cat ${ScriptsDir3}/package.json)
-[ -d ${ScriptsDir}/.git ] && Git_PullScripts || Git_CloneScripts
-[ -d ${ScriptsDir2}/.git ] && Git_PullScripts2 || Git_CloneScripts2
-[ -d ${ScriptsDir3}/.git ] && Git_PullScripts3 || Git_CloneScripts3
-
+if [ ${ExitStatusShell} -eq 0 ]; then
+  echo -e "--------------------------------------------------------------\n"
+  [ -f ${ScriptsDir}/package.json ] && PackageListOld=$(cat ${ScriptsDir}/package.json)
+  [ -f ${ScriptsDir3}/package.json ] && PackageListOld3=$(cat ${ScriptsDir3}/package.json)
+  [ -d ${ScriptsDir}/.git ] && Git_PullScripts || Git_CloneScripts
+  [ -d ${ScriptsDir2}/.git ] && Git_PullScripts2 || Git_CloneScripts2
+  [ -d ${ScriptsDir3}/.git ] && Git_PullScripts3 || Git_CloneScripts3
+fi
 
 ## 执行lxk各函数
 if [[ ${ExitStatusScripts} -eq 0 ]]

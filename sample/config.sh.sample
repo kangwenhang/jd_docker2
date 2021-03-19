@@ -618,12 +618,14 @@ EnableExtraShell=""
 ## 请在以下补充你需要用到的额外的环境变量，形式：export 变量名="变量值"
 
 ################################## 喜玛拉亚极速版 #########################################
-## 所需要的环境变量请去作者地址查看，因为是京东脚本为主，所以在京东缺失cookie的情况下此脚本也不会运行。仓库地址：https://github.com/Zero-S1/xmly_speed
+## 所需要的环境变量请去作者地址查看，因为是京东脚本为主，所以在京东缺失cookie的情况下此脚本也不会运行。(若只想运行此脚本，请随意填写一个京东cookie)
+## 仓库地址：https://github.com/Zero-S1/xmly_speed
 export XMLY_SPEED_COOKIE=""
 
 ###############################联通，爱奇艺，bilibili，52pojie#############################
-##请至config文件夹中相应的.json文件进行查看。参考仓库地址：https://github.com/kangwenhang/jd_docker2/tree/AutoSignMachine（非原仓库地址）
-##联通脚本更新49任务，请于下方填写参数。
+## 请至config文件夹中相应的.json文件进行查看。参考仓库地址：https://github.com/kangwenhang/jd_docker2/tree/AutoSignMachine（非原仓库地址）
+## 因为是京东脚本为主，所以在京东缺失cookie的情况下此脚本也不会运行。(若只想运行此脚本，请随意填写一个京东cookie)
+## 联通脚本更新49任务，请于下方填写参数。
 
 #联通脚本
 aus="2"
