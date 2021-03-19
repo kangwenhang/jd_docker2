@@ -1,6 +1,6 @@
-## Version: v3.30.1
-## Date: 2021-02-28
-## Update Content: 同步e大代码增加惊喜财富岛互助（上次更新联通脚本，使用方法见末尾）。
+## Version: v3.31.6
+## Date: 2021-3-8
+## Update Content: 更新联通49脚本，请于config.sh末尾填写相应参数。（上回更新：京小兑控制变量，宠汪汪自己内部账户互助变量,环球挑战赛互助变量。）
 
 ## 上面版本号中，如果第2位数字有变化，那么代表增加了新的参数，如果只有第3位数字有变化，仅代表更新了注释，没有增加新的参数，可更新可不更新
 ## 如需更新，请参考WIKI（https://github.com/EvineDeng/jd-base/wiki）中"如何更新配置文件"部分的操作说明，进行智能比对后修改。
@@ -560,6 +560,19 @@ export JDJOY_APPLYJDBEAN=""
 ## 口袋书店和东东小窝有些任务需要将商品加进购物车才能完成，默认 "false" 不做这些任务，如想做，请设置为 "true"
 export PURCHASE_SHOPS=""
 
+################################## 定义京喜财富岛通知（选填） ##################################
+## 输入true为通知,默认 "false",不填则为不通知
+export CFD_NOTIFY_CONTROL=""
+
+
+################################## 定义京小兑是否自动把抽奖卷兑换为兑币,（选填） ##################################
+## 输入true为自动兑换,不填则为不兑换
+export JD_JXD_EXCHANGE=""
+
+
+################################## 定义宠汪汪是否开启内部互助,（选填） ##################################
+## 输入true为开启内部互助,不填默认关闭
+export JOY_RUN_HELP_MYSELF=""
 
 ################################## Telegram 代理（选填） ##################################
 ## Telegram 代理的 IP，代理类型为 http，比如你代理是 http://127.0.0.1:1080，则填写 "127.0.0.1"
@@ -577,9 +590,6 @@ export PURCHASE_SHOPS=""
 ## 仓库下已经上传diy.sh模板，如果你想使用；可以参考本仓库下 diy.sh 文件；地址：https://raw.githubusercontent.com/dockere/jd-base/master/sample/diy.sh
 EnableExtraShell=""
 
-################################## 定义京喜财富岛通知（选填） ##################################
-## 输入true为通知,默认 "false",不填则为不通知
-export CFD_NOTIFY_CONTROL=""
 
 ################################## 互助码填法示例 ##################################
 ## **互助码是填在My系列变量中的，ForOther系统变量中只要填入My系列的变量名即可，按注释中的例子拼接，以东东农场为例，如下所示。**
@@ -613,11 +623,15 @@ export XMLY_SPEED_COOKIE=""
 
 ###############################联通，爱奇艺，bilibili，52pojie#############################
 ##请至config文件夹中相应的.json文件进行查看。参考仓库地址：https://github.com/kangwenhang/jd_docker2/tree/AutoSignMachine（非原仓库地址）
-##注意：.json文件配置完成后请删除内容注释那一行。
-##联通脚本更新，请于config文件中创建.env文件并且填写参数（注意：联通的json文件不用配置，但不可以删除，必须保留并且删除第一行注释）
-##env文件参考：https://github.com/dockere/jd-base/blob/py/sample/.env.sample
+##联通脚本更新49任务，请于下方填写参数。
 
-################################### 自定义py脚本 #########################################
-##自行添加脚本地址，以运行py脚本,使用方法如下：
-##diy2="${ScriptsDir2}/文件夹1 ${ScriptsDir2}/文件夹2"注意空格为英文字符，请勿使用中文字符。
-diy2="${ScriptsDir2}/xmly"
+#联通脚本
+aus="2"
+unicomcookies1=""
+unicomuser1=""
+unicompassword1=""
+unicomappid1=""
+unicomcookies2=""
+unicomuser2=""
+unicompassword2=""
+unicomappid2=""

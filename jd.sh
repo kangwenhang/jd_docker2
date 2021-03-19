@@ -116,6 +116,8 @@ function Combin_All {
   export JDSGMH_SHARECODES=$(Combin_Sub ForOtherSgmh "T022u_x3QRke_EnVIR_wnPEIcQCjVQmoaT5kRrbA@T0205KkcHkJujwKkXXy9wK9NCjVQmoaT5kRrbA@T012a1zrlZeWI-dHCjVQmoaT5kRrbA")
   #惊喜财富岛(jd_cfd.js)
   export JDCFD_SHARECODES=$(Combin_Sub ForOtherJdcfd "401DA52935EB84F3BDAC92C458E6B530888E1FAA1E33AF78C5315A97994F6CE6@53CD8B31D2CEDEFC5A39DBAFACD1553167EC7A3565A394D0C445F8CE8A78BD74")
+  #环球挑战赛(jd_global.js)
+  export JDGLOBAL_SHARECODES=$(Combin_Sub ForOtherGlobal "OTZwWkM3VnZUZlMxNko4Y1NxWjMwQXBReG1kbVFsV0JFKzNDZEIveXMvVT0=@U3Q4ZUgzalZMQjI5UitibjNNc0hidz09@TkFDcUEzQzZuMnpHYlArOElxVWFSUT09")
 }
 
 ## 转换JD_BEAN_SIGN_STOP_NOTIFY或JD_BEAN_SIGN_NOTIFY_SIMPLE
@@ -160,10 +162,9 @@ function Help {
   echo -e "js脚本的用法为："
   echo -e "1. bash ${HelpJd} xxx      # 如果设置了随机延迟并且当时时间不在0-2、30-31、59分内，将随机延迟一定秒数"
   echo -e "2. bash ${HelpJd} xxx now  # 无论是否设置了随机延迟，均立即运行"
-  echo -e "3. bash ${HelpJd} xxx py   # 运行pythone脚本"
-  echo -e "4. bash ${HelpJd} hangup   # 重启挂机程序"
-  echo -e "5. bash ${HelpJd} resetpwd # 重置控制面板用户名和密码"
-  echo -e "\n针对用法1、用法2中的\"xxx\"，无需输入后缀\".js\"，另外，如果前缀是\"jd_\"的话前缀也可以省略；方法3中后缀.py请省略。"
+  echo -e "3. bash ${HelpJd} hangup   # 重启挂机程序"
+  echo -e "4. bash ${HelpJd} resetpwd # 重置控制面板用户名和密码"
+  echo -e "\n针对用法1、用法2中的\"xxx\"，无需输入后缀\".js\"，另外，如果前缀是\"jd_\"的话前缀也可以省略。"
   echo -e "当前有以下脚本可以运行（仅列出以jd_、jr_、jx_开头的脚本）："
   cd ${ScriptsDir}
   for ((i=0; i<${#ListScripts[*]}; i++)); do
@@ -259,7 +260,7 @@ function Run_Normal2 {
   Import_Conf $1 && Detect_Cron
 
   FileNameTmp1=$(echo $1 | perl -pe "s|\.py||")
-  SeekDir="${diy2}"
+  SeekDir="${ScriptsDir2}"
   FileName=""
   WhichDir=""
 
@@ -288,15 +289,32 @@ function Run_Normal2 {
 
 #运行AutoSignMachine.js脚本
 function Run_Normal3 {
-  if [ -f ${ConfigDir}/$1.json ]; then
+    if [ -f ${ConfigDir}/$1.json ]; then
+      LogTime=$(date "+%Y-%m-%d-%H-%M-%S")
+      LogFile="${LogDir}/$1/${LogTime}.log"
+      [ ! -d ${LogDir}/$1 ] && mkdir -p ${LogDir}/$1
+      cd ${ScriptsDir3}
+      node ${Dir} $1 --config ${ConfigDir}/$1.json | tee ${LogFile}
+      else 
+       echo -e "\n配置文件不存在\n"
+    fi
+}
+
+#运行unicom脚本
+function Run_Normal4 {
+  Import_Conf $1 && Detect_Cron
+
+  for ((i=1; i<=${aus}; i++)); do
+    eval c='$'"unicomcookie$i"
+    eval U='$'"unicomuser$i"
+    eval P='$'"unicompassword$i"
+    eval A='$'"unicomappid$i"
     LogTime=$(date "+%Y-%m-%d-%H-%M-%S")
-    LogFile="${LogDir}/$1/${LogTime}.log"
-    [ ! -d ${LogDir}/$1 ] && mkdir -p ${LogDir}/$1
+    LogFile="${LogDir}/$1$i/${LogTime}.log"
+    [ ! -d ${LogDir}/$1$i ] && mkdir -p ${LogDir}/$1$i
     cd ${ScriptsDir3}
-    node ${Dir} $1 --config ${ConfigDir}/$1.json | tee ${LogFile}
-    else 
-      echo -e "\n配置文件不存在\n"
-  fi
+    node ${Dir} $1 --cookies ${C} --user ${U} --password ${P} --appid ${A} | tee ${LogFile}
+  done
 }
 
 ## 命令检测
@@ -317,7 +335,7 @@ case $# in
     elif [[ $1 == iqiyi ]]; then
       Run_Normal3 $1
     elif [[ $1 == unicom ]]; then
-      Run_Normal3 $1
+      Run_Normal4 $1
     else
       Run_Normal $1
     fi
