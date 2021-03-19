@@ -25,6 +25,7 @@ SendCount=${ShellDir}/send_count
 isTermux=${ANDROID_RUNTIME_ROOT}${ANDROID_ROOT}
 ScriptsURL=git@gitee.com:lxk0301/jd_scripts
 ScriptsURL2=https://gitee.com/kangwenhang/jd_docker2
+ScriptsURL3=https://github.com/Zero-S1/xmly_speed
 ShellURL=https://gitee.com/kangwenhang/jd_docker2
 
 ## 更新crontab，gitee服务器同一时间限制5个链接，因此每个人更新代码必须错开时间，每次执行git_pull随机生成。
@@ -72,7 +73,7 @@ function Git_PullScripts {
 ## 克隆scripts2
 function Git_CloneScripts2 {
   echo -e "克隆Zero-S1/xmly_speed脚本\n"
-  git clone -b master ${ScriptsURL2} ${ScriptsDir2}
+  git clone -b master ${ScriptsURL3} ${ScriptsDir2}
   ExitStatusScripts2=$?
   echo
 }
