@@ -7,7 +7,7 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     DEBIAN_FRONTEND=noninteractive \
     prefix=-
 SHELL ["/bin/bash", "-c"]
-COPY ./diy/ /root
+COPY /PagerMaid-Modify/diy/ /root/diy/
 RUN source ~/.bashrc \
 && apt-get update \
 && apt-get install -y tzdata \
