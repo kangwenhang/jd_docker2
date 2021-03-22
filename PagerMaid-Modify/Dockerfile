@@ -4,7 +4,7 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     LC_ALL=C \
     SHELL=/bin/bash \
     PS1="\u@\h:\w \$ " \
-    DEBIAN_FRONTEND=noninteractive\
+    DEBIAN_FRONTEND=noninteractive \
     prefix=-
 SHELL ["/bin/bash", "-c"]
 COPY /PagerMaid-Modify/diy/ /root
