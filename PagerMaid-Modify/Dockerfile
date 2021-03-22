@@ -7,7 +7,7 @@ ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
     DEBIAN_FRONTEND=noninteractive\
     prefix=-
 SHELL ["/bin/bash", "-c"]
-COPY /PagerMaid-Modify/docker-run.sh /root
+COPY /PagerMaid-Modify/diy/ /root
 RUN source ~/.bashrc \
 && apt-get update \
 && apt-get install -y tzdata \
@@ -43,7 +43,8 @@ RUN source ~/.bashrc \
 && sed -e 's;^# \(%wheel.*NOPASSWD.*\);\1;g' -i /etc/sudoers \
 && mkdir -p /pagermaid/workdir \
 && git clone -b master https://github.com/xtaodada/PagerMaid-Modify.git /pagermaid/workdir \
-&& mv -f /root/docker-run.sh /pagermaid/workdir/utils/docker-run.sh \
+&& mv -f /root/diy/docker-run.sh /pagermaid/workdir/utils/docker-run.sh \
+&& mv -f /root/diy/listener.py /pagermaid/workdir/pagermaid/listener.py \
 && cd /pagermaid/workdir \
 && pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt \
 && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
