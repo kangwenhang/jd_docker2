@@ -19,7 +19,7 @@ let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
             if (ckstr.indexOf(',') < 0) {
                 cookies.push(ckstr);
             } else {
-                cookies = str.split(',');
+                cookies = ckstr.split(',');
             }
         }
     }
