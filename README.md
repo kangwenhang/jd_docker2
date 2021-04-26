@@ -6,7 +6,7 @@
 * cookie填写处 [jddj_cookie.js](https://github.com/717785320/-/blob/main/jddj_cookie.js) nodejs专用,手机运行请用boxjs填写cookie
 
 
-**特别声明:**  (可定制脚本)
+**特别声明:** 
  
 本仓库发布的Script项目中涉及的任何解锁和解密分析脚本，仅用于测试和学习研究，禁止用于商业用途，不能保证其合法性，准确性，完整性和有效性，请根据情况自行判断.
 
