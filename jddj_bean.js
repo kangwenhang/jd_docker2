@@ -16,7 +16,7 @@ let thiscookie = '', deviceid = '';
             if (ckstr.indexOf(',') < 0) {
                 cookies.push(ckstr);
             } else {
-                cookies = str.split(',');
+                cookies = ckstr.split(',');
             }
         }
     }
