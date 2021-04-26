@@ -12,11 +12,17 @@ let thiscookie = '', deviceid = '';
     if ($.env.isNode) cookies = require('./jddj_cookie.js');
     if (cookies.length == 0) {
         let ckstr = $.read('#jddj_cookies');
-        if (ckstr.indexOf(',') < 0) {
-            cookies.push(ckstr);
-        } else {
-            cookies = str.split(',');
+        if (!!ckstr) {
+            if (ckstr.indexOf(',') < 0) {
+                cookies.push(ckstr);
+            } else {
+                cookies = str.split(',');
+            }
         }
+    }
+    if (cookies.length == 0) {
+        console.log(`\r\n请先填写cookie`);
+        return;
     }
     for (let i = 0; i < cookies.length; i++) {
         console.log(`\r\n★★★★★开始执行第${i + 1}个账号,共${cookies.length}个账号★★★★★`);
