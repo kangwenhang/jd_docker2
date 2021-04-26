@@ -2,7 +2,7 @@
 //用抓包抓 https://daojia.jd.com/html/index.html 页面cookie填写到下面,暂时不知cookie有效期
 //抓多账号直接清除浏览器缓存再登录新账号,千万别点退出登录,否则cookie失效
 //cookie只要里面的deviceid_pdj_jd=xxx-xxx-xxx;o2o_m_h5_sid=xxx-xxx-xxx关键信息
-//8,11,16整点各运行一次
+//每五分钟一次
 //boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json
 
 const $ = new API("djgy_collectWater");
