@@ -6,7 +6,7 @@
 //boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json
 
 //[task_local]
-//*/5 * * * * https://gitee.com/passerby-b/javascript/raw/master/JD/jddj_fruit_collectWater.js
+//*/5 * * * * https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit_collectWater.js
 
 const $ = new API("djgy_collectWater");
 let cookies = [];
