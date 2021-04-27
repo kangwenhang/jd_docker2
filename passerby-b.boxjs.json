@@ -31,7 +31,7 @@
       ],
       "author": "@passerby-b",
       "repo": "https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json",
-      "script": "https://gitee.com/passerby-b/javascript/raw/master/JD/jddj_fruit.js"
+      "script": "https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit.js"
     },
     {
       "id": "jddj_bean",
@@ -59,7 +59,7 @@
       ],
       "author": "@passerby-b",
       "repo": "https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json",
-      "script": "https://gitee.com/passerby-b/javascript/raw/master/JD/jddj_bean.js"
+      "script": "https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_bean.js"
     },
     {
       "id": "jddj_plantBeans",
@@ -87,7 +87,7 @@
       ],
       "author": "@passerby-b",
       "repo": "https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json",
-      "script": "https://gitee.com/passerby-b/javascript/raw/master/JD/jddj_plantBeans.js"
+      "script": "https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_plantBeans.js"
     },
     {
       "id": "jddj_getPoints",
@@ -115,7 +115,7 @@
       ],
       "author": "@passerby-b",
       "repo": "https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json",
-      "script": "https://gitee.com/passerby-b/javascript/raw/master/JD/jddj_fruit_collectWater.js"
+      "script": "https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit_collectWater.js"
     },
     {
       "id": "jddj_fruit_collectWater",
@@ -143,7 +143,7 @@
       ],
       "author": "@passerby-b",
       "repo": "https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json",
-      "script": "https://gitee.com/passerby-b/javascript/raw/master/JD/jddj_fruit_collectWater.js"
+      "script": "https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit_collectWater.js"
     }
   ]
 }
