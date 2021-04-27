@@ -1,27 +1,31 @@
-//京东到家鲜豆庄园脚本,支持qx,loon,shadowrocket,surge,nodejs
-//用抓包抓 https://daojia.jd.com/html/index.html 页面cookie填写到下面,暂时不知cookie有效期
-//抓多账号直接清除浏览器缓存再登录新账号,千万别点退出登录,否则cookie失效
-//cookie只要里面的deviceid_pdj_jd=xxx-xxx-xxx;o2o_m_h5_sid=xxx-xxx-xxx关键信息
-//一天运行一次
-//boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json
+/*
+京东到家鲜豆庄园脚本,支持qx,loon,shadowrocket,surge,nodejs
+用抓包抓 https://daojia.jd.com/html/index.html 页面cookie填写到下面,暂时不知cookie有效期
+抓多账号直接清除浏览器缓存再登录新账号,千万别点退出登录,否则cookie失效
+cookie只要里面的deviceid_pdj_jd=xxx-xxx-xxx;o2o_m_h5_sid=xxx-xxx-xxx关键信息
+一天运行一次
+boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json
 
-const $ = new API("jddj_bean");
+[task_local]
+0 0 * * * https://gitee.com/passerby-b/javascript/raw/master/JD/jddj_plantBeans.js
+
+*/
+
+const $ = new API(" jddj_plantBeans");
 let cookies = [];
 let thiscookie = '', deviceid = '';
 let lat = '30.' + Math.round(Math.random() * (99999 - 10000) + 10000);
 let lng = '114.' + Math.round(Math.random() * (99999 - 10000) + 10000);
 let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
 !(async () => {
+    if ($.env.isNode) cookies = require('./jddj_cookie.js');
     if (cookies.length == 0) {
-        if ($.env.isNode) { delete require.cache['./jddj_cookie.js']; cookies = require('./jddj_cookie.js') }
-        else {
-            let ckstr = $.read('#jddj_cookies');
-            if (!!ckstr) {
-                if (ckstr.indexOf(',') < 0) {
-                    cookies.push(ckstr);
-                } else {
-                    cookies = ckstr.split(',');
-                }
+        let ckstr = $.read('#jddj_cookies');
+        if (!!ckstr) {
+            if (ckstr.indexOf(',') < 0) {
+                cookies.push(ckstr);
+            } else {
+                cookies = ckstr.split(',');
             }
         }
     }
@@ -30,7 +34,7 @@ let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
         return;
     }
     for (let i = 0; i < cookies.length; i++) {
-        console.log(`\r\n★★★★★开始执行第${i + 1}个账号,共${cookies.length}个账号★★★★★`);
+        console.log(`\n★★★★★开始执行第${i + 1}个账号,共${cookies.length}个账号★★★★★`);
         thiscookie = cookies[i];
         if (!thiscookie.trim()) continue;
 
@@ -42,9 +46,6 @@ let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
             }
         });
         deviceid = jsonlist.deviceid_pdj_jd;
-
-        await userinfo();
-        await $.wait(1000);
 
         let tslist = await taskList();
 
@@ -71,28 +72,6 @@ let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
     $.done();
 })
 
-//个人信息
-async function userinfo() {
-    return new Promise(async resolve => {
-        try {
-            let option = urlTask('https://daojia.jd.com/client?_jdrandom=' + Math.round(new Date()) + '&platCode=H5&appName=paidaojia&channel=&appVersion=8.7.6&jdDevice=&functionId=mine%2FgetUserAccountInfo&body=%7B%22refPageSource%22:%22%22,%22fromSource%22:2,%22pageSource%22:%22myinfo%22,%22ref%22:%22%22,%22ctp%22:%22myinfo%22%7D&jda=&traceId=' + deviceid + Math.round(new Date()) + '&deviceToken=' + deviceid + '&deviceId=' + deviceid + '', '')
-
-            $.http.get(option).then(response => {
-                let data = JSON.parse(response.body);
-                if (data.code == 0) {
-                    nickname = data.result.userInfo.userBaseInfo.nickName;
-                    console.log("●●●" + nickname + "●●●");
-                }
-            })
-            resolve();
-
-        } catch (error) {
-            console.log('\n【个人信息】:' + error);
-            resolve();
-        }
-    })
-}
-
 //任务列表
 async function taskList() {
     return new Promise(async resolve => {
@@ -109,6 +88,7 @@ async function taskList() {
             console.log('\n【任务列表】:' + error);
             resolve({});
         }
+
     })
 }
 
@@ -127,7 +107,9 @@ async function sign() {
             console.log('\n【庄园签到】:' + error);
             resolve();
         }
+
     })
+
 }
 
 //浇水
