@@ -48,6 +48,10 @@ let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
         deviceid = jsonlist.deviceid_pdj_jd;
 
         let tslist = await taskList();
+        if (tslist.code == 1) {
+            $.notify('第' + (i + 1) + '个账号cookie过期', '请访问https://daojia.jd.com/html/index.html抓取cookie', { url: 'https://daojia.jd.com/html/index.html' });
+            continue;
+        }
 
         await sign();
         await $.wait(1000);
