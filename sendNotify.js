@@ -4,7 +4,7 @@
  * @Last Modified by: LXK9301
  * @Last Modified time: 2021-1-7 17:52:54
  */
-const querystring = require("querystring");
+const querystring = require("querystring"); 
 const $ = new Env();
 // =======================================微信server酱通知设置区域===========================================
 //此处填你申请的SCKEY.
