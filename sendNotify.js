@@ -533,7 +533,7 @@ function qywxamNotify(text, desp) {
               msgtype: 'textcard',
               textcard: {
                 title: `${text}`,
-                description: `${desp}`,
+                description: `<div class=\"highlight\">${desp}</div>`,
                 url: 'https://github.com/lxk0301/jd_scripts',
                 btntxt: '更多'
               }
