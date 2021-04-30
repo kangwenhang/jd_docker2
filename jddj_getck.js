@@ -19,6 +19,7 @@ const $ = new API("jddj_getck");
                 }
             }
         });
+        $.write(ck, '#jddj_cookies');
         $.notify('京东到家脚本获取ck成功', '', ck);
         console.log(ck);
     }
