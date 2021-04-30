@@ -7,7 +7,7 @@ MITM添加:daojia.jd.com
 */
 const $ = new API("jddj_getck");
 !(async () => {
-    let ckstr = $request.headers;
+    let ckstr = $request.headers.Cookie;
     if (ckstr.indexOf('deviceid_pdj_jd') > -1 && ckstr.indexOf('o2o_m_h5_sid') > -1) {
         let ck = '';
         var params = ckstr.split(';');
