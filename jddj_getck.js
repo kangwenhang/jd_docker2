@@ -1,5 +1,5 @@
 /*
-京东到家获取ckj脚本
+京东到家获取Cookie脚本
 重写地址:daojia.jd.com/html/index.html,触发类型:request-headers
 MITM添加:daojia.jd.com
 每次获取会覆盖之前的ck,请先用boxjs备份
