@@ -12,7 +12,7 @@
         "jddj_cookies"
       ],
       "descs_html": [
-        "多个用逗号分开"
+        "多个用英文逗号(,)分开"
       ],
       "settings": [
         {
@@ -144,6 +144,20 @@
       "author": "@passerby-b",
       "repo": "https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json",
       "script": "https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit_collectWater.js"
+    },
+    {
+      "id": "dyjs",
+      "name": "抖音极速版刷音符",
+      "keys": ["dyheadlist"],
+      "descs_html": [],
+      "settings": [],
+      "icons": [
+        "https://gitee.com/passerby-b/javascript/raw/master/icon/dy.png",
+        "https://gitee.com/passerby-b/javascript/raw/master/icon/dy.png"
+      ],
+      "author": "@passerby-b",
+      "repo": "https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json",
+      "script": "https://gitee.com/passerby-b/javascript/raw/master/dyjs.js"
     }
   ]
 }
