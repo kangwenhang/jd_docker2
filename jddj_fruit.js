@@ -5,6 +5,7 @@
 cookie只要里面的deviceid_pdj_jd=xxx-xxx-xxx;o2o_m_h5_sid=xxx-xxx-xxx关键信息,填写整个cookie也是可以的
 手机设备在boxjs里填写cookie,nodejs在jddj_cookie.js文件里填写cookie
 boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json
+TG群:https://t.me/joinchat/wH4Ks3mT6mxiMDg1
 
 [task_local]
 10 0,8,11,17 * * * https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit.js
