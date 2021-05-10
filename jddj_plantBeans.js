@@ -9,7 +9,6 @@ TG群:https://t.me/passerbyb2021
 
 [task_local]
 0 0 * * * https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_plantBeans.js
-
 */
 
 const $ = new API("jddj_plantBeans");
