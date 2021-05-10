@@ -10,6 +10,10 @@ TG群:https://t.me/joinchat/wH4Ks3mT6mxiMDg1
 [task_local]
 0 0 * * * https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_bean.js
 
+================Loon==============
+[Script]
+cron "0 0 * * *" script-path=https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_bean.js,tag=京东到家鲜豆任务
+
 */
 
 const $ = new API("jddj_bean");
