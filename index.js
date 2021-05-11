@@ -1,9 +1,9 @@
-//云函数入口,需要运行什么脚本自己改名字
+//'use strict';
 exports.main_handler = async (event, context, callback) => {
-  try {
-    delete require.cache[require.resolve('./jddj_fruit.js')];
-    require('./jddj_fruit.js');
-  } catch (e) {
-    console.error(e)
-  }
+    for (const v of event["Message"].split("&")) {
+		//解决云函数热启动问题
+        delete require.cache[require.resolve(`./${v}.js`)];
+        console.log(v);
+        require(`./${v}.js`)
+    }
 }
