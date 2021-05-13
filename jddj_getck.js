@@ -4,25 +4,28 @@
 MITM添加:daojia.jd.com
 每次获取会覆盖之前的ck,请先用boxjs备份
 多账号可以每次获取后复制出来最后拼在一起用英文逗号(,)分隔后一起复制到boxjs里
-TG群:https://t.me/joinchat/wH4Ks3mT6mxiMDg1
 */
 const $ = new API("jddj_getck");
 !(async () => {
-    let ckstr = $request.headers.Cookie;
-    console.log($request.headers.Cookie);
-    if (ckstr.indexOf('deviceid_pdj_jd') > -1 && ckstr.indexOf('o2o_m_h5_sid') > -1) {
-        let ck = '';
-        var params = ckstr.split(';');
-        params.forEach(item => {
-            if (item.indexOf('=') > -1) {
-                if (item.indexOf('deviceid_pdj_jd') > -1 || item.indexOf('o2o_m_h5_sid') > -1) {
-                    ck += item + ';';
+    if ($.env.isNode) {
+        console.log('仅限iOS设备抓包用!');
+    }
+    else {
+        let ckstr = $request.headers.Cookie;
+        if (ckstr.indexOf('deviceid_pdj_jd') > -1 && ckstr.indexOf('o2o_m_h5_sid') > -1) {
+            let ck = '';
+            var params = ckstr.split(';');
+            params.forEach(item => {
+                if (item.indexOf('=') > -1) {
+                    if (item.indexOf('deviceid_pdj_jd') > -1 || item.indexOf('o2o_m_h5_sid') > -1) {
+                        ck += item + ';';
+                    }
                 }
-            }
-        });
-        $.write(ck, '#jddj_cookies');
-        $.notify('京东到家脚本获取ck成功', '', ck);
-        console.log(ck);
+            });
+            $.write(ck, '#jddj_cookies');
+            $.notify('京东到家脚本获取ck成功', '', ck);
+            console.log(ck);
+        }
     }
 
 })().catch((e) => {
