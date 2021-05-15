@@ -63,17 +63,17 @@ let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
             continue;
         }
 
-        await sign();
-        await $.wait(1000);
+        // await sign();
+        // await $.wait(1000);
 
         await getPoints();
-        await $.wait(1000);
+        // await $.wait(1000);
 
-        await runTask(tslist);
-        await $.wait(1000);
+        // await runTask(tslist);
+        // await $.wait(1000);
 
-        await watering();
-        await $.wait(1000);
+        // await watering();
+        // await $.wait(1000);
 
     }
 
@@ -176,24 +176,27 @@ async function getPoints() {
         try {
             let option = urlTask('https://daojia.jd.com/client?_jdrandom=' + Math.round(new Date()) + '&_funid_=plantBeans/getActivityInfo', 'functionId=plantBeans%2FgetActivityInfo&isNeedDealError=true&method=POST&body=%7B%7D&lat=' + lat + '&lng=' + lat + '&lat_pos=' + lat + '&lng_pos=' + lat + '&city_id=' + cityid + '&channel=ios&platform=6.6.0&platCode=h5&appVersion=6.6.0&appName=paidaojia&deviceModel=appmodel&traceId=' + deviceid + Math.round(new Date()) + '&deviceToken=' + deviceid + '&deviceId=' + deviceid);
 
-            let perid = '', nextid = ''; activityDay = '';
+            let perid = '', nextid = ''; activityDay = '', buttonId = '', points = 0;
             await $.http.post(option).then(response => {
+                //console.log(response.body);
                 let data = JSON.parse(response.body);
                 perid = data.result.pre.activityId;
                 nextid = data.result.next.activityId;
-                activityDay = data.result.cur.activityDay;
+                activityDay = data.result.pre.activityDay;
+                buttonId = data.result.pre.buttonId;
+                points = data.result.pre.points;
             })
 
             await $.wait(1000);
 
             var date = new Date();
             activityDay = activityDay.split('-')[1].split('.')[1];
-            if (date.getDate() == activityDay) {
+            if (buttonId == 1) {
                 option = urlTask('https://daojia.jd.com/client?_jdrandom=' + Math.round(new Date()), 'functionId=plantBeans%2FgetPoints&isNeedDealError=true&method=POST&body=%7B%22activityId%22%3A%22' + perid + '%22%7D&lat=' + lat + '&lng=' + lng + '&lat_pos=' + lat + '&lng_pos=' + lng + '&city_id=' + cityid + '&channel=ios&platform=6.6.0&platCode=h5&appVersion=6.6.0&appName=paidaojia&deviceModel=appmodel&traceId=' + deviceid + Math.round(new Date()) + '&deviceToken=' + deviceid + '&deviceId=' + deviceid + '');
 
                 await $.http.post(option).then(response => {
                     let data = JSON.parse(response.body);
-                    console.log('\n【一轮结束领鲜豆】:' + data.msg);
+                    console.log('\n【一轮结束领鲜豆】:' + data.msg + ',领取鲜豆:' + points);
                 })
 
                 await $.wait(1000);
@@ -204,6 +207,9 @@ async function getPoints() {
                     let data = JSON.parse(response.body);
                     console.log('\n【参加下一轮种鲜豆】:' + data.msg);
                 })
+            }
+            else{
+                console.log('\n【一轮结束领鲜豆】:已领取上轮鲜豆,领取鲜豆:' + points);
             }
 
         } catch (error) {
