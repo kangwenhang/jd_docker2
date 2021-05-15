@@ -63,17 +63,17 @@ let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
             continue;
         }
 
-        // await sign();
-        // await $.wait(1000);
+        await sign();
+        await $.wait(1000);
 
         await getPoints();
-        // await $.wait(1000);
+        await $.wait(1000);
 
-        // await runTask(tslist);
-        // await $.wait(1000);
+        await runTask(tslist);
+        await $.wait(1000);
 
-        // await watering();
-        // await $.wait(1000);
+        await watering();
+        await $.wait(1000);
 
     }
 
@@ -208,7 +208,7 @@ async function getPoints() {
                     console.log('\n【参加下一轮种鲜豆】:' + data.msg);
                 })
             }
-            else{
+            else {
                 console.log('\n【一轮结束领鲜豆】:已领取上轮鲜豆,领取鲜豆:' + points);
             }
 
