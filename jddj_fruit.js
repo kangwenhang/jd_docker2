@@ -17,18 +17,12 @@ let isNotify = true; //是否通知,仅限nodejs
 let ckPath = './jddj_cookie.js'; //ck路径 
 
 $.http.get({ url: 'https://purge.jsdelivr.net/gh/passerby-b/JDDJ@main/jddj_fruit_code.js' });
-$.http.get({ url: 'https://purge.jsdelivr.net/gh/passerby-b/JDDJ@main/jddj_fruit_code.js' });
 $.http.get({ url: 'https://cdn.jsdelivr.net/gh/passerby-b/JDDJ@main/jddj_fruit_code.js' }).then(response => {
     if (!response.body) {
         $.http.get({ url: 'https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit_code.js' }).then(response => {
-            if (!response.body) {
-                eval(response.body);
-            }
+            if (!response.body) eval(response.body);
         });
-    } else {
-        eval(response.body);
-    }
-
+    } else eval(response.body);
 });
 
 /*********************************** API *************************************/
