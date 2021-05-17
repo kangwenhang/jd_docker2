@@ -13,7 +13,7 @@ boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby
 
 const $ = new API("dd_fruit");
 
-let isNotify = true; //是否通知,仅限nodejs 
+let isNotify = true; //是否通知,仅限nodejs
 let ckPath = './jddj_cookie.js'; //ck路径 
 
 $.http.get({ url: 'https://purge.jsdelivr.net/gh/passerby-b/JDDJ@main/jddj_fruit_code.js' });
