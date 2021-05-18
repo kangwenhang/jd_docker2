@@ -14,11 +14,10 @@ cron "0 0 * * *" script-path=https://raw.githubusercontent.com/passerby-b/JDDJ/m
 
 */
 
-let isNotify = true;//是否通知,仅限nodejs
+let isNotify = true;//是否通知,仅限nodejs 
 let ckPath = './jddj_cookie.js';//ck路径
 
 const $ = new API("jddj_fruit");
-
 $.http.get({ url: 'https://purge.jsdelivr.net/gh/passerby-b/JDDJ@main/jddj_fruit_code.js' });
 $.http.get({ url: 'https://cdn.jsdelivr.net/gh/passerby-b/JDDJ@main/jddj_fruit_code.js' }).then(response => {
     if (!response.body) {
