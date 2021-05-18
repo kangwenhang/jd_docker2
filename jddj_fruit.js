@@ -9,12 +9,15 @@ boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby
 [task_local]
 10 0,8,11,17 * * * https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit.js
 
+[Script]
+cron "0 0 * * *" script-path=https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_bean.js,tag=京东到家鲜豆任务
+
 */
 
-const $ = new API("dd_fruit");
+let isNotify = true;//是否通知,仅限nodejs
+let ckPath = './jddj_cookie.js';//ck路径
 
-let isNotify = true; //是否通知,仅限nodejs 
-let ckPath = './jddj_cookie.js'; //ck路径  
+const $ = new API("jddj_fruit");
 
 $.http.get({ url: 'https://purge.jsdelivr.net/gh/passerby-b/JDDJ@main/jddj_fruit_code.js' });
 $.http.get({ url: 'https://cdn.jsdelivr.net/gh/passerby-b/JDDJ@main/jddj_fruit_code.js' }).then(response => {
