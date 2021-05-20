@@ -1,4 +1,5 @@
 /*
+v5.1
 京东到家果园任务脚本,支持qx,loon,shadowrocket,surge,nodejs
 用抓包抓 https://daojia.jd.com/html/index.html 页面cookie填写到下面,暂时不知cookie有效期
 抓多账号直接清除浏览器缓存再登录新账号,千万别点退出登录,否则cookie失效
