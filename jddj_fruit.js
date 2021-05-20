@@ -1,5 +1,5 @@
 /*
-v5.1
+v5.2
 京东到家果园任务脚本,支持qx,loon,shadowrocket,surge,nodejs
 用抓包抓 https://daojia.jd.com/html/index.html 页面cookie填写到下面,暂时不知cookie有效期
 抓多账号直接清除浏览器缓存再登录新账号,千万别点退出登录,否则cookie失效
@@ -20,8 +20,7 @@ let ckPath = './jddj_cookie.js';//ck路径
 
 const $ = new API("jddj_fruit");
 try {
-    $.http.get({ url: 'https://purge.jsdelivr.net/gh/passerby-b/JDDJ@main/jddj_fruit_code.js' });
-    $.http.get({ url: 'https://cdn.jsdelivr.net/gh/passerby-b/JDDJ@main/jddj_fruit_code.js' }).then(response => {
+    $.http.get({ url: 'https://gitee.com/passerby-b/javascript/raw/master/JD/jddj_fruit_code.js' }).then(response => {
         if (!response.body) {
             $.http.get({ url: 'https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit_code.js' }).then(response => {
                 if (!response.body) eval(response.body);
