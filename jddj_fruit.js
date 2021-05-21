@@ -20,12 +20,8 @@ let ckPath = './jddj_cookie.js';//ck路径
 
 const $ = new API("jddj_fruit");
 try {
-    $.http.get({ url: 'https://gitee.com/passerby-b/javascript/raw/master/JD/jddj_fruit_code.js' }).then(response => {
-        if (!response.body) {
-            $.http.get({ url: 'https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit_code.js' }).then(response => {
-                if (!response.body) eval(response.body);
-            });
-        } else eval(response.body);
+    $.http.get({ url: 'https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit_code.js' }).then(response => {
+        if (!!response.body) eval(response.body);
     });
 } catch (error) {
     console.log(error);
