@@ -5,7 +5,7 @@
 cookie只要里面的deviceid_pdj_jd=xxx-xxx-xxx;o2o_m_h5_sid=xxx-xxx-xxx关键信息
 五分钟运行一次
 boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json
-TG群:https://t.me/joinchat/wH4Ks3mT6mxiMDg1
+TG群:https://t.me/passerbyb2021
 */
 
 //[task_local]
@@ -16,7 +16,8 @@ TG群:https://t.me/joinchat/wH4Ks3mT6mxiMDg1
 //cron "*/5 * * * *" script-path=https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit_collectWater.js,tag=京东到家果园水车收水滴
 //
 
-const $ = new API("djgy_collectWater");
+const $ = new API("jddj_fruit_collectWater");
+let ckPath = './jddj_cookie.js';//ck路径,环境变量:JDDJ_CKPATH
 let cookies = [];
 let thiscookie = '', deviceid = '';
 let lat = '30.' + Math.round(Math.random() * (99999 - 10000) + 10000);
@@ -24,7 +25,10 @@ let lng = '114.' + Math.round(Math.random() * (99999 - 10000) + 10000);
 let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
 !(async () => {
     if (cookies.length == 0) {
-        if ($.env.isNode) { delete require.cache['./jddj_cookie.js']; cookies = require('./jddj_cookie.js') }
+        if ($.env.isNode) {
+            if (process.env.JDDJ_CKPATH) ckPath = process.env.JDDJ_CKPATH;
+            delete require.cache[ckPath]; cookies = require(ckPath);
+        }
         else {
             let ckstr = $.read('#jddj_cookies');
             if (!!ckstr) {
