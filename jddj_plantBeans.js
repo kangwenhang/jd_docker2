@@ -16,6 +16,7 @@ cron "10 0 * * *" script-path=https://raw.githubusercontent.com/passerby-b/JDDJ/
 */
 
 const $ = new API("jddj_plantBeans");
+let ckPath = './jddj_cookie.js';//ck路径,环境变量:JDDJ_CKPATH
 let cookies = [];
 let thiscookie = '', deviceid = '';
 let lat = '30.' + Math.round(Math.random() * (99999 - 10000) + 10000);
@@ -23,7 +24,10 @@ let lng = '114.' + Math.round(Math.random() * (99999 - 10000) + 10000);
 let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
 !(async () => {
     if (cookies.length == 0) {
-        if ($.env.isNode) { delete require.cache['./jddj_cookie.js']; cookies = require('./jddj_cookie.js') }
+        if ($.env.isNode) {
+            if (process.env.JDDJ_CKPATH) ckPath = process.env.JDDJ_CKPATH;
+            delete require.cache[ckPath]; cookies = require(ckPath);
+        }
         else {
             let ckstr = $.read('#jddj_cookies');
             if (!!ckstr) {
