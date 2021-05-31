@@ -10,6 +10,8 @@ let cookies = [
 if (process.env.JDDJ_COOKIE) {
   if (process.env.JDDJ_COOKIE.indexOf(',') > -1) {
     cookies = process.env.JDDJ_COOKIE.split(',')
+  } else if (process.env.JDDJ_COOKIE.indexOf('&') > -1) {
+    cookies = process.env.JDDJ_COOKIE.split('&')
   } else if (process.env.JDDJ_COOKIE.indexOf('\n') > -1) {
     cookies = process.env.JDDJ_COOKIE.split('\n')
   } else {
