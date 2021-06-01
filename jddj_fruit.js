@@ -17,6 +17,7 @@ cron "10 0,8,11,17 * * *" script-path=https://raw.githubusercontent.com/passerby
 
 let isNotify = true;//是否通知,仅限nodejs
 let ckPath = './jddj_cookie.js';//ck路径,环境变量:JDDJ_CKPATH
+let shareCodes = '';//助力码,环境变量名:JDDJ_SHARECODES,示例:code1,code2
 
 const $ = new API("jddj_fruit");
 try {
