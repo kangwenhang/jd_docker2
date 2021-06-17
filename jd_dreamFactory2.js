@@ -592,7 +592,7 @@ function userInfo() {
                 console.log(`当前等级：${data.user.currentLevel}`)
                 console.log(`\n【京东账号${$.index}（${$.UserName}）的${$.name}好友互助码】${data.user.encryptPin}`);
                 await $.get({
-                  url: 'http://107.172.97.176:8080/activeJdFactoryCode?code=' + data.user.encryptPin
+                  url: 'http://51.15.187.136:8080/activeJdFactoryCode?code=' + data.user.encryptPin
                 }, function (err, resp, data) {
                   console.log('互助码状态:' + resp.body);
                 })
