@@ -1,10 +1,8 @@
 /*
 v5.4
 京东到家果园任务脚本,支持qx,loon,shadowrocket,surge,nodejs
-用抓包抓 https://daojia.jd.com/html/index.html 页面cookie填写到下面,暂时不知cookie有效期
-抓多账号直接清除浏览器缓存再登录新账号,千万别点退出登录,否则cookie失效
-cookie只要里面的deviceid_pdj_jd=xxx-xxx-xxx;o2o_m_h5_sid=xxx-xxx-xxx关键信息,填写整个cookie也是可以的
-手机设备在boxjs里填写cookie,nodejs在jddj_cookie.js文件里填写cookie
+兼容京东jdCookie.js
+手机设备在boxjs里填写cookie
 boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json
 
 [task_local]
