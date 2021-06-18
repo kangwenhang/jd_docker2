@@ -16,14 +16,16 @@
 
 
 const $ = new API("jddj_getPoints");
-let ckPath = './jddj_cookie.js';//ck路径,环境变量:JDDJ_CKPATH
+let ckPath = './jdCookie.js';//ck路径,环境变量:JDDJ_CKPATH
 let cookies = [];
 let thiscookie = '', deviceid = '', nickname = '';
 !(async () => {
     if (cookies.length == 0) {
         if ($.env.isNode) {
             if (process.env.JDDJ_CKPATH) ckPath = process.env.JDDJ_CKPATH;
-            delete require.cache[ckPath]; cookies = require(ckPath);
+            delete require.cache[ckPath];
+            let jdcookies = require(ckPath);
+            for (let key in jdcookies) cookies.push(jdcookies[key]);
         }
         else {
             let ckstr = $.read('#jddj_cookies');
@@ -45,14 +47,16 @@ let thiscookie = '', deviceid = '', nickname = '';
         thiscookie = cookies[i];
         if (!thiscookie.trim()) continue;
 
-        var jsonlist = {};
-        var params = thiscookie.split(';');
-        params.forEach(item => {
-            if (item.indexOf('=') > -1) {
-                jsonlist[item.split('=')[0].trim()] = item.split('=')[1].trim();
+        deviceid = _uuid();
+        let option = taskLoginUrl(deviceid, thiscookie);
+        await $.http.get(option).then(response => {
+            let data = JSON.parse(response.body);
+            if (data.code == 0) {
+                thiscookie = 'deviceid_pdj_jd=' + deviceid + '; PDJ_H5_PIN=' + data.result.PDJ_H5_PIN + '; o2o_m_h5_sid=' + data.result.o2o_m_h5_sid + ';';
+                //sid = data.result.o2o_m_h5_sid;
             }
+            else thiscookie = 'aabbcc';
         });
-        deviceid = jsonlist.deviceid_pdj_jd;
 
         await userinfo();
         await $.wait(1000);
@@ -167,6 +171,26 @@ function urlTask(url, body) {
         body: body
     };
     return option;
+}
+
+function taskLoginUrl(deviceid, thiscookie) {
+    return {
+        url: 'https://daojia.jd.com/client?_jdRandom=' + (+new Date()) + '&functionId=xapp/loginByPtKeyNew&body=' + escape(JSON.stringify({ "fromSource": 5, "businessChannel": 150, "subChannel": "", "regChannel": "" })) + 'channel=ios&platform=6.6.0&platCode=h5&appVersion=6.6.0&appName=paidaojia&deviceModel=appmodel&code=011UYn000apwmL1nWB000aGiv74UYn03&deviceId=' + deviceid + '&deviceToken=' + deviceid + '&deviceModel=appmodel',
+        headers: {
+            "Cookie": 'deviceid_pdj_jd=' + deviceid + ';' + thiscookie + ';',
+            "Host": "daojia.jd.com",
+            "referer": "https://daojia.jd.com/taroh5/h5dist/",
+            'Content-Type': 'application/x-www-form-urlencoded',
+            "User-Agent": 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)'
+        }
+    }
+}
+
+function _uuid() {
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
 /*********************************** API *************************************/
