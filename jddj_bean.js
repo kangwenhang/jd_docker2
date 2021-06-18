@@ -63,7 +63,7 @@ let thiscookie = '', deviceid = '';
 
         let tslist = await taskList();
         if (tslist.code == 1) {
-            $.notify('第' + (i + 1) + '个账号cookie过期', '请访问https://daojia.jd.com/html/index.html抓取cookie', { url: 'https://daojia.jd.com/html/index.html' });
+            $.notify('第' + (i + 1) + '个账号cookie过期', '请访问\nhttps://bean.m.jd.com/bean/signIndex.action抓取cookie', { url: 'https://bean.m.jd.com/bean/signIndex.action' });
             continue;
         }
 
