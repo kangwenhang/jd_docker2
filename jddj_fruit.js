@@ -1,5 +1,5 @@
 /*
-v5.4
+v5.5
 京东到家果园任务脚本,支持qx,loon,shadowrocket,surge,nodejs
 兼容京东jdCookie.js
 手机设备在boxjs里填写cookie
