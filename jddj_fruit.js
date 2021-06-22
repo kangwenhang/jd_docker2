@@ -1,5 +1,5 @@
 /*
-v5.5
+v5.6
 京东到家果园任务脚本,支持qx,loon,shadowrocket,surge,nodejs
 兼容京东jdCookie.js
 手机设备在boxjs里填写cookie
@@ -19,7 +19,7 @@ let ckPath = './jdCookie.js';//ck路径,环境变量:JDDJ_CKPATH
 const $ = new API("jddj_fruit");
 try {
     //https://cdn.jsdelivr.net/gh/passerby-b/JDDJ@main/jddj_fruit_code.js
-    $.http.get({ url: 'https://ghproxy.com/https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit_code.js' }).then(response => {
+    $.http.get({ url: 'https://ghproxy.com/https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_fruit_code.js', timeout: 5000 }).then(response => {
         if (!!response.body) eval(response.body);
     });
 } catch (error) {
