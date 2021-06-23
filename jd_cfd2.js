@@ -235,7 +235,7 @@ function getAuthorShareCode(url) {
 
 function getUserInfo(showInvite = true) {
   return new Promise(async (resolve) => {
-    $.get(taskUrl(`user/QueryUserInfo`), (err, resp, data) => {
+    $.get(taskUrl(`user/QueryUserInfo`), async(err, resp, data) => {
       try {
         if (err) {
           console.log(`${JSON.stringify(err)}`)
