@@ -258,6 +258,7 @@ function getUserInfo(showInvite = true) {
           if (showInvite && strMyShareId) {
             console.log(`财富岛好友互助码每次运行都变化,旧的可继续使用`);
             $.log(`\n【京东账号${$.index}（${$.UserName}）的${$.name}好友互助码】${strMyShareId}\n\n`);
+            console.log('互助码状态:激活成功');
           }
           $.info = {
             ...$.info,
