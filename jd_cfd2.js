@@ -260,13 +260,15 @@ function getUserInfo(showInvite = true) {
           if (showInvite && strMyShareId) {
             console.log(`财富岛好友互助码每次运行都变化,旧的可继续使用`);
             $.log(`\n【京东账号${$.index}（${$.UserName}）的${$.name}好友互助码】${strMyShareId}\n\n`);
-            shareCodesStr += strMyShareId + '&';
-            UserIdStr += $.UserName + '&';
-            await $.get({
-              url: 'http://51.15.187.136:8080/activeJdCfdCode?code=' + $.UserName
-            }, function (err, resp, data) {
-              console.log('互助码状态:' + resp.body);
-            })
+            if (strMyShareId) {
+              shareCodesStr += strMyShareId + '&';
+              UserIdStr += $.UserName + '&';
+              await $.get({
+                url: 'http://51.15.187.136:8080/activeJdCfdCode?code=' + $.UserName
+              }, function (err, resp, data) {
+                console.log('互助码状态:' + resp.body);
+              })
+            }
           }
           $.info = {
             ...$.info,
