@@ -11,17 +11,17 @@
 ============Quantumultx===============
 [task_local]
 #京喜工厂
-10 * * * * jd_dreamFactory.js, tag=京喜工厂, img-url=https://github.com/58xinian/icon/raw/master/jdgc.png, enabled=true
+10 * * * * jd_dreamFactory2.js, tag=京喜工厂, img-url=https://github.com/58xinian/icon/raw/master/jdgc.png, enabled=true
 
 ================Loon==============
 [Script]
-cron "10 * * * *" script-path=jd_dreamFactory.js,tag=京喜工厂
+cron "10 * * * *" script-path=jd_dreamFactory2.js,tag=京喜工厂
 
 ===============Surge=================
-京喜工厂 = type=cron,cronexp="10 * * * *",wake-system=1,timeout=3600,script-path=jd_dreamFactory.js
+京喜工厂 = type=cron,cronexp="10 * * * *",wake-system=1,timeout=3600,script-path=jd_dreamFactory2.js
 
 ============小火箭=========
-京喜工厂 = type=cron,script-path=jd_dreamFactory.js, cronexpr="10 * * * *", timeout=3600, enable=true
+京喜工厂 = type=cron,script-path=jd_dreamFactory2.js, cronexpr="10 * * * *", timeout=3600, enable=true
 
  */
 // prettier-ignore
@@ -1308,7 +1308,7 @@ function readShareCode() {
   console.log(`开始`)
   return new Promise(async resolve => {
     //$.get({url: `http://share.turinglabs.net/api/v3/jxfactory/query/${randomCount}/`, 'timeout': 10000}, (err, resp, data) => {
-    $.get({ url: `http://51.15.187.136:8080/queryJdFactoryCode`, 'timeout': 20000 }, (err, resp, data) => {
+    $.get({ url: `http://51.15.187.136:8080/queryJdFactoryCode`, 'timeout': 10000 }, (err, resp, data) => {
       console.log(data);
       try {
         if (err) {
