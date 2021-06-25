@@ -1,6 +1,6 @@
 
 /*
-boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json
+自用的小玩意儿,不需要的禁用
 
 [task_local]
 0 8 * * * https://raw.githubusercontent.com/passerby-b/JDDJ/main/weather.js.js
