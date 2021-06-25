@@ -13,7 +13,7 @@ console.log("天气脚本开始!");
 const $ = new API();
 
 !(async () => {
-    var sendMsg = require('./sendNotify');//require('./sendMsg.js');
+    var sendMsg = require('./sendNotify');
     await $.http.get({ url: "https://tianqi.moji.com/weather/china/hubei/wuhan" }).then(async response => {
         let d = response.body;
         if (d) {
@@ -40,8 +40,8 @@ const $ = new API();
             if (msg.indexOf("大雪") > -1) icon = "https://h5tq.moji.com/tianqi/assets/images/weather/w16.png";
             if (msg.indexOf("暴雪") > -1) icon = "https://h5tq.moji.com/tianqi/assets/images/weather/w17.png";
 
-            await sendMsg.sendNotify('今日天气', msg, 'ladder');
             await sendMsg.sendNotify('今日天气', msg);
+            
             msg = msg.split('。');
             if (msg.length > 0) {
                 $.notify(msg[0], msg[1], msg[2], { "url": "http://tianqi.moji.com/weather/china/hubei/wuhan", "img": "https://h5tq.moji.com/tianqi/assets/images/weather/w1.png" });
