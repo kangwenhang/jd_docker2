@@ -1,10 +1,7 @@
-
 /*
 自用的小玩意儿,不需要的禁用
-
 [task_local]
 0 8 * * * https://raw.githubusercontent.com/passerby-b/JDDJ/main/weather.js
-
 [Script]
 cron "0 8 * * *" script-path=https://raw.githubusercontent.com/passerby-b/JDDJ/main/weather.js,tag=今日天气
 */
@@ -15,7 +12,7 @@ const $ = new API();
 let city = 'beijing/beijing';//环境变量WEATHERCITY
 
 !(async () => {
-    var sendMsg = require('./sendNotify');
+
     if (process.env.WEATHERCITY) city = process.env.WEATHERCITY;
     await $.http.get({ url: "https://tianqi.moji.com/weather/china/" + city }).then(async response => {
         let d = response.body;
@@ -24,7 +21,7 @@ let city = 'beijing/beijing';//环境变量WEATHERCITY
             var index2 = d.indexOf("keywords") - 24;
 
             var msg = d.substring(index, index2).replace(/ /g, "");
-            console.log(msg);
+            //console.log(msg);
 
             var icon = "https://h5tq.moji.com/tianqi/assets/images/weather/w0.png";
             if (msg.indexOf("多云") > -1) icon = "https://h5tq.moji.com/tianqi/assets/images/weather/w1.png";
@@ -43,7 +40,21 @@ let city = 'beijing/beijing';//环境变量WEATHERCITY
             if (msg.indexOf("大雪") > -1) icon = "https://h5tq.moji.com/tianqi/assets/images/weather/w16.png";
             if (msg.indexOf("暴雪") > -1) icon = "https://h5tq.moji.com/tianqi/assets/images/weather/w17.png";
 
-            await sendMsg.sendNotify('今日天气', msg);
+            if ($.env.isNode) {
+                const sendMsg = require('./sendNotify');
+                const cheerio = require('cheerio');
+
+                let html = cheerio.load(d);
+                let ul = html('.forecast.clearfix>ul:eq(1)');
+                let li1 = html(ul).find('li:eq(1)').text().replace(/\n/g, '').replace(/ /g, '');
+                let li2 = html(ul).find('li:eq(2)').text().replace(/\n/g, '').replace(/ /g, '');
+                let li3 = html(ul).find('li:eq(3)').text().replace(/\n/g, '').replace(/ /g, '');
+                let li4 = html(ul).find('li:eq(4)').text().replace(/\n/g, '').replace(/ /g, '');
+                let tomorrow = '\n明日天气: ' + li1 + ' ' + li2 + ' ' + li3 + ' 空气' + li4;
+
+                await sendMsg.sendNotify('今日天气', msg + tomorrow);
+            }
+
             msg = msg.split('。');
             if (msg.length > 0) {
                 $.notify(msg[0], msg[1], msg[2], { "url": "https://tianqi.moji.com/weather/china/" + city, "img": icon });
