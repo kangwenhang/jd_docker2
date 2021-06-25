@@ -1,4 +1,4 @@
-﻿
+
 /*
 boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json
 
@@ -12,9 +12,12 @@ cron "0 8 * * *" script-path=https://raw.githubusercontent.com/passerby-b/JDDJ/m
 console.log("天气脚本开始!");
 const $ = new API();
 
+let province = 'hubei';
+let city = 'wuhan';
+
 !(async () => {
     var sendMsg = require('./sendNotify');
-    await $.http.get({ url: "https://tianqi.moji.com/weather/china/hubei/wuhan" }).then(async response => {
+    await $.http.get({ url: "https://tianqi.moji.com/weather/china/" + province + "/" + city }).then(async response => {
         let d = response.body;
         if (d) {
             var index = d.indexOf('description') + 22;
@@ -41,10 +44,9 @@ const $ = new API();
             if (msg.indexOf("暴雪") > -1) icon = "https://h5tq.moji.com/tianqi/assets/images/weather/w17.png";
 
             await sendMsg.sendNotify('今日天气', msg);
-            
             msg = msg.split('。');
             if (msg.length > 0) {
-                $.notify(msg[0], msg[1], msg[2], { "url": "http://tianqi.moji.com/weather/china/hubei/wuhan", "img": "https://h5tq.moji.com/tianqi/assets/images/weather/w1.png" });
+                $.notify(msg[0], msg[1], msg[2], { "url": "https://tianqi.moji.com/weather/china/" + province + "/" + city, "img": icon });
             }
             else {
                 $.notify("错误", "错误", d.substring(index, index2).replace(/ /g, ""));
