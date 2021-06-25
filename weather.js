@@ -3,10 +3,10 @@
 自用的小玩意儿,不需要的禁用
 
 [task_local]
-0 8 * * * https://raw.githubusercontent.com/passerby-b/JDDJ/main/weather.js.js
+0 8 * * * https://raw.githubusercontent.com/passerby-b/JDDJ/main/weather.js
 
 [Script]
-cron "0 8 * * *" script-path=https://raw.githubusercontent.com/passerby-b/JDDJ/main/weather.js.js,tag=今日天气
+cron "0 8 * * *" script-path=https://raw.githubusercontent.com/passerby-b/JDDJ/main/weather.js,tag=今日天气
 */
 
 console.log("天气脚本开始!");
