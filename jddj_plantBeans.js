@@ -1,17 +1,15 @@
 /*
 京东到家鲜豆庄园脚本,支持qx,loon,shadowrocket,surge,nodejs
-用抓包抓 https://daojia.jd.com/html/index.html 页面cookie填写到下面,暂时不知cookie有效期
-抓多账号直接清除浏览器缓存再登录新账号,千万别点退出登录,否则cookie失效
-cookie只要里面的deviceid_pdj_jd=xxx-xxx-xxx;o2o_m_h5_sid=xxx-xxx-xxx关键信息
-一天运行一次
+兼容京东jdCookie.js
+手机设备在boxjs里填写cookie
 boxjs订阅地址:https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json
 TG群:https://t.me/passerbyb2021
 
 [task_local]
-10 0 * * * https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_plantBeans.js
+10 8 * * * https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_plantBeans.js
 
 [Script]
-cron "10 0 * * *" script-path=https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_plantBeans.js,tag=京东到家鲜豆庄园
+cron "10 8 * * *" script-path=https://raw.githubusercontent.com/passerby-b/JDDJ/main/jddj_plantBeans.js,tag=京东到家鲜豆庄园
 
 */
 
@@ -28,7 +26,7 @@ let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
         if ($.env.isNode) {
             if (process.env.JDDJ_CKPATH) ckPath = process.env.JDDJ_CKPATH;
             let jdcookies = require(ckPath);
-            for (let key in jdcookies) cookies.push(jdcookies[key]);
+            for (let key in jdcookies) if (!!jdcookies[key]) cookies.push(jdcookies[key]);
         }
         else {
             let ckstr = $.read('#jddj_cookies');
@@ -49,7 +47,7 @@ let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
     for (let i = 0; i < cookies.length; i++) {
         console.log(`\r\n★★★★★开始执行第${i + 1}个账号,共${cookies.length}个账号★★★★★`);
         thiscookie = cookies[i];
-        if (!thiscookie.trim()) continue;
+        if (!thiscookie) continue;
 
         deviceid = _uuid();
         let option = taskLoginUrl(deviceid, thiscookie);
@@ -67,11 +65,14 @@ let cityid = Math.round(Math.random() * (1500 - 1000) + 1000);
 
         let tslist = await taskList();
         if (tslist.code == 1) {
-            $.notify('第' + (i + 1) + '个账号cookie过期', '请访问\nhttps://bean.m.jd.com/bean/signIndex.action抓取cookie', { url: 'https://bean.m.jd.com/bean/signIndex.action' });
+            $.notify('第' + (i + 1) + '个账号cookie过期', '请访问\nhttps://bean.m.jd.com/bean/signIndex.action\n抓取cookie', { url: 'https://bean.m.jd.com/bean/signIndex.action' });
             continue;
         }
 
         await sign();
+        await $.wait(1000);
+
+        await beansLottery();
         await $.wait(1000);
 
         await getPoints();
@@ -225,6 +226,28 @@ async function getPoints() {
 
     })
 
+}
+
+//发现露水
+async function beansLottery() {
+    return new Promise(async resolve => {
+        try {
+            for (let index = 0; index < 20; index++) {
+                let option = urlTask('https://daojia.jd.com/client?_jdrandom=' + Math.round(new Date()) + '&_funid_=plantBeans/beansLottery', 'functionId=plantBeans%2FbeansLottery&isNeedDealError=true&method=POST&body=%7B%22activityId%22%3A%22241254dc8b9ae89%22%7D&lat=' + lat + '&lng=' + lng + '&lat_pos=' + lat + '&lng_pos=' + lng + '&city_id=' + cityid + '&channel=ios&platform=6.6.0&platCode=h5&appVersion=6.6.0&appName=paidaojia&deviceModel=appmodel&traceId=' + deviceid + '&deviceToken=' + deviceid + '&deviceId=' + deviceid);
+                await $.http.post(option).then(response => {
+                    let data = JSON.parse(response.body);
+                    if (!!data.result.water) console.log('\n【发现露水】:' + data.result.water + 'g');
+                    else console.log('\n【发现露水】:' + data.result.text.replace(/\n/g, ''));
+                });
+                await $.wait(1000);
+            }
+            resolve();
+
+        } catch (error) {
+            console.log('\n【发现露水】:' + error);
+            resolve();
+        }
+    })
 }
 
 async function runTask(tslist) {
