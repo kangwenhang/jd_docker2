@@ -1,7 +1,7 @@
 /*
 原生nodejs运行方式,不需要面板,下面配置好脚本和运行时间,在pm2挂在该主要程序脚本,
 安装pm2命令:npm install pm2 -g
-挂在主程序命令:pm2 start main.js --name myserver
+挂载主程序命令:pm2 start main.js --name myserver
 
 */
 var cronJob = require("cron").CronJob;
