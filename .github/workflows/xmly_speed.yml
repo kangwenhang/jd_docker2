@@ -1,5 +1,5 @@
 # File: .github/workflows/repo-sync.yml
-name: sync-Zero-S1/xmly_speed
+name: sync-cdle/xdd
 on:
   schedule:
     - cron: '1 0,15 * * *'
@@ -9,7 +9,7 @@ on:
   push:
     branches: [ dockerjs ]
   repository_dispatch:
-    types: sync-Zero-S1/xmly_speed
+    types: sync-cdle/xdd
 jobs:
   repo-sync:
     env:
@@ -26,7 +26,7 @@ jobs:
         uses: repo-sync/github-sync@v2
         if: env.PAT
         with:
-          source_repo: "https://github.com/Zero-S1/xmly_speed.git"
-          source_branch: "master"
-          destination_branch: "xmly_speed"
+          source_repo: "https://github.com/cdle/xdd.git"
+          source_branch: "main"
+          destination_branch: "xdd"
           github_token: ${{ secrets.PAT }}
