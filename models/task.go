@@ -2,6 +2,7 @@ package models
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -27,6 +28,7 @@ type Task struct {
 	Git     string
 	Title   string
 	Running string
+	Envs    []Env `gorm:"-"`
 }
 
 type Env struct {
@@ -118,6 +120,9 @@ func runTask(task *Task, msgs ...interface{}) string {
 	// 		lan, task.Name)
 	// cmd := exec.Command("sh", "-c", sh)
 	cmd := exec.Command(lan, task.Name)
+	for _, env := range task.Envs {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", env.Name, env.Value))
+	}
 	stdout, err := cmd.StdoutPipe()
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
