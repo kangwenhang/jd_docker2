@@ -301,6 +301,9 @@ func CheckLogin(token, cookie, okl_token string) (string, *models.JdCookie) {
 		return sth.Message, nil
 	case 258: //务异常，请稍后重试
 		return "", nil
+	case 264: //出错了，请退出重试
+		JdCookieRunners.Delete(token)
+		return sth.Message, nil
 	default:
 		JdCookieRunners.Delete(token)
 		fmt.Println(sth)
