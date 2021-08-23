@@ -173,11 +173,12 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 		{ //tyt
 			ss := regexp.MustCompile(`packetId=(\S+)(&|&amp;)currentActId`).FindStringSubmatch(msg)
 			if len(ss) > 0 {
-				if Cdle {
-					return "推毛线啊"
-				}
+				// if Cdle {
+				// 	return "推毛线啊"
+				// }
 				runTask(&Task{Path: "jd_tyt.js", Envs: []Env{
 					{Name: "tytpacketId", Value: ss[1]},
+					{Name: "pins", Value: "xxxx"},
 				}}, msgs...)
 				return nil
 			}
