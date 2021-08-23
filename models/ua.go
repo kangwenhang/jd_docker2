@@ -12,8 +12,7 @@ var ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/6
 func initUserAgent() {
 	u := &UserAgent{}
 	err := db.Order("id desc").First(u).Error
-
-	if strings.Contains(err.Error(), "converting") {
+	if err != nil && strings.Contains(err.Error(), "converting") {
 		db.Migrator().DropTable(&UserAgent{})
 		Daemon()
 	}
