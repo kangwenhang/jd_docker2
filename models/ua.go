@@ -14,10 +14,9 @@ func initUserAgent() {
 	err := db.Order("id desc").First(u).Error
 
 	if strings.Contains(err.Error(), "converting") {
-		db.Migrator().DropColumn(&UserAgent{}, "id")
-		db.AutoMigrate(&UserAgent{})
+		db.Migrator().DropTable(&UserAgent{})
+		Daemon()
 	}
-
 	if u.Content != "" {
 		ua = u.Content
 	} else {
