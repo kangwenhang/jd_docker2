@@ -9,7 +9,7 @@ var ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/6
 
 func initUserAgent() {
 	u := &UserAgent{}
-	db.Order("id asc").First(u)
+	db.Order("id desc").First(u)
 	if u.Content != "" {
 		ua = u.Content
 	} else {
@@ -32,6 +32,6 @@ func GetUserAgent() string {
 }
 
 type UserAgent struct {
-	ID      string
+	ID      int
 	Content string
 }
