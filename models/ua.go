@@ -9,7 +9,7 @@ var ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/6
 
 func initUserAgent() {
 	u := &UserAgent{}
-	db.Order("id desc").First(u)
+	db.Order("id asc").First(u)
 	if u.Content != "" {
 		ua = u.Content
 	} else {
