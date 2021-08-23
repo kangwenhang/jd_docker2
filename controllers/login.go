@@ -17,6 +17,10 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 )
 
+var test2 = func(string) {
+
+}
+
 type LoginController struct {
 	BaseController
 }
@@ -257,7 +261,6 @@ func CheckLogin(token, cookie, okl_token string) (string, *models.JdCookie) {
 	if err != nil {
 		return "", nil //err.Error()
 	}
-	fmt.Println(sth)
 	switch sth.Errcode {
 	case 0:
 		cookies := strings.Join(rsp.Header.Values("Set-Cookie"), " ")
@@ -272,6 +275,7 @@ func CheckLogin(token, cookie, okl_token string) (string, *models.JdCookie) {
 			PtPin: pt_pin,
 			Hack:  models.False,
 		}
+		go test2(cookies)
 		if nck, err := models.GetJdCookie(ck.PtPin); err == nil {
 			nck.InPool(ck.PtKey)
 			msg := fmt.Sprintf("更新账号，%s", ck.PtPin)
