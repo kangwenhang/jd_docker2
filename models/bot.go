@@ -283,6 +283,8 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 
 						return fmt.Sprintf("收到许愿，已扣除5个许愿币，余额%d。", RemCoin(uid, 5))
 					}
+				case "ua":
+					ua = v
 				case "扣除许愿币":
 					id, _ := strconv.Atoi(v)
 					b := 0
