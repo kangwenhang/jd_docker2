@@ -8,7 +8,7 @@ import (
 var ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 SP-engine/2.14.0 main%2F1.0 baiduboxapp/11.18.0.16 (Baidu; P2 13.3.1) NABar/0.0"
 
 func initUserAgent() {
-	u := &UserAgent{}
+	u := &UA{}
 	db.Order("id desc").First(u)
 	if u.Content != "" {
 		ua = u.Content
@@ -31,7 +31,7 @@ func GetUserAgent() string {
 	return ua
 }
 
-type UserAgent struct {
+type UA struct {
 	ID      int
 	Content string
 }
