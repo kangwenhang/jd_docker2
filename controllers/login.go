@@ -306,7 +306,7 @@ func CheckLogin(token, cookie, okl_token string) (string, *models.JdCookie) {
 		// return sth.Message, nil
 	default:
 		JdCookieRunners.Delete(token)
-		fmt.Println(sth)
+		// fmt.Println(sth)
 	}
 	return "", nil
 }
