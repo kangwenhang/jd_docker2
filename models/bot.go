@@ -140,6 +140,11 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 		sendMessagee("小滴滴重启程序", msgs...)
 		Daemon()
 		return nil
+	case "get-ua":
+		if !isAdmin(msgs...) {
+			return "你没有权限操作"
+		}
+		return ua
 	case "任务列表":
 		rt := ""
 		for i := range Config.Repos {
@@ -290,11 +295,6 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 					db.Create(&UserAgent{Content: v})
 					ua = v
 					return "已更新User-Agent。"
-				case "get-ua":
-					if !isAdmin(msgs...) {
-						return "你没有权限操作"
-					}
-					return ua
 				case "扣除许愿币":
 					id, _ := strconv.Atoi(v)
 					b := 0
