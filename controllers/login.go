@@ -257,7 +257,7 @@ func CheckLogin(token, cookie, okl_token string) (string, *models.JdCookie) {
 	if err != nil {
 		return "", nil //err.Error()
 	}
-	// fmt.Println(sth)
+	fmt.Println(sth)
 	switch sth.Errcode {
 	case 0:
 		cookies := strings.Join(rsp.Header.Values("Set-Cookie"), " ")
