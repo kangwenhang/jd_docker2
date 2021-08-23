@@ -39,7 +39,7 @@ func initDB() {
 		&JdCookie{},
 		&JdCookiePool{},
 		&User{},
-		&UA{},
+		&UserAgent{},
 	)
 	keys = make(map[string]bool)
 	pins = make(map[string]bool)

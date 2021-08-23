@@ -292,7 +292,7 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 					if !isAdmin(msgs...) {
 						return "你没有权限操作"
 					}
-					db.Create(&UA{Content: v})
+					db.Create(&UserAgent{Content: v})
 					ua = v
 					return "已更新User-Agent。"
 				case "扣除许愿币":

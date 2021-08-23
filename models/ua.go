@@ -1,6 +1,8 @@
 package models
 
 import (
+	"strings"
+
 	"github.com/beego/beego/v2/adapter/logs"
 	"github.com/beego/beego/v2/client/httplib"
 )
@@ -8,8 +10,14 @@ import (
 var ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 SP-engine/2.14.0 main%2F1.0 baiduboxapp/11.18.0.16 (Baidu; P2 13.3.1) NABar/0.0"
 
 func initUserAgent() {
-	u := &UA{}
-	db.Order("id desc").First(u)
+	u := &UserAgent{}
+	err := db.Order("id desc").First(u).Error
+
+	if strings.Contains(err.Error(), "converting") {
+		db.Migrator().DropColumn(&UserAgent{}, "id")
+		db.AutoMigrate(&UserAgent{})
+	}
+
 	if u.Content != "" {
 		ua = u.Content
 	} else {
@@ -31,7 +39,7 @@ func GetUserAgent() string {
 	return ua
 }
 
-type UA struct {
+type UserAgent struct {
 	ID      int
 	Content string
 }
