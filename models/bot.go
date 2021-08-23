@@ -285,6 +285,7 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 					}
 				case "ua":
 					ua = v
+					return "已更新User-Agent。"
 				case "扣除许愿币":
 					id, _ := strconv.Atoi(v)
 					b := 0
