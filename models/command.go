@@ -330,4 +330,11 @@ var codeSignals = []CodeSignal{
 			return "操作成功"
 		},
 	},
+	{
+		Command: []string{"降级"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			return "滚"
+		},
+	},
 }
