@@ -366,6 +366,17 @@ var codeSignals = []CodeSignal{
 			return "许愿币+1"
 		},
 	},
+	{
+		Command: []string{"reply", "回复"},
+		Handle: func(sender *Sender) interface{} {
+			if len(sender.Contents) >= 2 {
+				replies[sender.Contents[0]] = strings.Join(sender.Contents[1:], " ")
+			} else {
+				return "操作失败"
+			}
+			return "操作成功"
+		},
+	},
 }
 
 var mx = map[int]bool{}
