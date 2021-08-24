@@ -90,7 +90,7 @@ var codeSignals = []CodeSignal{
 				if zero.Unix() > u.ActiveAt.Unix() {
 					first = true
 				} else {
-					sender.Reply(fmt.Sprintf("你打过卡了，许愿币余额%d。", u.Coin))
+					return fmt.Sprintf("你打过卡了，许愿币余额%d。", u.Coin)
 				}
 			}
 			if first {
@@ -107,7 +107,7 @@ var codeSignals = []CodeSignal{
 					"coin":      gorm.Expr(fmt.Sprintf("coin+%d", coin)),
 				})
 				u.Coin += coin
-				sender.Reply(fmt.Sprintf("你是打卡第%d人，奖励%d个许愿币，许愿币余额%d。", total[0]+1, coin, u.Coin))
+				return fmt.Sprintf("你是打卡第%d人，奖励%d个许愿币，许愿币余额%d。", total[0]+1, coin, u.Coin)
 			}
 			return nil
 		},
@@ -252,12 +252,9 @@ var codeSignals = []CodeSignal{
 			b := GetCoin(sender.UserID)
 			if b < 5 {
 				return "许愿币不足，需要5个许愿币。"
-			} else {
-				(&JdCookie{}).Push(fmt.Sprintf("%d许愿%s，许愿币余额%d。", sender.UserID, sender.JoinContens(), b))
-
-				return fmt.Sprintf("收到许愿，已扣除5个许愿币，余额%d。", RemCoin(sender.UserID, 5))
 			}
-			return nil
+			(&JdCookie{}).Push(fmt.Sprintf("%d许愿%s，许愿币余额%d。", sender.UserID, sender.JoinContens(), b))
+			return fmt.Sprintf("收到许愿，已扣除5个许愿币，余额%d。", RemCoin(sender.UserID, 5))
 		},
 	},
 	{
@@ -274,6 +271,18 @@ var codeSignals = []CodeSignal{
 		Handle: func(sender *Sender) interface{} {
 			cmd(sender.JoinContens(), sender)
 			return nil
+		},
+	},
+	{
+		Command: []string{"环境变量", "environments"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			rt := []string{}
+			envs := GetEnvs()
+			for _, env := range envs {
+				rt = append(rt, fmt.Sprintf(`export "%s"="%s"`, env.Name, env.Value))
+			}
+			return strings.Join(rt, "\n")
 		},
 	},
 }
