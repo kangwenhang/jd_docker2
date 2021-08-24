@@ -274,15 +274,50 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"环境变量", "environments"},
-		Admin:   true,
-		Handle: func(sender *Sender) interface{} {
+		Command: []string{"环境变量", "environments", "envs"},
+		Handle: func(_ *Sender) interface{} {
 			rt := []string{}
 			envs := GetEnvs()
+			if len(envs) == 0 {
+				return "未设置任何环境变量"
+			}
 			for _, env := range envs {
-				rt = append(rt, fmt.Sprintf(`export "%s"="%s"`, env.Name, env.Value))
+				rt = append(rt, fmt.Sprintf(`"%s"="%s"`, env.Name, env.Value))
 			}
 			return strings.Join(rt, "\n")
+		},
+	},
+	{
+		Command: []string{"get-env"},
+		Handle: func(sender *Sender) interface{} {
+			value := GetEnv(sender.JoinContens())
+			if value == "" {
+				return "未设置环境变量"
+			}
+			return fmt.Sprintf("环境变量的值为：" + value)
+		},
+	},
+	{
+		Command: []string{"set-env"},
+		Handle: func(sender *Sender) interface{} {
+			if len(sender.Contents) < 2 {
+				return "操作失败"
+			}
+			ExportEnv(&Env{
+				Name:  sender.Contents[0],
+				Value: strings.Join(sender.Contents[1:], " "),
+			})
+			return "操作成功"
+		},
+	},
+	{
+		Command: []string{"unset-env"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			UnExportEnv(&Env{
+				Name: sender.JoinContens(),
+			})
+			return "操作成功"
 		},
 	},
 }
