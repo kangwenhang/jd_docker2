@@ -381,6 +381,46 @@ var codeSignals = []CodeSignal{
 			return "操作成功"
 		},
 	},
+	{
+		Command: []string{"help", "助力"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			cks := GetJdCookies()
+			tmp := []JdCookie{}
+			a := sender.JoinContens()
+			if s := strings.Split(a, "-"); len(s) == 2 {
+				for i, ck := range cks {
+					if i+1 >= Int(s[0]) && i+1 <= Int(s[1]) {
+						ck.Update(Help, True)
+						sender.Reply(fmt.Sprintf("已设置助力账号%s", ck.Nickname))
+					}
+				}
+			} else if x := regexp.MustCompile(`^[\s\d,]+$`).FindString(a); x != "" {
+				xx := regexp.MustCompile(`(\d+)`).FindAllStringSubmatch(a, -1)
+				for i, ck := range cks {
+					for _, x := range xx {
+						if fmt.Sprint(i+1) == x[1] {
+							ck.Update(Help, True)
+							sender.Reply(fmt.Sprintf("已设置助力账号%s", ck.Nickname))
+						}
+					}
+
+				}
+			} else {
+				a = strings.Replace(a, " ", "", -1)
+				for _, ck := range cks {
+					if strings.Contains(ck.Note, a) || strings.Contains(ck.Nickname, a) || strings.Contains(ck.PtPin, a) {
+						ck.Update(Help, True)
+						sender.Reply(fmt.Sprintf("已设置助力账号%s", ck.Nickname))
+					}
+				}
+			}
+			if len(tmp) == 0 {
+				return "找不到匹配的账号"
+			}
+			return nil
+		},
+	},
 }
 
 var mx = map[int]bool{}
