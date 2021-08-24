@@ -159,7 +159,7 @@ func init() {
 						case "tg", "tgg":
 							ck.Update(models.Telegram, uid)
 							if gid != 0 {
-								go models.SendTggMsg(int(gid), int(uid), "扫码成功")
+								go models.SendTggMsg(int(gid), int(uid), "扫码成功", vv[5].(int), vv[6].(string))
 							} else {
 								go models.SendTgMsg(int(uid), "扫码成功")
 							}
@@ -178,7 +178,7 @@ func init() {
 						case "tg", "tgg":
 							// ck.Update(models.Telegram, uid)
 							if gid != 0 {
-								go models.SendTggMsg(int(gid), int(uid), "扫码失败")
+								go models.SendTggMsg(int(gid), int(uid), "扫码失败", vv[5].(int), vv[6].(string))
 							} else {
 								go models.SendTgMsg(int(uid), "扫码失败")
 							}
