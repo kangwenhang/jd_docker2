@@ -337,4 +337,11 @@ var codeSignals = []CodeSignal{
 			return "滚"
 		},
 	},
+	{
+		Command: []string{"。。。"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			return "你很无语吗"
+		},
+	},
 }
