@@ -172,7 +172,7 @@ var codeSignals = []CodeSignal{
 	{
 		Command: []string{"任务列表"},
 		Admin:   true,
-		Handle: func(sender *Sender) interface{} {
+		Handle: func(_ *Sender) interface{} {
 			rt := ""
 			for i := range Config.Repos {
 				for j := range Config.Repos[i].Task {
@@ -300,13 +300,21 @@ var codeSignals = []CodeSignal{
 	{
 		Command: []string{"set-env"},
 		Handle: func(sender *Sender) interface{} {
+			env := &Env{}
 			if len(sender.Contents) < 2 {
 				return "操作失败"
+			} else if len(sender.Contents) == 1 {
+				ss := regexp.MustCompile(`([^'"=]+)=['"]?([^=]+)['"]?`).FindStringSubmatch(sender.Contents[1])
+				if len(ss) != 3 {
+					return "无法解析"
+				}
+				env.Name = ss[1]
+				env.Value = ss[2]
+			} else {
+				env.Name = sender.Contents[0]
+				env.Value = strings.Join(sender.Contents[1:], " ")
 			}
-			ExportEnv(&Env{
-				Name:  sender.Contents[0],
-				Value: strings.Join(sender.Contents[1:], " "),
-			})
+			ExportEnv(env)
 			return "操作成功"
 		},
 	},

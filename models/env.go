@@ -27,6 +27,6 @@ func GetEnvs() []Env {
 
 func GetEnv(name string) string {
 	env := &Env{}
-	db.First(env)
+	db.Where("name = ?", name).First(env)
 	return env.Value
 }
