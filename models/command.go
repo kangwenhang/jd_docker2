@@ -415,9 +415,6 @@ var codeSignals = []CodeSignal{
 					}
 				}
 			}
-			if len(tmp) == 0 {
-				return "找不到匹配的账号"
-			}
 			return nil
 		},
 	},
