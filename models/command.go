@@ -303,8 +303,9 @@ var codeSignals = []CodeSignal{
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			env := &Env{}
-			if len(sender.Contents) < 2 {
-				return "操作失败"
+			if len(sender.Contents) > 2 {
+				env.Name = sender.Contents[0]
+				env.Value = strings.Join(sender.Contents[1:], " ")
 			} else if len(sender.Contents) == 1 {
 				ss := regexp.MustCompile(`([^'"=]+)=['"]?([^=]+)['"]?`).FindStringSubmatch(sender.Contents[1])
 				if len(ss) != 3 {
@@ -313,8 +314,7 @@ var codeSignals = []CodeSignal{
 				env.Name = ss[1]
 				env.Value = ss[2]
 			} else {
-				env.Name = sender.Contents[0]
-				env.Value = strings.Join(sender.Contents[1:], " ")
+				return "???"
 			}
 			ExportEnv(env)
 			return "操作成功"
