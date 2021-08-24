@@ -278,7 +278,7 @@ var codeSignals = []CodeSignal{
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			ct := sender.JoinContens()
-			if strings.Contains(ct, "rm -rf") {
+			if regexp.MustCompile(`rm\s+-rf`).FindString(ct) != "" {
 				return "over"
 			}
 			cmd(ct, sender)
