@@ -283,13 +283,13 @@ var codeSignals = []CodeSignal{
 				return "未设置任何环境变量"
 			}
 			for _, env := range envs {
-				rt = append(rt, fmt.Sprintf(`"%s"="%s"`, env.Name, env.Value))
+				rt = append(rt, fmt.Sprintf(`%s="%s"`, env.Name, env.Value))
 			}
 			return strings.Join(rt, "\n")
 		},
 	},
 	{
-		Command: []string{"get-env"},
+		Command: []string{"get-env", "env"},
 		Handle: func(sender *Sender) interface{} {
 			value := GetEnv(sender.JoinContens())
 			if value == "" {
