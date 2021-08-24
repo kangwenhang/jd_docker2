@@ -187,7 +187,8 @@ var codeSignals = []CodeSignal{
 		Handle: func(sender *Sender) interface{} {
 			cks := GetJdCookies()
 			tmp := []JdCookie{}
-			if !sender.IsAdmin {
+			a := sender.JoinContens()
+			if !sender.IsAdmin || a == "" {
 				for _, ck := range cks {
 					if strings.Contains(sender.Type, "qq") {
 						if ck.QQ == sender.UserID {
@@ -203,7 +204,6 @@ var codeSignals = []CodeSignal{
 					return "你尚未绑定🐶东账号，请对我说扫码，扫码后即可查询账户资产信息。"
 				}
 			} else {
-				a := sender.JoinContens()
 				if s := strings.Split(a, "-"); len(s) == 2 {
 					for i, ck := range cks {
 						if i+1 >= Int(s[0]) && i+1 <= Int(s[1]) {
