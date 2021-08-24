@@ -351,7 +351,6 @@ var codeSignals = []CodeSignal{
 	},
 	{
 		Command: []string{"。。。"},
-		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			return "你很无语吗？"
 		},
