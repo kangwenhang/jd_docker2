@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	tb "gopkg.in/tucnak/telebot.v2"
 	"gorm.io/gorm"
 )
 
@@ -19,16 +18,16 @@ type User struct {
 func NewActiveUser(class string, uid int, msgs ...interface{}) {
 	msg := ""
 	if class == "tgg" {
-		sender := msgs[4].(*tb.User)
-		last := ""
-		if sender.LastName != "" {
-			last = " " + sender.LastName
-		}
-		if sender.Username == "" {
-			msg = fmt.Sprintf(`@%s%s `, sender.FirstName, last)
-		} else {
-			msg = fmt.Sprintf(`@%s `, sender.Username)
-		}
+		// sender := msgs[4].(*tb.User)
+		// last := ""
+		// if sender.LastName != "" {
+		// 	last = " " + sender.LastName
+		// }
+		// if sender.Username == "" {
+		// 	msg = fmt.Sprintf(`@%s%s `, sender.FirstName, last)
+		// } else {
+		// 	msg = fmt.Sprintf(`@%s `, sender.Username)
+		// }
 
 		class = "tg"
 	}
