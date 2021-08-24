@@ -119,7 +119,9 @@ func (c *LoginController) GetQrcode() {
 	bot := c.GetString("tp")
 	uid := c.GetQueryInt("uid")
 	gid := c.GetQueryInt("gid")
-	JdCookieRunners.Store(st.Token, []interface{}{cookie, okl_token, bot, uid, gid})
+	mid := c.GetQueryInt("mid")
+	unm := c.GetString("unm")
+	JdCookieRunners.Store(st.Token, []interface{}{cookie, okl_token, bot, uid, gid, mid, unm})
 	if bot != "" {
 		c.Ctx.ResponseWriter.Write(data)
 		return

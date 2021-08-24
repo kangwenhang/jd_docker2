@@ -120,6 +120,9 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 		return fmt.Sprintf("余额%d", GetCoin(uid))
 	case "qrcode", "扫码", "二维码", "scan":
 		url := fmt.Sprintf("http://127.0.0.1:%d/api/login/qrcode.png?tp=%s&uid=%d&gid=%d", web.BConfig.Listen.HTTPPort, tp, uid, gid)
+		if tp == "tgg" {
+			url += fmt.Sprintf("&mid=%v&unm=%v", msgs[4], msgs[5])
+		}
 		rsp, err := httplib.Get(url).Response()
 		if err != nil {
 			return nil
