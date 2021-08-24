@@ -291,7 +291,11 @@ var codeSignals = []CodeSignal{
 	{
 		Command: []string{"get-env", "env", "e"},
 		Handle: func(sender *Sender) interface{} {
-			value := GetEnv(sender.JoinContens())
+			ct := sender.JoinContens()
+			if ct == "" {
+				return "未指定变量名"
+			}
+			value := GetEnv(ct)
 			if value == "" {
 				return "未设置环境变量"
 			}
