@@ -368,6 +368,7 @@ var codeSignals = []CodeSignal{
 	},
 	{
 		Command: []string{"reply", "回复"},
+		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			if len(sender.Contents) >= 2 {
 				replies[sender.Contents[0]] = strings.Join(sender.Contents[1:], " ")
