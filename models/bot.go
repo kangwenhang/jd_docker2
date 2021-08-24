@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"io/ioutil"
-	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -145,37 +144,8 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 			}
 		}
 		{
-			o := false
-			for _, v := range regexp.MustCompile(`京东账号\d*（(.*)）(.*)】(\S*)`).FindAllStringSubmatch(msg, -1) {
-				if !strings.Contains(v[3], "种子") && !strings.Contains(v[3], "undefined") {
-					pt_pin := url.QueryEscape(v[1])
-					for key, ss := range map[string][]string{
-						"Fruit":        {"京东农场", "东东农场"},
-						"Pet":          {"京东萌宠"},
-						"Bean":         {"种豆得豆"},
-						"JdFactory":    {"东东工厂"},
-						"DreamFactory": {"京喜工厂"},
-						"Jxnc":         {"京喜农场"},
-						"Jdzz":         {"京东赚赚"},
-						"Joy":          {"crazyJoy"},
-						"Sgmh":         {"闪购盲盒"},
-						"Cfd":          {"财富岛"},
-						"Cash":         {"签到领现金"},
-					} {
-						for _, s := range ss {
-							if strings.Contains(v[2], s) && v[3] != "" {
-								if ck, err := GetJdCookie(pt_pin); err == nil {
-									ck.Update(key, v[3])
-								}
-								if !o {
-									o = true
-								}
-							}
-						}
-					}
-				}
-			}
-			if o {
+			o := findShareCode(msg)
+			if o != "" {
 				return "导入互助码成功"
 			}
 		}
