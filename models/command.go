@@ -386,7 +386,6 @@ var codeSignals = []CodeSignal{
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			cks := GetJdCookies()
-			tmp := []JdCookie{}
 			a := sender.JoinContens()
 			if s := strings.Split(a, "-"); len(s) == 2 {
 				for i, ck := range cks {
