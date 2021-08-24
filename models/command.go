@@ -289,7 +289,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"get-env", "env"},
+		Command: []string{"get-env", "env", "e"},
 		Handle: func(sender *Sender) interface{} {
 			value := GetEnv(sender.JoinContens())
 			if value == "" {
