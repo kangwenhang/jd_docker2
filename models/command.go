@@ -299,11 +299,11 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"set-env"},
+		Command: []string{"set-env", "se"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			env := &Env{}
-			if len(sender.Contents) > 2 {
+			if len(sender.Contents) >= 2 {
 				env.Name = sender.Contents[0]
 				env.Value = strings.Join(sender.Contents[1:], " ")
 			} else if len(sender.Contents) == 1 {
@@ -321,7 +321,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"unset-env"},
+		Command: []string{"unset-env", "ue"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			UnExportEnv(&Env{
