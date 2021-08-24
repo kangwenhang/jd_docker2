@@ -355,4 +355,17 @@ var codeSignals = []CodeSignal{
 			return "你很无语吗？"
 		},
 	},
+	{
+		Command: []string{"祈祷"},
+		Handle: func(sender *Sender) interface{} {
+			if _, ok := mx[sender.UserID]; ok {
+				return "你祈祷过啦，等下次我忘记了再来吧。"
+			}
+			mx[sender.UserID] = true
+			AddCoin(sender.UserID)
+			return "许愿币+1"
+		},
+	},
 }
+
+var mx = map[int]bool{}
