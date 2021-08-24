@@ -344,7 +344,6 @@ var codeSignals = []CodeSignal{
 	},
 	{
 		Command: []string{"降级"},
-		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			return "滚"
 		},

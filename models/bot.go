@@ -49,28 +49,6 @@ func InitReplies() {
 	}
 }
 
-var sendMessagee = func(msg string, msgs ...interface{}) {
-	if len(msgs) == 0 {
-		return
-	}
-	tp := msgs[1].(string)
-	uid := msgs[2].(int)
-	gid := 0
-	if len(msgs) >= 4 {
-		gid = msgs[3].(int)
-	}
-	switch tp {
-	case "tg":
-		SendTgMsg(uid, msg)
-	case "tgg":
-		SendTggMsg(gid, uid, msg, msgs[4].(int), msgs[5].(string))
-	case "qq":
-		SendQQ(int64(uid), msg)
-	case "qqg":
-		SendQQGroup(int64(gid), int64(uid), msg)
-	}
-}
-
 var handleMessage = func(msgs ...interface{}) interface{} {
 	msg := msgs[0].(string)
 	args := strings.Split(msg, " ")
@@ -139,7 +117,7 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 							ck.Telegram = sender.UserID
 						}
 						if HasKey(ck.PtKey) {
-							sendMessagee(fmt.Sprintf("作弊，许愿币-1，余额%d", RemCoin(sender.UserID, 1)), msgs...)
+							sender.Reply(fmt.Sprintf("作弊，许愿币-1，余额%d", RemCoin(sender.UserID, 1)))
 						} else {
 							if nck, err := GetJdCookie(ck.PtPin); err == nil {
 								nck.InPool(ck.PtKey)
@@ -152,12 +130,12 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 								}
 								NewJdCookie(&ck)
 								msg := fmt.Sprintf("添加账号，%s", ck.PtPin)
-								sendMessagee(fmt.Sprintf("很棒，许愿币+1，余额%d", AddCoin(sender.UserID)), msgs...)
+								sender.Reply(fmt.Sprintf("很棒，许愿币+1，余额%d", AddCoin(sender.UserID)))
 								logs.Info(msg)
 							}
 						}
 					} else {
-						sendMessagee(fmt.Sprintf("无效，许愿币-1，余额%d", RemCoin(sender.UserID, 1)), msgs...)
+						sender.Reply(fmt.Sprintf("无效，许愿币-1，余额%d", RemCoin(sender.UserID, 1)))
 					}
 				}
 				go func() {
