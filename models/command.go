@@ -154,7 +154,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"get-ua"},
+		Command: []string{"get-ua", "ua"},
 		Handle: func(sender *Sender) interface{} {
 			return ua
 		},
