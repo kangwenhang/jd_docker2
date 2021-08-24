@@ -275,6 +275,7 @@ var codeSignals = []CodeSignal{
 	},
 	{
 		Command: []string{"环境变量", "environments", "envs"},
+		Admin:   true,
 		Handle: func(_ *Sender) interface{} {
 			rt := []string{}
 			envs := GetEnvs()
@@ -299,6 +300,7 @@ var codeSignals = []CodeSignal{
 	},
 	{
 		Command: []string{"set-env"},
+		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			env := &Env{}
 			if len(sender.Contents) < 2 {
