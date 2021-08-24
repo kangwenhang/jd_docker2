@@ -161,8 +161,8 @@ var codeSignals = []CodeSignal{
 				if coin < 0 {
 					return "许愿币不足以查看UserAgent。"
 				}
-				sender.Reply("查看一次扣5个许愿币。")
-				RemCoin(sender.UserID, 5)
+				sender.Reply("查看一次扣1个许愿币。")
+				RemCoin(sender.UserID, 1)
 			}
 			return ua
 		},
