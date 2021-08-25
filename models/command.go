@@ -306,7 +306,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"set-env", "se"},
+		Command: []string{"set-env", "se", "export"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			env := &Env{}
@@ -328,7 +328,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"unset-env", "ue"},
+		Command: []string{"unset-env", "ue", "unexport", "de"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			UnExportEnv(&Env{
@@ -412,17 +412,6 @@ var codeSignals = []CodeSignal{
 			sender.handleJdCookies(func(ck *JdCookie) {
 				ck.Update(Hack, False)
 				sender.Reply(fmt.Sprintf("已设置取消屏蔽助力账号%s(%s)", ck.PtPin, ck.Nickname))
-			})
-			return nil
-		},
-	},
-	{
-		Command: []string{"WHEN Priority -1  "},
-		Admin:   true,
-		Handle: func(sender *Sender) interface{} {
-			sender.handleJdCookies(func(ck *JdCookie) {
-				ck.Update(Hack, True)
-				sender.Reply(fmt.Sprintf("已设置屏蔽助力账号%s(%s)", ck.PtPin, ck.Nickname))
 			})
 			return nil
 		},
