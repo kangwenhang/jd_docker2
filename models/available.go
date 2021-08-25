@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/beego/beego/v2/client/httplib"
@@ -134,9 +135,9 @@ func initCookie() {
 }
 
 func CookieOK(ck *JdCookie) bool {
-	fmt.Println(ck.PtPin)
+	// fmt.Println(ck.PtPin)
 	cookie := "pt_key=" + ck.PtKey + ";pt_pin=" + ck.PtPin + ";"
-	fmt.Println(cookie)
+	// fmt.Println(cookie)
 	// jdzz(cookie, make(chan int64))
 	if ck == nil {
 		return true
@@ -157,7 +158,6 @@ func CookieOK(ck *JdCookie) bool {
 	if nil != json.Unmarshal(data, ui) {
 		return true
 	}
-	fmt.Println(ui)
 	switch ui.Retcode {
 	case "1001": //ck.BeanNum
 		if ui.Msg == "not login" {
@@ -168,7 +168,7 @@ func CookieOK(ck *JdCookie) bool {
 			return false
 		}
 	case "0":
-		if ui.Data.UserInfo.BaseInfo.CurPin != ck.PtPin {
+		if url.QueryEscape(ui.Data.UserInfo.BaseInfo.CurPin) != ck.PtPin {
 			return false
 		}
 		if ui.Data.UserInfo.BaseInfo.Nickname != ck.Nickname || ui.Data.AssetInfo.BeanNum != ck.BeanNum || ui.Data.UserInfo.BaseInfo.UserLevel != ck.UserLevel || ui.Data.UserInfo.BaseInfo.LevelName != ck.LevelName {
@@ -184,6 +184,7 @@ func CookieOK(ck *JdCookie) bool {
 			ck.Nickname = ui.Data.UserInfo.BaseInfo.Nickname
 			ck.BeanNum = ui.Data.AssetInfo.BeanNum
 		}
+		fmt.Println("----")
 		return true
 	}
 	return av2(cookie)
