@@ -111,7 +111,7 @@ func runTask(task *Task, sender *Sender) string {
 	for _, env := range GetEnvs() {
 		if env.Name+".js" == task.Name && env.Value != "" {
 			for _, ck := range LimitJdCookie(GetJdCookies(), env.Value) {
-				pins += ck.PtPin
+				pins += "&" + ck.PtPin
 			}
 		}
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", env.Name, env.Value))
