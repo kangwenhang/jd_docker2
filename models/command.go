@@ -333,7 +333,7 @@ var codeSignals = []CodeSignal{
 				env.Name = sender.Contents[0]
 				env.Value = strings.Join(sender.Contents[1:], " ")
 			} else if len(sender.Contents) == 1 {
-				ss := regexp.MustCompile(`([^'"=]+)=['"]?([^=]+)['"]?`).FindStringSubmatch(sender.Contents[0])
+				ss := regexp.MustCompile(`([^'"=]+)=['"]?([^=]+)['"]*?`).FindStringSubmatch(sender.Contents[0])
 				if len(ss) != 3 {
 					return "无法解析"
 				}
