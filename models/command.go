@@ -256,7 +256,7 @@ var codeSignals = []CodeSignal{
 			w := sender.JoinContens()
 			if w == "" {
 				defer sender.Reply("请对我说 许愿 巴拉巴拉")
-				return "请说出你的愿望。"
+				return nil
 			}
 			if b < 25 {
 				return "许愿币不足，需要25个许愿币。"
@@ -264,12 +264,6 @@ var codeSignals = []CodeSignal{
 
 			(&JdCookie{}).Push(fmt.Sprintf("%d许愿%s，许愿币余额%d。", sender.UserID, w, b))
 			return fmt.Sprintf("收到许愿，已扣除25个许愿币，余额%d。", RemCoin(sender.UserID, 25))
-		},
-	},
-	{
-		Command: []string{"巴拉巴拉"},
-		Handle: func(sender *Sender) interface{} {
-			return "黑魔变身。"
 		},
 	},
 	{
