@@ -476,7 +476,7 @@ var codeSignals = []CodeSignal{
 				tx.Rollback()
 				return "你还没有开通钱包功能"
 			}
-			if s.Coin <= 0 {
+			if s.Coin <= amount {
 				tx.Rollback()
 				return "余额不足"
 			}
