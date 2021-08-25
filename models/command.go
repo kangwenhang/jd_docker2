@@ -458,10 +458,7 @@ var codeSignals = []CodeSignal{
 			if sender.ReplySenderUserID == 0 {
 				return "没有转账目标"
 			}
-			if len(sender.Contents) != 1 {
-				return "未设置转账金额"
-			}
-			amount := Int(sender.Contents[0])
+			amount := Int(sender.JoinContens())
 			if !sender.IsAdmin {
 				if amount <= 0 {
 					return "转账金额必须大于0"
