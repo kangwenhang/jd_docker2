@@ -17,7 +17,9 @@ type User struct {
 
 func AddCoin(uid int) int {
 	var u User
-	db.Where("number = ?", uid).First(&u)
+	if db.Where("number = ?", uid).First(&u).Error != nil {
+		return 0
+	}
 	db.Model(u).Updates(map[string]interface{}{
 		"coin": gorm.Expr("coin+1"),
 	})
