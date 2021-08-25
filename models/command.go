@@ -501,6 +501,17 @@ var codeSignals = []CodeSignal{
 			return fmt.Sprintf("转账成功，你的余额%d，他的余额%d。", s.Coin-amount, r.Coin+amount)
 		},
 	},
+	{
+		Command: []string{"导出账号"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			sender.handleJdCookies(func(ck *JdCookie) {
+				ck.Update(Hack, True)
+				sender.Reply(fmt.Sprintf("pt_key=%s;pt_pin=%s;", ck.PtKey, ck.PtPin))
+			})
+			return nil
+		},
+	},
 }
 
 var mx = map[int]bool{}
