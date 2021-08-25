@@ -107,7 +107,6 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 
 				xyb := 0
 				for _, s := range ss {
-					fmt.Println(s[1], s[2])
 					ck := JdCookie{
 						PtKey: s[1],
 						PtPin: s[2],
