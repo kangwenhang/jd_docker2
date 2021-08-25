@@ -380,6 +380,19 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
+		Command: []string{"退还许愿币"},
+		Handle: func(sender *Sender) interface{} {
+			if len(sender.Contents) == 2 {
+				db.Model(User{}).Where("number = " + sender.Contents[1]).Updates(map[string]interface{}{
+					"coin": gorm.Expr("coin+" + sender.Contents[1]),
+				})
+				return "操作成功"
+			} else {
+				return "操作异常"
+			}
+		},
+	},
+	{
 		Command: []string{"reply", "回复"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
