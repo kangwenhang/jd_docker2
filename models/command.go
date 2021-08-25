@@ -262,7 +262,7 @@ var codeSignals = []CodeSignal{
 				if !sender.IsAdmin {
 					tb = tb.Where("user_number", sender.UserID)
 				} else {
-					tb = tb.Where("status != 0")
+					tb = tb.Where("status != 1")
 				}
 				tb.Order("id asc").Find(&ws)
 				if len(ws) == 0 {
