@@ -461,7 +461,7 @@ var codeSignals = []CodeSignal{
 			amount := Int(sender.JoinContens())
 			if !sender.IsAdmin {
 				if amount <= 0 {
-					return "转账金额必须大于0"
+					return "转账金额必须大于等于1"
 				}
 			}
 			if sender.UserID == sender.ReplySenderUserID {
