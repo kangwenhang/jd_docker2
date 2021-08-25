@@ -134,8 +134,8 @@ func initCookie() {
 }
 
 func CookieOK(ck *JdCookie) bool {
-	cookie := fmt.Sprintf("pt_key=" + ck.PtKey + ";pt_pin=" + ck.PtPin + ";")
-	fmt.Println(cookie)
+	cookie := "pt_key=" + ck.PtKey + ";pt_pin=" + ck.PtPin + ";"
+	// fmt.Println(cookie)
 	// jdzz(cookie, make(chan int64))
 	if ck == nil {
 		return true
