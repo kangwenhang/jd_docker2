@@ -458,7 +458,7 @@ var codeSignals = []CodeSignal{
 			if sender.ReplySenderUserID == 0 {
 				return "没有转账目标"
 			}
-			if len(sender.Contents) == 0 {
+			if len(sender.Contents) != 1 {
 				return "未设置转账金额"
 			}
 			amount := Int(sender.Contents[0])
