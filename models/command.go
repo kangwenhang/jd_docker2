@@ -78,41 +78,13 @@ func (sender *Sender) handleJdCookies(handle func(ck *JdCookie)) {
 			sender.Reply("你尚未绑定🐶东账号，请对我说扫码，扫码后即可查询账户资产信息。")
 		}
 	} else {
-		if s := strings.Split(a, "-"); len(s) == 2 {
-			for i, ck := range cks {
-				if i+1 >= Int(s[0]) && i+1 <= Int(s[1]) {
-					if !ok {
-						ok = true
-					}
-					handle(&ck)
-				}
-			}
-		} else if x := regexp.MustCompile(`^[\s\d,]+$`).FindString(a); x != "" {
-			xx := regexp.MustCompile(`(\d+)`).FindAllStringSubmatch(a, -1)
-			for i, ck := range cks {
-				for _, x := range xx {
-					if fmt.Sprint(i+1) == x[1] {
-						if !ok {
-							ok = true
-						}
-						handle(&ck)
-					}
-				}
-
-			}
-		} else if a != "" {
-			a = strings.Replace(a, " ", "", -1)
-			for _, ck := range cks {
-				if strings.Contains(ck.Note, a) || strings.Contains(ck.Nickname, a) || strings.Contains(ck.PtPin, a) {
-					if !ok {
-						ok = true
-					}
-					handle(&ck)
-				}
-			}
-		}
-		if !ok {
+		cks = LimitJdCookie(cks, a)
+		if len(cks) == 0 {
 			sender.Reply("没有匹配的账号")
+		} else {
+			for _, ck := range cks {
+				handle(&ck)
+			}
 		}
 	}
 
@@ -458,3 +430,32 @@ var codeSignals = []CodeSignal{
 }
 
 var mx = map[int]bool{}
+
+func LimitJdCookie(cks []JdCookie, a string) []JdCookie {
+	ncks := []JdCookie{}
+	if s := strings.Split(a, "-"); len(s) == 2 {
+		for i, ck := range cks {
+			if i+1 >= Int(s[0]) && i+1 <= Int(s[1]) {
+				ncks = append(ncks, ck)
+			}
+		}
+	} else if x := regexp.MustCompile(`^[\s\d,]+$`).FindString(a); x != "" {
+		xx := regexp.MustCompile(`(\d+)`).FindAllStringSubmatch(a, -1)
+		for i, ck := range cks {
+			for _, x := range xx {
+				if fmt.Sprint(i+1) == x[1] {
+					ncks = append(ncks, ck)
+				}
+			}
+
+		}
+	} else if a != "" {
+		a = strings.Replace(a, " ", "", -1)
+		for _, ck := range cks {
+			if strings.Contains(ck.Note, a) || strings.Contains(ck.Nickname, a) || strings.Contains(ck.PtPin, a) {
+				ncks = append(ncks, ck)
+			}
+		}
+	}
+	return ncks
+}

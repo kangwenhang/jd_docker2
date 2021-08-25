@@ -106,20 +106,17 @@ func runTask(task *Task, sender *Sender) string {
 	if strings.Contains(task.Name, ".py") {
 		lan = Config.Python
 	}
-	// envs := ""
-	// for _, env := range task.Envs {
-	// 	envs += fmt.Sprintf("export %s=\"%s\"", env.Name, env.Value)
-	// }
-	// 	sh := fmt.Sprintf(`
-	// %s
-	// %s %s
-	// 	`, envs,
-	// 		lan, task.Name)
-	// cmd := exec.Command("sh", "-c", sh)
 	cmd := exec.Command(lan, task.Name)
+	pins := ""
 	for _, env := range GetEnvs() {
+		if env.Name+".js" == task.Name && env.Value != "" {
+			for _, ck := range LimitJdCookie(GetJdCookies(), env.Value) {
+				pins += ck.PtPin
+			}
+		}
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", env.Name, env.Value))
 	}
+	cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", "pins", pins))
 	for _, env := range task.Envs {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", env.Name, env.Value))
 	}
