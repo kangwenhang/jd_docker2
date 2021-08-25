@@ -42,7 +42,11 @@ func initTgBot() {
 				if tgg == nil {
 					tgg = m.Chat
 				}
-				rt := handleMessage(m.Text, "tgg", m.Sender.ID, int(m.Chat.ID), m.ID, m.Sender.Username, m.ReplyTo.Sender.ID)
+				var rid int = 0
+				if m.ReplyTo != nil {
+					rid = m.ReplyTo.Sender.ID
+				}
+				rt := handleMessage(m.Text, "tgg", m.Sender.ID, int(m.Chat.ID), m.ID, rid)
 				// fmt.Println(rt)
 				switch rt.(type) {
 				case string:
