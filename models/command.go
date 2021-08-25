@@ -149,7 +149,9 @@ var codeSignals = []CodeSignal{
 					"coin":      gorm.Expr(fmt.Sprintf("coin+%d", coin)),
 				})
 				u.Coin += coin
-				return fmt.Sprintf("你是打卡第%d人，奖励%d个许愿币，许愿币余额%d。", total[0]+1, coin, u.Coin)
+				sender.Reply(fmt.Sprintf("你是打卡第%d人，奖励%d个许愿币，许愿币余额%d。", total[0]+1, coin, u.Coin))
+				ReturnCoin(sender)
+				return ""
 			}
 			return nil
 		},
@@ -250,8 +252,35 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"许愿", "wish", "hope", "want"},
+		Command: []string{"许愿", "愿望", "wish", "hope", "want"},
 		Handle: func(sender *Sender) interface{} {
+			ct := sender.JoinContens()
+			if ct == "" {
+				rt := []string{}
+				ws := []Wish{}
+				tb := db
+				if !sender.IsAdmin {
+					tb.Where("user_number", sender.UserID)
+				}
+				tb.Order("id asc").Find(&ws)
+				if len(ws) == 0 {
+					return "请对我说 许愿 巴拉巴拉"
+				}
+				for i, w := range ws {
+					status := "未达成"
+					if w.Status == 1 {
+						status = "已撤销"
+					} else if w.Status == 2 {
+						status = "已达成"
+					}
+					id := i + 1
+					if sender.IsAdmin {
+						id = w.ID
+					}
+					rt = append(rt, fmt.Sprintf("%d.\t %s [%s]", id, w.Content, status))
+				}
+				return strings.Join(rt, "\n")
+			}
 			cost := 25
 			if sender.IsAdmin {
 				cost = 1
@@ -263,14 +292,9 @@ var codeSignals = []CodeSignal{
 				return "许愿币不足，先去打卡吧。"
 			}
 			w := &Wish{
-				Content:    sender.JoinContens(),
+				Content:    ct,
 				Coin:       cost,
 				UserNumber: sender.UserID,
-			}
-			if w.Content == "" {
-				tx.Rollback()
-				sender.Reply("请对我说 许愿 巴拉巴拉")
-				return nil
 			}
 			if u.Coin < cost {
 				tx.Rollback()
@@ -290,21 +314,22 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"愿望清单", "wishes"},
-		Handle: func(_ *Sender) interface{} {
-			rt := []string{"\n"}
-			ws := []Wish{}
-			db.Find(&ws)
-			for i, w := range ws {
-				status := "未达成"
-				if w.Status == 1 {
-					status = "已退回"
-				} else if w.Status == 2 {
-					status = "已达成"
-				}
-				rt = append(rt, fmt.Sprintf("%d.\t[%s] %s", i+1, status, w.Content))
+		Command: []string{"愿望达成"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			w := &Wish{}
+			id := Int(sender.JoinContens())
+			if id == 0 {
+				return "目标未指定"
 			}
-			return strings.Join(rt, "\n")
+			if db.First(w, id).Error != nil {
+				return "目标不存在"
+			}
+			if db.Model(w).Update("status", 2).RowsAffected == 0 {
+				return "操作失败"
+			}
+			sender.Reply(fmt.Sprintf("达成了愿望 %s", w.Content))
+			return nil
 		},
 	},
 	{
@@ -430,17 +455,18 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"退还许愿币"},
+		Command: []string{"撤销愿望"},
+		Handle: func(sender *Sender) interface{} {
+			ReturnCoin(sender)
+			return nil
+		},
+	},
+	{
+		Command: []string{"达成愿望"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
-			if len(sender.Contents) == 2 {
-				db.Model(User{}).Where("number = " + sender.Contents[1]).Updates(map[string]interface{}{
-					"coin": gorm.Expr("coin+" + sender.Contents[1]),
-				})
-				return "操作成功"
-			} else {
-				return "操作异常"
-			}
+			db.Model(Wish{}).Where("status = 0 and id = ?", Int(sender.JoinContens())).Update("status", 2)
+			return "操作成功"
 		},
 	},
 	{
@@ -589,4 +615,31 @@ func LimitJdCookie(cks []JdCookie, a string) []JdCookie {
 		}
 	}
 	return ncks
+}
+
+func ReturnCoin(sender *Sender) {
+	tx := db.Begin()
+	ws := []Wish{}
+	if err := tx.Where("status = 0 and user_number = ?", sender.UserID).Find(&ws).Error; err != nil {
+		tx.Rollback()
+		sender.Reply(err.Error())
+	}
+	for _, w := range ws {
+		if tx.Model(User{}).Where("number = ? ", sender.UserID).Update(
+			"coin", gorm.Expr(fmt.Sprintf("coin + %d", w.Coin)),
+		).RowsAffected == 0 {
+			tx.Rollback()
+			sender.Reply("愿望未达成退还许愿币失败。")
+			return
+		}
+		sender.Reply(fmt.Sprintf("[%s] 愿望未达成退还%d枚许愿币。", w.Content, w.Coin))
+		if tx.Model(&w).Update(
+			"status", 1,
+		).RowsAffected == 0 {
+			tx.Rollback()
+			sender.Reply("愿望未达成退还许愿币失败。")
+			return
+		}
+	}
+	tx.Commit()
 }
