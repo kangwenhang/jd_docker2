@@ -260,7 +260,7 @@ var codeSignals = []CodeSignal{
 				ws := []Wish{}
 				tb := db
 				if !sender.IsAdmin {
-					tb.Where("user_number", sender.UserID)
+					tb = tb.Where("user_number", sender.UserID)
 				}
 				tb.Order("id asc").Find(&ws)
 				if len(ws) == 0 {
