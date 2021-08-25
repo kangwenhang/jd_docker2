@@ -256,7 +256,7 @@ var codeSignals = []CodeSignal{
 				return "许愿币不足，需要10个许愿币。"
 			}
 			(&JdCookie{}).Push(fmt.Sprintf("%d许愿%s，许愿币余额%d。", sender.UserID, sender.JoinContens(), b))
-			return fmt.Sprintf("收到许愿，已扣除10个许愿币，余额%d。", RemCoin(sender.UserID, 5))
+			return fmt.Sprintf("收到许愿，已扣除10个许愿币，余额%d。", RemCoin(sender.UserID, 10))
 		},
 	},
 	{
