@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 func getVhelpRule(num int) string {
@@ -183,8 +185,11 @@ func getQLHelp(num int) map[string]string {
 	return f
 }
 
-func WriteHelpJS() {
-	var Codes = map[string][]string{
+func WriteHelpJS(acks []JdCookie) {
+	cks := GetJdCookies(func(sb *gorm.DB) *gorm.DB {
+		return sb.Where(fmt.Sprintf("%s = ?", Help), True)
+	})
+	var codes = map[string][]string{
 		"Fruit":        {},
 		"Pet":          {},
 		"Bean":         {},
@@ -197,47 +202,101 @@ func WriteHelpJS() {
 		"Cfd":          {},
 		"Cash":         {},
 	}
-	cks := GetJdCookies()
 	for _, ck := range cks {
-		if ck.Help == True {
-			for k := range Codes {
-				switch k {
-				case "Fruit":
-					Codes[k] = append(Codes[k], ck.Fruit)
-				case "Pet":
-					Codes[k] = append(Codes[k], ck.Pet)
-				case "Bean":
-					Codes[k] = append(Codes[k], ck.Bean)
-				case "JdFactory":
-					Codes[k] = append(Codes[k], ck.JdFactory)
-				case "DreamFactory":
-					Codes[k] = append(Codes[k], ck.DreamFactory)
-				case "Jxnc":
-					Codes[k] = append(Codes[k], ck.Jxnc)
-				case "Jdzz":
-					Codes[k] = append(Codes[k], ck.Jdzz)
-				case "Joy":
-					Codes[k] = append(Codes[k], ck.Joy)
-				case "Sgmh":
-					Codes[k] = append(Codes[k], ck.Sgmh)
-				case "Cfd":
-					Codes[k] = append(Codes[k], ck.Cfd)
-				case "Cash":
-					Codes[k] = append(Codes[k], ck.Cash)
+		for k := range codes {
+			switch k {
+			case "Fruit":
+				codes[k] = append(codes[k], ck.Fruit)
+			case "Pet":
+				codes[k] = append(codes[k], ck.Pet)
+			case "Bean":
+				codes[k] = append(codes[k], ck.Bean)
+			case "JdFactory":
+				codes[k] = append(codes[k], ck.JdFactory)
+			case "DreamFactory":
+				codes[k] = append(codes[k], ck.DreamFactory)
+			case "Jxnc":
+				codes[k] = append(codes[k], ck.Jxnc)
+			case "Jdzz":
+				codes[k] = append(codes[k], ck.Jdzz)
+			case "Joy":
+				codes[k] = append(codes[k], ck.Joy)
+			case "Sgmh":
+				codes[k] = append(codes[k], ck.Sgmh)
+			case "Cfd":
+				codes[k] = append(codes[k], ck.Cfd)
+			case "Cash":
+				codes[k] = append(codes[k], ck.Cash)
+			}
+			if len := len(codes[k]); len != 0 {
+				if codes[k][len-1] == "undefined" || codes[k][len-1] == "" {
+					codes[k] = codes[k][:len-1]
 				}
-				if len := len(Codes[k]); len != 0 {
-					if Codes[k][len-1] == "undefined" || Codes[k][len-1] == "" || Codes[k][len-1] == "--" {
-						Codes[k] = Codes[k][:len-1]
-					}
+			}
+		}
+	}
+	var e = map[string][]string{
+		"Fruit":        {},
+		"Pet":          {},
+		"Bean":         {},
+		"JdFactory":    {},
+		"DreamFactory": {},
+		"Jxnc":         {},
+		"Jdzz":         {},
+		"Joy":          {},
+		"Sgmh":         {},
+		"Cfd":          {},
+		"Cash":         {},
+	}
+	var f = func(ss []string, s string) string {
+		tss := []string{}
+		for _, v := range ss {
+			if v != s {
+				tss = append(tss, v)
+			}
+		}
+		return `'` + strings.Join(tss, "@") + `'`
+	}
+
+	for k := range codes {
+		for _, ck := range acks {
+			switch k {
+			case "Fruit":
+				e[k] = append(e[k], f(codes[k], ck.Fruit))
+			case "Pet":
+				e[k] = append(e[k], f(codes[k], ck.Pet))
+			case "Bean":
+				e[k] = append(e[k], f(codes[k], ck.Bean))
+			case "JdFactory":
+				e[k] = append(e[k], f(codes[k], ck.JdFactory))
+			case "DreamFactory":
+				e[k] = append(e[k], f(codes[k], ck.DreamFactory))
+			case "Jxnc":
+				e[k] = append(e[k], f(codes[k], ck.Jxnc))
+			case "Jdzz":
+				e[k] = append(e[k], f(codes[k], ck.Jdzz))
+			case "Joy":
+				e[k] = append(e[k], f(codes[k], ck.Joy))
+			case "Sgmh":
+				e[k] = append(e[k], f(codes[k], ck.Sgmh))
+			case "Cfd":
+				e[k] = append(e[k], f(codes[k], ck.Cfd))
+			case "Cash":
+				e[k] = append(e[k], f(codes[k], ck.Cash))
+			}
+			if len := len(codes[k]); len != 0 {
+				if codes[k][len-1] == "undefined" || codes[k][len-1] == "" {
+					codes[k] = codes[k][:len-1]
 				}
 			}
 		}
 	}
 	tpl := `let codes = [%s];
 for (let i = 0; i < codes.length; i++) {
-const index = (i + 1 === 1) ? '' : (i + 1);exports['%s' + index] = codes[i];
+	const index = (i + 1 === 1) ? '' : (i + 1);
+	exports['%s' + index] = codes[i];
 }`
-	for k, codes := range Codes {
+	for k, codes := range e {
 		switch k {
 		case "Fruit":
 			WriteToFile(

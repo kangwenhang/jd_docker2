@@ -145,9 +145,13 @@ func Date() string {
 	return time.Now().Local().Format("2006-01-02")
 }
 
-func GetJdCookies() []JdCookie {
+func GetJdCookies(sbs ...func(sb *gorm.DB) *gorm.DB) []JdCookie {
 	cks := []JdCookie{}
-	db.Order("priority desc").Find(&cks)
+	tb := db
+	for _, sb := range sbs {
+		tb = sb(tb)
+	}
+	tb.Order("priority desc").Find(&cks)
 	return cks
 }
 
