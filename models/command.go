@@ -464,22 +464,24 @@ var codeSignals = []CodeSignal{
 					return "转账金额必须大于0"
 				}
 			}
+			if sender.UserID == sender.ReplySenderUserID {
+				return "转账成功"
+			}
 			tx := db.Begin()
-			u := &User{}
-			if err := db.Where("number = ?", sender.UserID).First(&u).Error; err != nil {
+			s := &User{}
+			if err := db.Where("number = ?", sender.UserID).First(&s).Error; err != nil {
 				tx.Rollback()
 				return "你还没有开通钱包功能"
 			}
-			if u.Coin <= 0 {
+			if s.Coin <= 0 {
 				tx.Rollback()
 				return "余额不足"
 			}
-			u.ID = 0
-			if err := db.Where("number = ?", sender.ReplySenderUserID).First(&u).Error; err != nil {
+			r := &User{}
+			if err := db.Where("number = ?", sender.ReplySenderUserID).First(&r).Error; err != nil {
 				tx.Rollback()
 				return "他还没有开通钱包功能"
 			}
-
 			if tx.Model(User{}).Where("number = ?", sender.UserID).Updates(map[string]interface{}{
 				"coin": gorm.Expr(fmt.Sprintf("coin - %d", amount)),
 			}).RowsAffected == 0 {
@@ -493,7 +495,7 @@ var codeSignals = []CodeSignal{
 				return "转账失败"
 			}
 			tx.Commit()
-			return "转账成功"
+			return fmt.Sprintf("转账成功，你的余额%d，他的余额%d。", s.Coin-amount, r.Coin+amount)
 		},
 	},
 }
