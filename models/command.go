@@ -467,6 +467,9 @@ var codeSignals = []CodeSignal{
 			if sender.UserID == sender.ReplySenderUserID {
 				return "转账成功"
 			}
+			if amount > 10000 {
+				return "单笔转账限额10000"
+			}
 			tx := db.Begin()
 			s := &User{}
 			if err := db.Where("number = ?", sender.UserID).First(&s).Error; err != nil {
