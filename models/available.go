@@ -165,6 +165,9 @@ func CookieOK(ck *JdCookie) bool {
 			return false
 		}
 	case "0":
+		if ui.Data.UserInfo.BaseInfo.CurPin == "" {
+			return false
+		}
 		if ui.Data.UserInfo.BaseInfo.Nickname != ck.Nickname || ui.Data.AssetInfo.BeanNum != ck.BeanNum || ui.Data.UserInfo.BaseInfo.UserLevel != ck.UserLevel || ui.Data.UserInfo.BaseInfo.LevelName != ck.LevelName {
 			ck.Updates(JdCookie{
 				Nickname:  ui.Data.UserInfo.BaseInfo.Nickname,
