@@ -463,12 +463,18 @@ var codeSignals = []CodeSignal{
 				if amount <= 0 {
 					return "转账金额必须大于0"
 				}
-				remain := GetCoin(sender.UserID)
-				if remain <= 0 {
-					return "余额不足"
-				}
 			}
 			tx := db.Begin()
+			u := &User{}
+			if err := db.Where("number = ?", sender.UserID).First(&u).Error; err != nil {
+				return "你还没有开通钱包功能"
+			}
+			if u.Coin <= 0 {
+				return "余额不足"
+			}
+			if err := db.Where("number = ?", sender.ReplySenderUserID).First(&u).Error; err != nil {
+				return "他还没有开通钱包功能"
+			}
 			if tx.Model(User{}).Where("number = ?", sender.UserID).Updates(map[string]interface{}{
 				"coin": gorm.Expr(fmt.Sprintf("coin - %d", amount)),
 			}).RowsAffected == 0 {
