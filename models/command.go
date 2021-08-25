@@ -325,6 +325,12 @@ var codeSignals = []CodeSignal{
 			if db.First(w, id).Error != nil {
 				return "目标不存在"
 			}
+			if w.Status == 1 {
+				return "愿望已撤销"
+			}
+			if w.Status == 2 {
+				return "愿望已达成"
+			}
 			if db.Model(w).Update("status", 2).RowsAffected == 0 {
 				return "操作失败"
 			}
