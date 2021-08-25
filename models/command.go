@@ -474,11 +474,12 @@ var codeSignals = []CodeSignal{
 				tx.Rollback()
 				return "余额不足"
 			}
+			u.ID = 0
 			if err := db.Where("number = ?", sender.ReplySenderUserID).First(&u).Error; err != nil {
 				tx.Rollback()
 				return "他还没有开通钱包功能"
 			}
-			u.ID = 0
+
 			if tx.Model(User{}).Where("number = ?", sender.UserID).Updates(map[string]interface{}{
 				"coin": gorm.Expr(fmt.Sprintf("coin - %d", amount)),
 			}).RowsAffected == 0 {
