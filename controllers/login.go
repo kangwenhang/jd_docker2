@@ -160,6 +160,9 @@ func init() {
 							}
 						case "tg", "tgg":
 							ck.Update(models.Telegram, uid)
+							if ck.Priority < 0 && models.GetEnv("AutoPriority") == models.True {
+								ck.Update(models.Priority, -ck.Priority)
+							}
 							if gid != 0 {
 								go models.SendTggMsg(int(gid), int(uid), "扫码成功", vv[5].(int), vv[6].(string))
 							} else {

@@ -444,6 +444,17 @@ var codeSignals = []CodeSignal{
 			return nil
 		},
 	},
+	{
+		Command: []string{"WHEN Priority -1  "},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			sender.handleJdCookies(func(ck *JdCookie) {
+				ck.Update(Hack, True)
+				sender.Reply(fmt.Sprintf("已设置屏蔽助力账号%s(%s)", ck.PtPin, ck.Nickname))
+			})
+			return nil
+		},
+	},
 }
 
 var mx = map[int]bool{}
