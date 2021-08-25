@@ -95,6 +95,8 @@ type JdCookie struct {
 	Help         string `gorm:"column:Help;default:false" validate:"oneof=true false"`
 	Pool         string `gorm:"-"`
 	Hack         string `gorm:"column:Hack"  validate:"oneof=true false"`
+	UserLevel    string `gorm:"column:UserLevel"`
+	LevelName    string `gorm:"column:LevelName"`
 }
 
 type JdCookiePool struct {
@@ -105,6 +107,8 @@ type JdCookiePool struct {
 	CreateAt string `gorm:"column:CreateAt"`
 }
 
+var UserLevel = "UserLevel"
+var LevelName = "LevelName"
 var ScanedAt = "ScanedAt"
 var LoseAt = "LoseAt"
 var CreateAt = "CreateAt"

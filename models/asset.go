@@ -133,6 +133,8 @@ func (ck *JdCookie) Query() string {
 			}
 			page++
 		}
+		msgs = append(msgs, fmt.Sprintf("用户等级：%v", ck.UserLevel))
+		msgs = append(msgs, fmt.Sprintf("等级名称：%v", ck.LevelName))
 		msgs = append(msgs, fmt.Sprintf("当前京豆：%v京豆", ck.BeanNum))
 		ysd := int(time.Now().Add(24 * time.Hour).Unix())
 		if rps := <-rpc; len(rps) != 0 {
