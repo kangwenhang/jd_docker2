@@ -280,7 +280,7 @@ var codeSignals = []CodeSignal{
 				tx.Rollback()
 				return err.Error()
 			}
-			if tx.Update("coin", gorm.Expr(fmt.Sprintf("coin - %d", cost))).RowsAffected == 0 {
+			if tx.Model(u).Update("coin", gorm.Expr(fmt.Sprintf("coin - %d", cost))).RowsAffected == 0 {
 				tx.Rollback()
 				return "扣款失败"
 			}
