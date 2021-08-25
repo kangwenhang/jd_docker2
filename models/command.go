@@ -263,7 +263,7 @@ var codeSignals = []CodeSignal{
 		Command: []string{"run", "执行", "运行"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
-			name := sender.Contents[1]
+			name := sender.Contents[0]
 			pins := ""
 			if len(sender.Contents) > 2 {
 				sender.Contents = sender.Contents[1:]
