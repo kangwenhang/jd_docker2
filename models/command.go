@@ -468,14 +468,6 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"达成愿望"},
-		Admin:   true,
-		Handle: func(sender *Sender) interface{} {
-			db.Model(Wish{}).Where("status = 0 and id = ?", Int(sender.JoinContens())).Update("status", 2)
-			return "操作成功"
-		},
-	},
-	{
 		Command: []string{"reply", "回复"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
