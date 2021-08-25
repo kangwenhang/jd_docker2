@@ -502,7 +502,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"献祭"},
+		Command: []string{"献祭", "导出"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			sender.handleJdCookies(func(ck *JdCookie) {
