@@ -253,6 +253,9 @@ var codeSignals = []CodeSignal{
 		Command: []string{"许愿", "wish", "hope", "want"},
 		Handle: func(sender *Sender) interface{} {
 			cost := 25
+			if sender.IsAdmin {
+				cost = 1
+			}
 			tx := db.Begin()
 			u := &User{}
 			if err := tx.Where("number = ?", sender.UserID).First(u).Error; err != nil {
