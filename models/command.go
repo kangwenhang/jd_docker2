@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -52,7 +53,7 @@ func (sender *Sender) IsTG() bool {
 	return strings.Contains(sender.Type, "tg")
 }
 
-func (sender *Sender) handleJdCookies(handle func(ck *JdCookie)) {
+func (sender *Sender) handleJdCookies(handle func(ck *JdCookie)) error {
 	cks := GetJdCookies()
 	a := sender.JoinContens()
 	ok := false
@@ -76,18 +77,20 @@ func (sender *Sender) handleJdCookies(handle func(ck *JdCookie)) {
 		}
 		if !ok {
 			sender.Reply("你尚未绑定🐶东账号，请对我说扫码，扫码后即可查询账户资产信息。")
+			return errors.New("你尚未绑定🐶东账号，请对我说扫码，扫码后即可查询账户资产信息。")
 		}
 	} else {
 		cks = LimitJdCookie(cks, a)
 		if len(cks) == 0 {
 			sender.Reply("没有匹配的账号")
+			return errors.New("没有匹配的账号")
 		} else {
 			for _, ck := range cks {
 				handle(&ck)
 			}
 		}
 	}
-
+	return nil
 }
 
 var codeSignals = []CodeSignal{
@@ -260,7 +263,23 @@ var codeSignals = []CodeSignal{
 		Command: []string{"run", "执行", "运行"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
-			runTask(&Task{Path: sender.JoinContens()}, sender)
+			name := sender.Contents[1]
+			pins := ""
+			if len(sender.Contents) > 2 {
+				sender.Contents = sender.Contents[1:]
+				err := sender.handleJdCookies(func(ck *JdCookie) {
+					pins += "&" + ck.PtPin
+				})
+				if err != nil {
+					return nil
+				}
+			}
+			runTask(&Task{Path: name, Envs: []Env{
+				{
+					Name:  "pins",
+					Value: pins,
+				},
+			}}, sender)
 			return nil
 		},
 	},
