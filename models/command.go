@@ -274,12 +274,14 @@ var codeSignals = []CodeSignal{
 					return nil
 				}
 			}
-			runTask(&Task{Path: name, Envs: []Env{
-				{
+			envs := []Env{}
+			if pins != "" {
+				envs = append(envs, Env{
 					Name:  "pins",
 					Value: pins,
-				},
-			}}, sender)
+				})
+			}
+			runTask(&Task{Path: name, Envs: envs}, sender)
 			return nil
 		},
 	},
