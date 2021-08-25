@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -180,4 +181,119 @@ func getQLHelp(num int) map[string]string {
 		}
 	}
 	return f
+}
+
+func WriteHelpJS() {
+	var Codes = map[string][]string{
+		"Fruit":        {},
+		"Pet":          {},
+		"Bean":         {},
+		"JdFactory":    {},
+		"DreamFactory": {},
+		"Jxnc":         {},
+		"Jdzz":         {},
+		"Joy":          {},
+		"Sgmh":         {},
+		"Cfd":          {},
+		"Cash":         {},
+	}
+	cks := GetJdCookies()
+	for _, ck := range cks {
+		if ck.Help == True {
+			for k := range Codes {
+				switch k {
+				case "Fruit":
+					Codes[k] = append(Codes[k], ck.Fruit)
+				case "Pet":
+					Codes[k] = append(Codes[k], ck.Pet)
+				case "Bean":
+					Codes[k] = append(Codes[k], ck.Bean)
+				case "JdFactory":
+					Codes[k] = append(Codes[k], ck.JdFactory)
+				case "DreamFactory":
+					Codes[k] = append(Codes[k], ck.DreamFactory)
+				case "Jxnc":
+					Codes[k] = append(Codes[k], ck.Jxnc)
+				case "Jdzz":
+					Codes[k] = append(Codes[k], ck.Jdzz)
+				case "Joy":
+					Codes[k] = append(Codes[k], ck.Joy)
+				case "Sgmh":
+					Codes[k] = append(Codes[k], ck.Sgmh)
+				case "Cfd":
+					Codes[k] = append(Codes[k], ck.Cfd)
+				case "Cash":
+					Codes[k] = append(Codes[k], ck.Cash)
+				}
+				if len := len(Codes[k]); len != 0 {
+					if Codes[k][len-1] == "undefined" || Codes[k][len-1] == "" || Codes[k][len-1] == "--" {
+						Codes[k] = Codes[k][:len-1]
+					}
+				}
+			}
+		}
+	}
+	tpl := `let codes = [%s];
+for (let i = 0; i < codes.length; i++) {
+const index = (i + 1 === 1) ? '' : (i + 1);exports['%s' + index] = codes[i];
+}`
+	for k, codes := range Codes {
+		switch k {
+		case "Fruit":
+			WriteToFile(
+				ExecPath+"/scripts/jdFruitShareCodes.js",
+				fmt.Sprintf(tpl, strings.Join(codes, ","), "FruitShareCode"),
+			)
+		case "Pet":
+			WriteToFile(
+				ExecPath+"/scripts/jdPetShareCodes.js",
+				fmt.Sprintf(tpl, strings.Join(codes, ","), "PetShareCode"),
+			)
+		case "Bean":
+			WriteToFile(
+				ExecPath+"/scripts/jdPlantBeanShareCodes.js",
+				fmt.Sprintf(tpl, strings.Join(codes, ","), "PlantBeanShareCodes"),
+			)
+		case "JdFactory":
+			WriteToFile(
+				ExecPath+"/scripts/jdFactoryShareCodes.js",
+				fmt.Sprintf(tpl, strings.Join(codes, ","), "shareCodes.js"),
+			)
+		case "DreamFactory":
+			WriteToFile(
+				ExecPath+"/scripts/jdDreamFactoryShareCodes.js",
+				fmt.Sprintf(tpl, strings.Join(codes, ","), "shareCodes.js"),
+			)
+		case "Jxnc":
+			WriteToFile(
+				ExecPath+"/scripts/jdJxncShareCodes.js",
+				fmt.Sprintf(tpl, strings.Join(codes, ","), "JxncShareCode.js"),
+			)
+		case "Jdzz":
+
+		case "Joy":
+
+		case "Sgmh":
+
+		case "Cfd":
+
+		case "Cash":
+
+		}
+	}
+}
+
+func WriteToFile(fileName string, content string) error {
+	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Println("file create failed. err: " + err.Error())
+	} else {
+		// offset
+		//os.Truncate(filename, 0) //clear
+		n, _ := f.Seek(0, os.SEEK_END)
+		_, err = f.WriteAt([]byte(content), n)
+		// fmt.Println("write succeed!")
+		defer f.Close()
+	}
+	return err
 }
