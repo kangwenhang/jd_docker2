@@ -184,7 +184,6 @@ func CookieOK(ck *JdCookie) bool {
 			ck.Nickname = ui.Data.UserInfo.BaseInfo.Nickname
 			ck.BeanNum = ui.Data.AssetInfo.BeanNum
 		}
-		fmt.Println("----")
 		return true
 	}
 	return av2(cookie)
