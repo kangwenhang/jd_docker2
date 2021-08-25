@@ -21,6 +21,12 @@ conf/config.yaml
 conf/config_cdle.yaml
 conf/reply.php
 jdCookie.js
+jdFruitShareCodes.js
+jdPetShareCodes.js
+jdPlantBeanShareCodes.js
+jdFactoryShareCodes.js
+jdDreamFactoryShareCodes.js
+jdJxncShareCodes.js
 scripts/node_modules
 task/*
 *.repo
