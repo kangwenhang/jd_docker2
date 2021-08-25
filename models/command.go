@@ -287,6 +287,24 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
+		Command: []string{"愿望清单", "wishes"},
+		Handle: func(_ *Sender) interface{} {
+			rt := []string{"\n"}
+			ws := []Wish{}
+			db.Find(&ws)
+			for i, w := range ws {
+				status := "未达成"
+				if w.Status == 1 {
+					status = "已退回"
+				} else if w.Status == 2 {
+					status = "已达成"
+				}
+				rt = append(rt, fmt.Sprintf("%d.\t[%s] %s", i+1, status, w.Content))
+			}
+			return strings.Join(rt, "\n")
+		},
+	},
+	{
 		Command: []string{"run", "执行", "运行"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
