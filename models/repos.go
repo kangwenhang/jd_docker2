@@ -77,7 +77,9 @@ func (rp *Repo) gitPull() string {
 }
 
 func (rp *Repo) cpConfig() {
-	cmd(fmt.Sprintf(`cp jdCookie.js %s`, rp.path+"/jdCookie.js"), &Sender{})
+	for _, js := range []string{"jdCookie", "jdFruitShareCodes", "jdPetShareCodes", "jdPlantBeanShareCodes", "jdFactoryShareCodes", "jdDreamFactoryShareCodes", "jdJxncShareCodes"} {
+		cmd(fmt.Sprintf(`cp `+js+`.js %s`, rp.path+"/"+js+".js"), &Sender{})
+	}
 }
 
 func (rp *Repo) addTask() {

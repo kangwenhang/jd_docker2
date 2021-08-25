@@ -45,7 +45,7 @@ func initHandle() {
 			if err != nil {
 				logs.Warn("创建jdCookie.js失败，", err)
 			}
-			WriteHelpJS(cks)
+
 			f.WriteString(fmt.Sprintf(`
 var cookies = %s
 var pins = process.env.pins
@@ -66,6 +66,7 @@ if(pins){
 }
 module.exports = cookies`, cookies))
 			f.Close()
+			WriteHelpJS(cks)
 			go CopyConfigAll()
 			// tmp = []JdCookie{}
 			// for _, ck := range cks {
