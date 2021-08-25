@@ -467,12 +467,15 @@ var codeSignals = []CodeSignal{
 			tx := db.Begin()
 			u := &User{}
 			if err := db.Where("number = ?", sender.UserID).First(&u).Error; err != nil {
+				tx.Rollback()
 				return "你还没有开通钱包功能"
 			}
 			if u.Coin <= 0 {
+				tx.Rollback()
 				return "余额不足"
 			}
 			if err := db.Where("number = ?", sender.ReplySenderUserID).First(&u).Error; err != nil {
+				tx.Rollback()
 				return "他还没有开通钱包功能"
 			}
 			if tx.Model(User{}).Where("number = ?", sender.UserID).Updates(map[string]interface{}{
