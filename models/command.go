@@ -52,6 +52,72 @@ func (sender *Sender) IsTG() bool {
 	return strings.Contains(sender.Type, "tg")
 }
 
+func (sender *Sender) handleJdCookies(handle func(ck *JdCookie)) {
+	cks := GetJdCookies()
+	a := sender.JoinContens()
+	ok := false
+	if !sender.IsAdmin || a == "" {
+		for _, ck := range cks {
+			if strings.Contains(sender.Type, "qq") {
+				if ck.QQ == sender.UserID {
+					if !ok {
+						ok = true
+					}
+					handle(&ck)
+				}
+			} else if strings.Contains(sender.Type, "tg") {
+				if ck.Telegram == sender.UserID {
+					if !ok {
+						ok = true
+					}
+					handle(&ck)
+				}
+			}
+		}
+		if !ok {
+			sender.Reply("你尚未绑定🐶东账号，请对我说扫码，扫码后即可查询账户资产信息。")
+		}
+	} else {
+		if s := strings.Split(a, "-"); len(s) == 2 {
+			for i, ck := range cks {
+				if i+1 >= Int(s[0]) && i+1 <= Int(s[1]) {
+					if !ok {
+						ok = true
+					}
+					handle(&ck)
+				}
+			}
+		} else if x := regexp.MustCompile(`^[\s\d,]+$`).FindString(a); x != "" {
+			xx := regexp.MustCompile(`(\d+)`).FindAllStringSubmatch(a, -1)
+			for i, ck := range cks {
+				for _, x := range xx {
+					if fmt.Sprint(i+1) == x[1] {
+						if !ok {
+							ok = true
+						}
+						handle(&ck)
+					}
+				}
+
+			}
+		} else if a != "" {
+			a = strings.Replace(a, " ", "", -1)
+			for _, ck := range cks {
+				if strings.Contains(ck.Note, a) || strings.Contains(ck.Nickname, a) || strings.Contains(ck.PtPin, a) {
+					if !ok {
+						ok = true
+					}
+					handle(&ck)
+				}
+			}
+		}
+		if !ok {
+			sender.Reply("没有匹配的账号")
+		}
+	}
+
+}
+
 var codeSignals = []CodeSignal{
 	{
 		Command: []string{"status", "状态"},
@@ -193,56 +259,9 @@ var codeSignals = []CodeSignal{
 	{
 		Command: []string{"查询", "query"},
 		Handle: func(sender *Sender) interface{} {
-			cks := GetJdCookies()
-			tmp := []JdCookie{}
-			a := sender.JoinContens()
-			if !sender.IsAdmin || a == "" {
-				for _, ck := range cks {
-					if strings.Contains(sender.Type, "qq") {
-						if ck.QQ == sender.UserID {
-							tmp = append(tmp, ck)
-						}
-					} else if strings.Contains(sender.Type, "tg") {
-						if ck.Telegram == sender.UserID {
-							tmp = append(tmp, ck)
-						}
-					}
-				}
-				if len(tmp) == 0 {
-					return "你尚未绑定🐶东账号，请对我说扫码，扫码后即可查询账户资产信息。"
-				}
-			} else {
-				if s := strings.Split(a, "-"); len(s) == 2 {
-					for i, ck := range cks {
-						if i+1 >= Int(s[0]) && i+1 <= Int(s[1]) {
-							tmp = append(tmp, ck)
-						}
-					}
-				} else if x := regexp.MustCompile(`^[\s\d,]+$`).FindString(a); x != "" {
-					xx := regexp.MustCompile(`(\d+)`).FindAllStringSubmatch(a, -1)
-					for i, ck := range cks {
-						for _, x := range xx {
-							if fmt.Sprint(i+1) == x[1] {
-								tmp = append(tmp, ck)
-							}
-						}
-
-					}
-				} else {
-					a = strings.Replace(a, " ", "", -1)
-					for _, ck := range cks {
-						if strings.Contains(ck.Note, a) || strings.Contains(ck.Nickname, a) || strings.Contains(ck.PtPin, a) {
-							tmp = append(tmp, ck)
-						}
-					}
-				}
-				if len(tmp) == 0 {
-					return "找不到匹配的账号"
-				}
-			}
-			for _, ck := range tmp {
+			sender.handleJdCookies(func(ck *JdCookie) {
 				sender.Reply(ck.Query())
-			}
+			})
 			return nil
 		},
 	},
@@ -385,35 +404,21 @@ var codeSignals = []CodeSignal{
 		Command: []string{"help", "助力"},
 		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
-			cks := GetJdCookies()
-			a := sender.JoinContens()
-			if s := strings.Split(a, "-"); len(s) == 2 {
-				for i, ck := range cks {
-					if i+1 >= Int(s[0]) && i+1 <= Int(s[1]) {
-						ck.Update(Help, True)
-						sender.Reply(fmt.Sprintf("已设置助力账号%s", ck.Nickname))
-					}
-				}
-			} else if x := regexp.MustCompile(`^[\s\d,]+$`).FindString(a); x != "" {
-				xx := regexp.MustCompile(`(\d+)`).FindAllStringSubmatch(a, -1)
-				for i, ck := range cks {
-					for _, x := range xx {
-						if fmt.Sprint(i+1) == x[1] {
-							ck.Update(Help, True)
-							sender.Reply(fmt.Sprintf("已设置助力账号%s", ck.Nickname))
-						}
-					}
-
-				}
-			} else {
-				a = strings.Replace(a, " ", "", -1)
-				for _, ck := range cks {
-					if strings.Contains(ck.Note, a) || strings.Contains(ck.Nickname, a) || strings.Contains(ck.PtPin, a) {
-						ck.Update(Help, True)
-						sender.Reply(fmt.Sprintf("已设置助力账号%s", ck.Nickname))
-					}
-				}
-			}
+			sender.handleJdCookies(func(ck *JdCookie) {
+				ck.Update(Help, True)
+				sender.Reply(fmt.Sprintf("已设置助力账号%s(%s)", ck.PtPin, ck.Nickname))
+			})
+			return nil
+		},
+	},
+	{
+		Command: []string{"tool", "工具人", "unhelp", "取消助力"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			sender.handleJdCookies(func(ck *JdCookie) {
+				ck.Update(Help, False)
+				sender.Reply(fmt.Sprintf("已设置取消助力账号%s(%s)", ck.PtPin, ck.Nickname))
+			})
 			return nil
 		},
 	},
