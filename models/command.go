@@ -19,13 +19,14 @@ type CodeSignal struct {
 }
 
 type Sender struct {
-	UserID    int
-	ChatID    int
-	Type      string
-	Contents  []string
-	MessageID int
-	Username  string
-	IsAdmin   bool
+	UserID            int
+	ChatID            int
+	Type              string
+	Contents          []string
+	MessageID         int
+	Username          string
+	IsAdmin           bool
+	ReplySenderUserID int
 }
 
 func (sender *Sender) Reply(msg string) {
@@ -449,6 +450,42 @@ var codeSignals = []CodeSignal{
 				sender.Reply(fmt.Sprintf("已设置取消屏蔽助力账号%s(%s)", ck.PtPin, ck.Nickname))
 			})
 			return nil
+		},
+	},
+	{
+		Command: []string{"转账"},
+		Handle: func(sender *Sender) interface{} {
+			if sender.ReplySenderUserID == 0 {
+				return "没有转账目标"
+			}
+			if len(sender.Contents) == 0 {
+				return "未设置转账金额"
+			}
+			amount := Int(sender.Contents[0])
+			if !sender.IsAdmin {
+				if amount <= 0 {
+					return "转账金额必须大于0"
+				}
+				remain := GetCoin(sender.UserID)
+				if remain <= 0 {
+					return "余额不足"
+				}
+			}
+			tx := db.Begin()
+			if tx.Model(User{}).Where("number = ?", sender.UserID).Updates(map[string]interface{}{
+				"coin": gorm.Expr(fmt.Sprintf("coin - %d", amount)),
+			}).RowsAffected == 0 {
+				tx.Rollback()
+				return "转账失败"
+			}
+			if tx.Model(User{}).Where("number = ?", sender.ReplySenderUserID).Updates(map[string]interface{}{
+				"coin": gorm.Expr(fmt.Sprintf("coin - %d", amount)),
+			}).RowsAffected == 0 {
+				tx.Rollback()
+				return "转账失败"
+			}
+			tx.Commit()
+			return "转账成功"
 		},
 	},
 }

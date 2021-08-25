@@ -64,6 +64,7 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 	if sender.Type == "tgg" {
 		sender.MessageID = msgs[4].(int)
 		sender.Username = msgs[5].(string)
+		sender.ReplySenderUserID = msgs[6].(int)
 	}
 	if sender.UserID == Config.TelegramUserID || sender.UserID == int(Config.QQID) {
 		sender.IsAdmin = true
