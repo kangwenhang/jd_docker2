@@ -632,7 +632,7 @@ func ReturnCoin(sender *Sender) {
 			sender.Reply("愿望未达成退还许愿币失败。")
 			return
 		}
-		sender.Reply(fmt.Sprintf("[%s] 愿望未达成退还%d枚许愿币。", w.Content, w.Coin))
+		sender.Reply(fmt.Sprintf("愿望未达成退还%d枚许愿币。", w.Coin))
 		if tx.Model(&w).Update(
 			"status", 1,
 		).RowsAffected == 0 {
