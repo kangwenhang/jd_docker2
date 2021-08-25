@@ -265,7 +265,7 @@ var codeSignals = []CodeSignal{
 		Handle: func(sender *Sender) interface{} {
 			name := sender.Contents[0]
 			pins := ""
-			if len(sender.Contents) > 2 {
+			if len(sender.Contents) > 1 {
 				sender.Contents = sender.Contents[1:]
 				err := sender.handleJdCookies(func(ck *JdCookie) {
 					pins += "&" + ck.PtPin
