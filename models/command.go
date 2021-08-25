@@ -479,7 +479,7 @@ var codeSignals = []CodeSignal{
 				return "转账失败"
 			}
 			if tx.Model(User{}).Where("number = ?", sender.ReplySenderUserID).Updates(map[string]interface{}{
-				"coin": gorm.Expr(fmt.Sprintf("coin - %d", amount)),
+				"coin": gorm.Expr(fmt.Sprintf("coin + %d", amount)),
 			}).RowsAffected == 0 {
 				tx.Rollback()
 				return "转账失败"
