@@ -252,18 +252,38 @@ var codeSignals = []CodeSignal{
 	{
 		Command: []string{"许愿", "wish", "hope", "want"},
 		Handle: func(sender *Sender) interface{} {
-			b := GetCoin(sender.UserID)
-			w := sender.JoinContens()
-			if w == "" {
-				defer sender.Reply("请对我说 许愿 巴拉巴拉")
+			cost := 25
+			tx := db.Begin()
+			u := &User{}
+			if err := tx.Where("number = ?", sender.UserID).First(u).Error; err != nil {
+				tx.Rollback()
+				return "许愿币不足，先去打卡吧。"
+			}
+			w := &Wish{
+				Content:    sender.JoinContens(),
+				Coin:       cost,
+				UserNumber: sender.UserID,
+			}
+			if w.Content == "" {
+				tx.Rollback()
+				sender.Reply("请对我说 许愿 巴拉巴拉")
 				return nil
 			}
-			if b < 25 {
-				return "许愿币不足，需要25个许愿币。"
+			if u.Coin < cost {
+				tx.Rollback()
+				return fmt.Sprintf("许愿币不足，需要%d个许愿币。", cost)
 			}
-
-			(&JdCookie{}).Push(fmt.Sprintf("%d许愿%s，许愿币余额%d。", sender.UserID, w, b))
-			return fmt.Sprintf("收到许愿，已扣除25个许愿币，余额%d。", RemCoin(sender.UserID, 25))
+			if err := tx.Create(w).Error; err != nil {
+				tx.Rollback()
+				return err.Error()
+			}
+			if tx.Update("coin", gorm.Expr(fmt.Sprintf("coin - %d", cost))).RowsAffected == 0 {
+				tx.Rollback()
+				return "扣款失败"
+			}
+			tx.Commit()
+			(&JdCookie{}).Push(fmt.Sprintf("有人许愿%s，愿望id为%d。", w.Content, w.ID))
+			return fmt.Sprintf("收到愿望，已扣除%d个许愿币。", cost)
 		},
 	},
 	{
