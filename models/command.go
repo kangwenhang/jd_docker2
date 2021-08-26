@@ -553,6 +553,12 @@ var codeSignals = []CodeSignal{
 				tx.Rollback()
 				return "余额不足"
 			}
+
+			if amount == 1 {
+				tx.Rollback()
+				return "转账失败，手续费1个许愿币。"
+			}
+
 			r := &User{}
 			if err := db.Where("number = ?", sender.ReplySenderUserID).First(&r).Error; err != nil {
 				tx.Rollback()
@@ -565,13 +571,13 @@ var codeSignals = []CodeSignal{
 				return "转账失败"
 			}
 			if tx.Model(User{}).Where("number = ?", sender.ReplySenderUserID).Updates(map[string]interface{}{
-				"coin": gorm.Expr(fmt.Sprintf("coin + %d", amount)),
+				"coin": gorm.Expr(fmt.Sprintf("coin + %d", amount-1)),
 			}).RowsAffected == 0 {
 				tx.Rollback()
 				return "转账失败"
 			}
 			tx.Commit()
-			return fmt.Sprintf("转账成功，你的余额%d，他的余额%d。", s.Coin-amount, r.Coin+amount)
+			return fmt.Sprintf("转账成功，你的余额%d，他的余额%d，手续费%d。", s.Coin-amount, r.Coin+amount-1, 1)
 		},
 	},
 	{
