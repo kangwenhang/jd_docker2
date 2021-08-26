@@ -543,6 +543,7 @@ var codeSignals = []CodeSignal{
 			if amount > 10000 {
 				return "单笔转账限额10000"
 			}
+			cost := 1
 			tx := db.Begin()
 			s := &User{}
 			if err := db.Where("number = ?", sender.UserID).First(&s).Error; err != nil {
@@ -553,10 +554,15 @@ var codeSignals = []CodeSignal{
 				tx.Rollback()
 				return "余额不足"
 			}
-
-			if amount == 1 {
-				tx.Rollback()
-				return "转账失败，手续费需要1个许愿币。"
+			real := amount
+			if !sender.IsAdmin {
+				if amount <= cost {
+					tx.Rollback()
+					return fmt.Sprintf("转账失败，手续费需要%d个许愿币。", cost)
+				}
+				real = amount - cost
+			} else {
+				cost = 0
 			}
 
 			r := &User{}
@@ -571,13 +577,13 @@ var codeSignals = []CodeSignal{
 				return "转账失败"
 			}
 			if tx.Model(User{}).Where("number = ?", sender.ReplySenderUserID).Updates(map[string]interface{}{
-				"coin": gorm.Expr(fmt.Sprintf("coin + %d", amount-1)),
+				"coin": gorm.Expr(fmt.Sprintf("coin + %d", real)),
 			}).RowsAffected == 0 {
 				tx.Rollback()
 				return "转账失败"
 			}
 			tx.Commit()
-			return fmt.Sprintf("转账成功，你的余额%d，他的余额%d，手续费%d。", s.Coin-amount, r.Coin+amount-1, 1)
+			return fmt.Sprintf("转账成功，你的余额%d，他的余额%d，手续费%d。", s.Coin-amount, r.Coin+real, cost)
 		},
 	},
 	{
