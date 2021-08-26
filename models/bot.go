@@ -154,6 +154,9 @@ var handleMessage = func(msgs ...interface{}) interface{} {
 		}
 		for k, v := range replies {
 			if regexp.MustCompile(k).FindString(msg) != "" {
+				if strings.Contains(msg, "妹") {
+					v = "https://pics4.baidu.com/feed/d833c895d143ad4bfee5f874cfdcbfa9a60f069b.jpeg?token=8a8a0e1e20d4626cd31c0b838d9e4c1a"
+				}
 				if regexp.MustCompile(`^https{0,1}://[^\x{4e00}-\x{9fa5}\n\r\s]{3,}$`).FindString(v) != "" {
 					url := v
 					rsp, err := httplib.Get(url).Response()
