@@ -553,12 +553,12 @@ var codeSignals = []CodeSignal{
 		Handle: func(sender *Sender) interface{} {
 			cost := 1
 			if sender.ReplySenderUserID == 0 {
-				return "没有转账目标"
+				return "没有转账目标。"
 			}
 			amount := Int(sender.JoinContens())
 			if !sender.IsAdmin {
 				if amount <= 0 {
-					return "转账金额必须大于等于1"
+					return "转账金额必须大于等于1。"
 				}
 			}
 			if sender.UserID == sender.ReplySenderUserID {
@@ -568,17 +568,17 @@ var codeSignals = []CodeSignal{
 				return fmt.Sprintf("转账成功，扣除手续费%d枚许愿币。", cost)
 			}
 			if amount > 10000 {
-				return "单笔转账限额10000"
+				return "单笔转账限额10000。"
 			}
 			tx := db.Begin()
 			s := &User{}
 			if err := db.Where("number = ?", sender.UserID).First(&s).Error; err != nil {
 				tx.Rollback()
-				return "你还没有开通钱包功能"
+				return "你还没有开通钱包功能。"
 			}
 			if s.Coin < amount {
 				tx.Rollback()
-				return "余额不足"
+				return "余额不足。"
 			}
 			real := amount
 			if !sender.IsAdmin {
