@@ -486,7 +486,9 @@ var codeSignals = []CodeSignal{
 				return "你祈祷过啦，等下次我忘记了再来吧。"
 			}
 			mx[sender.UserID] = true
-			AddCoin(sender.UserID)
+			if db.Model(User{}).Where("user_number = ?", sender.UserID).Update("coin", gorm.Expr("coin + 1")).RowsAffected == 0 {
+				return "先去打卡吧你。"
+			}
 			return "许愿币+1"
 		},
 	},
