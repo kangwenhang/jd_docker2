@@ -306,7 +306,7 @@ var codeSignals = []CodeSignal{
 				}
 				return strings.Join(rt, "\n")
 			}
-			cost := 25
+			cost := 66
 			if sender.IsAdmin {
 				cost = 1
 			}
