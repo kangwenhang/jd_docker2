@@ -157,7 +157,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"coin", "许愿币"},
+		Command: []string{"coin", "许愿币", "余额"},
 		Handle: func(sender *Sender) interface{} {
 			return fmt.Sprintf("余额%d", GetCoin(sender.UserID))
 		},
@@ -275,7 +275,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"许愿", "祈愿", "祈福", "愿望", "wish", "hope", "want"},
+		Command: []string{"许愿", "愿望", "wish", "hope", "want"},
 		Handle: func(sender *Sender) interface{} {
 			ct := sender.JoinContens()
 			if ct == "" {
@@ -475,7 +475,7 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
-		Command: []string{"祈祷"},
+		Command: []string{"祈祷", "祈愿", "祈福"},
 		Handle: func(sender *Sender) interface{} {
 			if _, ok := mx[sender.UserID]; ok {
 				return "你祈祷过啦，等下次我忘记了再来吧。"
@@ -551,6 +551,7 @@ var codeSignals = []CodeSignal{
 	{
 		Command: []string{"转账"},
 		Handle: func(sender *Sender) interface{} {
+			cost := 1
 			if sender.ReplySenderUserID == 0 {
 				return "没有转账目标"
 			}
@@ -561,12 +562,14 @@ var codeSignals = []CodeSignal{
 				}
 			}
 			if sender.UserID == sender.ReplySenderUserID {
-				return "转账成功"
+				db.Model(User{}).Where("number = ?", sender.UserID).Updates(map[string]interface{}{
+					"coin": gorm.Expr(fmt.Sprintf("coin - %d", cost)),
+				})
+				return fmt.Sprintf("转账成功，扣除手续费%d枚许愿币。", cost)
 			}
 			if amount > 10000 {
 				return "单笔转账限额10000"
 			}
-			cost := 1
 			tx := db.Begin()
 			s := &User{}
 			if err := db.Where("number = ?", sender.UserID).First(&s).Error; err != nil {
