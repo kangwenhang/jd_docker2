@@ -253,7 +253,6 @@ var codeSignals = []CodeSignal{
 	},
 	{
 		Command: []string{"翻翻乐"},
-		Admin:   true,
 		Handle: func(sender *Sender) interface{} {
 			cost := Int(sender.JoinContens())
 			if cost <= 0 {
