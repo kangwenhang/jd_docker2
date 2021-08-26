@@ -105,12 +105,12 @@ var codeSignals = []CodeSignal{
 	{
 		Command: []string{"sign", "打卡", "签到"},
 		Handle: func(sender *Sender) interface{} {
-			if sender.Type == "tgg" {
-				sender.Type = "tg"
-			}
-			if sender.Type == "qqg" {
-				sender.Type = "qq"
-			}
+			//if sender.Type == "tgg" {
+			//	sender.Type = "tg"
+			//}
+			//if sender.Type == "qqg" {
+			//	sender.Type = "qq"
+			//}
 			zero, _ := time.ParseInLocation("2006-01-02", time.Now().Local().Format("2006-01-02"), time.Local)
 			var u User
 			var ntime = time.Now()
