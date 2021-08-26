@@ -556,7 +556,7 @@ var codeSignals = []CodeSignal{
 
 			if amount == 1 {
 				tx.Rollback()
-				return "转账失败，手续费1个许愿币。"
+				return "转账失败，手续费需要1个许愿币。"
 			}
 
 			r := &User{}
