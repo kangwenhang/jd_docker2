@@ -263,7 +263,7 @@ var codeSignals = []CodeSignal{
 				return "许愿币不足，先去打卡吧。"
 			}
 			baga := 0
-			if u.Coin > 1000 {
+			if u.Coin > 100000 {
 				baga = u.Coin
 				cost = u.Coin
 			}
