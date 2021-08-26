@@ -252,6 +252,30 @@ var codeSignals = []CodeSignal{
 		},
 	},
 	{
+		Command: []string{"翻翻乐"},
+		Admin:   true,
+		Handle: func(sender *Sender) interface{} {
+			cost := Int(sender.JoinContens())
+			if cost <= 0 {
+				cost = 1
+			}
+			u := &User{}
+			if err := db.Where("number = ?", sender.UserID).First(u).Error; err != nil || u.Coin < cost {
+				return "许愿币不足，先去打卡吧。"
+			}
+			if time.Now().Unix()%10 < 6 || !sender.IsAdmin {
+				sender.Reply(fmt.Sprintf("很遗憾你失去了%d枚许愿币。", cost))
+				cost = -cost
+			} else {
+				sender.Reply(fmt.Sprintf("很幸运你获得%d枚许愿币，10秒后自动转入余额。", cost))
+				time.Sleep(time.Second * 10)
+				sender.Reply(fmt.Sprintf("%d枚许愿币已到账。", cost))
+			}
+			db.Model(u).Update("coin", gorm.Expr(fmt.Sprintf("coin + %d", cost)))
+			return nil
+		},
+	},
+	{
 		Command: []string{"许愿", "愿望", "wish", "hope", "want"},
 		Handle: func(sender *Sender) interface{} {
 			ct := sender.JoinContens()
@@ -564,7 +588,6 @@ var codeSignals = []CodeSignal{
 			} else {
 				cost = 0
 			}
-
 			r := &User{}
 			if err := db.Where("number = ?", sender.ReplySenderUserID).First(&r).Error; err != nil {
 				tx.Rollback()
