@@ -262,7 +262,12 @@ var codeSignals = []CodeSignal{
 			if err := db.Where("number = ?", sender.UserID).First(u).Error; err != nil || u.Coin < cost {
 				return "许愿币不足，先去打卡吧。"
 			}
-			if time.Now().Nanosecond()%10 < 6 {
+			baga := 0
+			if u.Coin > 1000 {
+				baga = u.Coin
+				cost = u.Coin
+			}
+			if time.Now().Nanosecond()%10 < 6 || baga > 0 {
 				sender.Reply(fmt.Sprintf("很遗憾你失去了%d枚许愿币。", cost))
 				cost = -cost
 			} else {
