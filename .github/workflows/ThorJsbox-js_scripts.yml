@@ -1,5 +1,5 @@
 # File: .github/workflows/repo-sync.yml
-name: MoonBegonia/ninja
+name: ThorJsbox/js_scripts
 on:
   schedule:
     - cron: '1 0,12 * * *'
@@ -9,7 +9,7 @@ on:
   push:
     branches: [ dockerjs ]
   repository_dispatch:
-    types: MoonBegonia/ninja
+    types: ThorJsbox/js_scripts
 jobs:
   repo-sync:
     env:
@@ -26,7 +26,7 @@ jobs:
         uses: repo-sync/github-sync@v2
         if: env.PAT
         with:
-          source_repo: "https://github.com/kangwenhang/ninja.git"
+          source_repo: "https://github.com/ThorJsbox/js_scripts.git"
           source_branch: "main"
-          destination_branch: "MoonBegonia-ninja"
+          destination_branch: "ThorJsbox-js_scripts"
           github_token: ${{ secrets.PAT }}
