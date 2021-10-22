@@ -214,6 +214,34 @@
       "author": "@passerby-b",
       "repo": "https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json",
       "script": "https://raw.githubusercontent.com/passerby-b/ks_fruit/main/ks_fruit.js"
+    },
+    {
+      "id": "mt_fruit",
+      "name": "美团买菜果园",
+      "keys": [
+        "mt_cookies"
+      ],
+      "descs_html": [
+        "填写cookie,多账号用英文逗号(,)分开"
+      ],
+      "settings": [
+        {
+          "id": "mt_cookies",
+          "name": "mt_cookies",
+          "val": "",
+          "type": "textarea",
+          "autoGrow": true,
+          "rows": 8,
+          "desc": "mt_cookies"
+        }
+      ],
+      "icons": [
+        "https://gitee.com/passerby-b/javascript/raw/master/icon/mtmall.png",
+        "https://gitee.com/passerby-b/javascript/raw/master/icon/mtmall.png"
+      ],
+      "author": "@passerby-b",
+      "repo": "https://gitee.com/passerby-b/javascript/raw/master/JD/passerby-b.boxjs.json",
+      "script": "https://raw.githubusercontent.com/passerby-b/mt_fruit/main/mt_fruit.js"
     }
   ]
 }
