@@ -36,6 +36,7 @@ to a **NAS (fnOS / Synology / QNAP) or any directory**.
 ---
 
 ## 🚀 快速开始（推荐：Docker Compose）
+## 🚀 Quick Start (Recommended: Docker Compose)
 ```bash
 services:
   mssql-backup:
@@ -49,10 +50,10 @@ services:
       - ./config.env:/config/config.env
       - ./schedule.cron:/config/schedule.cron
       - /vol1/backup/mssql:/backup
-## 🚀 Quick Start (Recommended: Docker Compose)
-
+```
 ### 1️⃣ 创建工作目录  
 ### 1️⃣ Create working directory
 
 ```bash
 mkdir mssql-backup && cd mssql-backup
+```
