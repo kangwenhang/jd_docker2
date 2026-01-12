@@ -35,7 +35,20 @@ to a **NAS (fnOS / Synology / QNAP) or any directory**.
 
 ---
 
-## 🚀 快速开始（推荐：Docker Compose）  
+## 🚀 快速开始（推荐：Docker Compose）
+```bash
+services:
+  mssql-backup:
+    image: <DOCKER_HUB_USERNAME>/mssql-backup:latest
+    container_name: mssql-backup
+    restart: unless-stopped
+    environment:
+      CONFIG_FILE: /config/config.env
+      CRON_FILE: /config/schedule.cron
+    volumes:
+      - ./config.env:/config/config.env
+      - ./schedule.cron:/config/schedule.cron
+      - /vol1/backup/mssql:/backup
 ## 🚀 Quick Start (Recommended: Docker Compose)
 
 ### 1️⃣ 创建工作目录  
