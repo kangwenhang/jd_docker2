@@ -1,0 +1,2 @@
+# 每天北京时间 01:00 执行备份
+0 1 * * * /app/backup.sh >> /var/log/mssql-backup.log 2>&1
